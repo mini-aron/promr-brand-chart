@@ -89,6 +89,13 @@ const tableWrapStyles = css({
   },
   '& th:last-child, & td:last-child': { borderRight: 'none' },
   '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
+  '& .col-num': { textAlign: 'right' },
+  '& tfoot tr': {
+    fontWeight: 700,
+    borderTop: `2px solid ${theme.colors.border}`,
+    backgroundColor: theme.colors.background,
+  },
+  '& tfoot td': { padding: theme.spacing(2) },
 });
 
 const separatorRowStyles = css({
@@ -97,6 +104,17 @@ const separatorRowStyles = css({
     padding: theme.spacing(1),
     backgroundColor: theme.colors.background,
   },
+});
+
+const fileSumRowStyles = css({
+  '& td': {
+    borderBottom: `2px solid ${theme.colors.border}`,
+    padding: theme.spacing(2),
+    backgroundColor: theme.colors.background,
+    fontWeight: 600,
+    fontSize: 13,
+  },
+  '& .col-num': { textAlign: 'right' },
 });
 
 const uploadedFilesRowStyles = css({
@@ -256,16 +274,26 @@ export function SalesUploadPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const previewSectionRef = useRef<HTMLDivElement>(null);
 
-  const { preview, separatorAfterIndices } = useMemo(() => {
+  const { preview, separatorAfterIndices, totals, fileTotals, showFileSums } = useMemo(() => {
     const allRows: SalesRow[] = [];
     const separators: number[] = [];
     uploadedFiles.forEach((f) => {
       f.rows.forEach((r) => allRows.push(r));
       if (f.rows.length > 0) separators.push(allRows.length - 1);
     });
+    const totalQuantity = allRows.reduce((s, r) => s + r.quantity, 0);
+    const totalAmount = allRows.reduce((s, r) => s + r.amount, 0);
+    const fileTotalsList = uploadedFiles.map((f) => ({
+      fileName: f.fileName,
+      totalQuantity: f.rows.reduce((s, r) => s + r.quantity, 0),
+      totalAmount: f.rows.reduce((s, r) => s + r.amount, 0),
+    }));
     return {
       preview: allRows,
       separatorAfterIndices: separators.slice(0, -1),
+      totals: { totalQuantity, totalAmount },
+      fileTotals: fileTotalsList,
+      showFileSums: uploadedFiles.length > 1,
     };
   }, [uploadedFiles]);
 
@@ -430,8 +458,8 @@ export function SalesUploadPage() {
                 <tr>
                   <th>병의원</th>
                   <th>제품명</th>
-                  <th>수량</th>
-                  <th>금액</th>
+                  <th className="col-num">수량</th>
+                  <th className="col-num">금액</th>
                 </tr>
               </thead>
               <tbody>
@@ -440,19 +468,45 @@ export function SalesUploadPage() {
                     <tr key={r.id}>
                       <td>{hospitalName(r.hospitalId)}</td>
                       <td>{r.productName}</td>
-                      <td>{r.quantity}</td>
-                      <td>{r.amount.toLocaleString()}</td>
+                      <td className="col-num">{r.quantity}</td>
+                      <td className="col-num">{r.amount.toLocaleString()}</td>
                     </tr>
                   );
-                  const sep =
-                    separatorAfterIndices.includes(i) ? (
+                  const sep = separatorAfterIndices.includes(i) ? (
+                    showFileSums ? (
+                      (() => {
+                        const fileIndex = separatorAfterIndices.indexOf(i);
+                        const ft = fileTotals[fileIndex];
+                        return ft ? (
+                          <tr key={`sum-${i}`} css={fileSumRowStyles}>
+                            <td colSpan={2}>
+                              {ft.fileName} 합계
+                            </td>
+                            <td className="col-num">{ft.totalQuantity.toLocaleString()}</td>
+                            <td className="col-num">{ft.totalAmount.toLocaleString()}</td>
+                          </tr>
+                        ) : (
+                          <tr key={`sep-${i}`} css={separatorRowStyles}>
+                            <td colSpan={4} />
+                          </tr>
+                        );
+                      })()
+                    ) : (
                       <tr key={`sep-${i}`} css={separatorRowStyles}>
                         <td colSpan={4} />
                       </tr>
-                    ) : null;
+                    )
+                  ) : null;
                   return sep ? [row, sep] : [row];
                 })}
               </tbody>
+              <tfoot>
+                <tr>
+                  <td colSpan={2}>합계</td>
+                  <td className="col-num">{totals.totalQuantity.toLocaleString()}</td>
+                  <td className="col-num">{totals.totalAmount.toLocaleString()}</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
           <button
