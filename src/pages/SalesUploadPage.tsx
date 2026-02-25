@@ -96,6 +96,21 @@ const tableWrapStyles = css({
     backgroundColor: theme.colors.background,
   },
   '& tfoot td': { padding: theme.spacing(2) },
+  '& td input': {
+    padding: `${theme.spacing(1)}px ${theme.spacing(1.5)}px`,
+    fontSize: 12,
+    border: `1px solid ${theme.colors.border}`,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surface,
+    boxSizing: 'border-box',
+    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
+  },
+  '& td input[type="text"]': { width: '100%', minWidth: 80 },
+  '& td input[type="number"]': {
+    width: 56,
+    minWidth: 56,
+    textAlign: 'right',
+  },
 });
 
 const separatorRowStyles = css({
@@ -270,32 +285,63 @@ export function SalesUploadPage() {
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
   const [isDrag, setIsDrag] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; rows: SalesRow[] }[]>([]);
+  const [editedOverrides, setEditedOverrides] = useState<Record<string, { quantity?: number; productName?: string }>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const previewSectionRef = useRef<HTMLDivElement>(null);
 
-  const { preview, separatorAfterIndices, totals, fileTotals, showFileSums } = useMemo(() => {
+  const { preview, separatorAfterIndices, showFileSums } = useMemo(() => {
     const allRows: SalesRow[] = [];
     const separators: number[] = [];
     uploadedFiles.forEach((f) => {
       f.rows.forEach((r) => allRows.push(r));
       if (f.rows.length > 0) separators.push(allRows.length - 1);
     });
-    const totalQuantity = allRows.reduce((s, r) => s + r.quantity, 0);
-    const totalAmount = allRows.reduce((s, r) => s + r.amount, 0);
-    const fileTotalsList = uploadedFiles.map((f) => ({
-      fileName: f.fileName,
-      totalQuantity: f.rows.reduce((s, r) => s + r.quantity, 0),
-      totalAmount: f.rows.reduce((s, r) => s + r.amount, 0),
-    }));
     return {
       preview: allRows,
       separatorAfterIndices: separators.slice(0, -1),
-      totals: { totalQuantity, totalAmount },
-      fileTotals: fileTotalsList,
       showFileSums: uploadedFiles.length > 1,
     };
   }, [uploadedFiles]);
+
+  const effectiveRows = useMemo(
+    () =>
+      preview.map((r) => ({
+        ...r,
+        quantity: editedOverrides[r.id]?.quantity ?? r.quantity,
+        productName: editedOverrides[r.id]?.productName ?? r.productName,
+      })),
+    [preview, editedOverrides]
+  );
+
+  const { totals, fileTotals } = useMemo(() => {
+    const totalQuantity = effectiveRows.reduce((s, r) => s + r.quantity, 0);
+    const totalAmount = effectiveRows.reduce((s, r) => s + r.amount, 0);
+    let idx = 0;
+    const fileTotalsList = uploadedFiles.map((f) => {
+      const rows = effectiveRows.slice(idx, idx + f.rows.length);
+      idx += f.rows.length;
+      return {
+        fileName: f.fileName,
+        totalQuantity: rows.reduce((s, r) => s + r.quantity, 0),
+        totalAmount: rows.reduce((s, r) => s + r.amount, 0),
+      };
+    });
+    return {
+      totals: { totalQuantity, totalAmount },
+      fileTotals: fileTotalsList,
+    };
+  }, [effectiveRows, uploadedFiles]);
+
+  const setRowEdit = useCallback((rowId: string, field: 'quantity' | 'productName', value: number | string) => {
+    setEditedOverrides((prev) => ({
+      ...prev,
+      [rowId]: {
+        ...prev[rowId],
+        [field]: field === 'quantity' ? (value as number) : (value as string),
+      },
+    }));
+  }, []);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -319,6 +365,7 @@ export function SalesUploadPage() {
         next.push({ fileName: file.name, rows: rowsWithId });
       }
       setUploadedFiles(next);
+      setEditedOverrides({});
       setTimeout(() => previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     },
     [currentCorporationId, hospitals]
@@ -348,12 +395,13 @@ export function SalesUploadPage() {
   );
 
   const doRegister = useCallback(() => {
-    if (!preview?.length) return;
-    addSalesRows(preview);
-    setMessage({ type: 'success', text: `${preview.length}건의 실적이 업로드되었습니다.` });
+    if (!effectiveRows.length) return;
+    addSalesRows(effectiveRows);
+    setMessage({ type: 'success', text: `${effectiveRows.length}건의 실적이 업로드되었습니다.` });
     setUploadedFiles([]);
+    setEditedOverrides({});
     setShowConfirmModal(false);
-  }, [preview, addSalesRows]);
+  }, [effectiveRows, addSalesRows]);
 
   const openConfirmModal = useCallback(() => {
     if (preview?.length) setShowConfirmModal(true);
@@ -464,11 +512,28 @@ export function SalesUploadPage() {
               </thead>
               <tbody>
                 {preview.flatMap((r, i) => {
+                  const qty = editedOverrides[r.id]?.quantity ?? r.quantity;
+                  const productName = editedOverrides[r.id]?.productName ?? r.productName;
                   const row = (
                     <tr key={r.id}>
                       <td>{hospitalName(r.hospitalId)}</td>
-                      <td>{r.productName}</td>
-                      <td className="col-num">{r.quantity}</td>
+                      <td>
+                        <input
+                          type="text"
+                          value={productName}
+                          onChange={(e) => setRowEdit(r.id, 'productName', e.target.value)}
+                          aria-label={`${r.id} 제품명`}
+                        />
+                      </td>
+                      <td className="col-num">
+                        <input
+                          type="number"
+                          min={0}
+                          value={qty}
+                          onChange={(e) => setRowEdit(r.id, 'quantity', Number(e.target.value) || 0)}
+                          aria-label={`${r.id} 수량`}
+                        />
+                      </td>
                       <td className="col-num">{r.amount.toLocaleString()}</td>
                     </tr>
                   );

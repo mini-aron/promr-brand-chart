@@ -85,6 +85,32 @@ const previewGrid = css({
   '& img': { width: '100%', height: 120, objectFit: 'cover', borderRadius: theme.radius.sm },
 });
 
+const previewItemWrap = css({
+  position: 'relative',
+  '& img': { display: 'block', width: '100%', height: 120, objectFit: 'cover', borderRadius: theme.radius.sm },
+});
+
+const removeImageBtn = css({
+  position: 'absolute',
+  top: 4,
+  right: 4,
+  width: 24,
+  height: 24,
+  padding: 0,
+  border: 'none',
+  borderRadius: '50%',
+  backgroundColor: 'rgba(0,0,0,0.6)',
+  color: 'white',
+  fontSize: 16,
+  lineHeight: 1,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  '&:hover': { backgroundColor: theme.colors.error },
+  '&:focus': { outline: 'none' },
+});
+
 const buttonStyles = css({
   marginTop: theme.spacing(3),
   padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x * 1.5}px`,
@@ -163,6 +189,15 @@ export function PrescriptionUploadPage() {
     setFiles((prev) => [...prev, ...items]);
     setPreviewUrls((prev) => [...prev, ...items.map((f) => URL.createObjectURL(f))]);
     e.target.value = '';
+  }, []);
+
+  const removeImageAt = useCallback((index: number) => {
+    setPreviewUrls((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const submitUpload = useCallback(() => {
@@ -266,7 +301,17 @@ export function PrescriptionUploadPage() {
         {previewUrls.length > 0 && (
           <div css={previewGrid}>
             {previewUrls.map((url, i) => (
-              <img key={url} src={url} alt={`처방 ${i + 1}`} />
+              <div key={url} css={previewItemWrap}>
+                <img src={url} alt={`처방 ${i + 1}`} />
+                <button
+                  type="button"
+                  css={removeImageBtn}
+                  onClick={(e) => { e.stopPropagation(); removeImageAt(i); }}
+                  aria-label={`이미지 ${i + 1} 삭제`}
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </div>
         )}
