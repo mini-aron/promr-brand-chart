@@ -130,11 +130,17 @@ export function Layout() {
   const { userRole, setUserRole } = useApp();
   const { themeMode, toggleTheme } = useThemeMode();
   const isUploadPath = location.pathname.startsWith('/upload/');
+  const isMasterPath = ['/accounts', '/hospitals', '/fees'].includes(location.pathname);
   const [uploadOpen, setUploadOpen] = useState(isUploadPath);
+  const [masterOpen, setMasterOpen] = useState(isMasterPath);
 
   useEffect(() => {
     if (isUploadPath) setUploadOpen(true);
   }, [isUploadPath]);
+
+  useEffect(() => {
+    if (isMasterPath) setMasterOpen(true);
+  }, [isMasterPath]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -186,18 +192,37 @@ export function Layout() {
           )}
           {userRole === 'pharma' && (
             <>
-              <Link
-                to="/accounts"
-                css={isActive('/accounts') ? activeLinkStyles : undefined}
+              <button
+                type="button"
+                css={[menuParentStyles, isMasterPath && activeLinkStyles]}
+                onClick={() => setMasterOpen((o) => !o)}
+                aria-expanded={masterOpen}
               >
-                거래처관리
-              </Link>
-              <Link
-                to="/fees"
-                css={isActive('/fees') ? activeLinkStyles : undefined}
-              >
-                수수료관리
-              </Link>
+                기준정보 관리
+                <span css={css({ fontSize: 12, transition: 'transform 0.2s', transform: masterOpen ? 'rotate(90deg)' : 'rotate(0)' })}>›</span>
+              </button>
+              {masterOpen && (
+                <div css={subNavStyles}>
+                  <Link
+                    to="/accounts"
+                    css={isActive('/accounts') ? activeLinkStyles : undefined}
+                  >
+                    거래처관리
+                  </Link>
+                  <Link
+                    to="/hospitals"
+                    css={isActive('/hospitals') ? activeLinkStyles : undefined}
+                  >
+                    병의원 관리
+                  </Link>
+                  <Link
+                    to="/fees"
+                    css={isActive('/fees') ? activeLinkStyles : undefined}
+                  >
+                    수수료관리
+                  </Link>
+                </div>
+              )}
               <Link
                 to="/aggregate"
                 css={isActive('/aggregate') ? activeLinkStyles : undefined}
