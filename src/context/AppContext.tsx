@@ -6,8 +6,9 @@ import {
   mockSalesRows,
   mockPrescriptionUploads,
   mockFilterRequests,
+  mockDealers,
 } from '@/store/mockData';
-import type { Corporation, Hospital, SalesRow, PrescriptionUpload, FilterRequest } from '@/types';
+import type { Corporation, Hospital, SalesRow, PrescriptionUpload, FilterRequest, Dealer } from '@/types';
 
 type AppState = {
   userRole: UserRole;
@@ -17,6 +18,7 @@ type AppState = {
   salesRows: SalesRow[];
   prescriptionUploads: PrescriptionUpload[];
   filterRequests: FilterRequest[];
+  dealers: Dealer[];
 };
 
 type AppActions = {
@@ -26,7 +28,12 @@ type AppActions = {
   addPrescriptionUpload: (upload: PrescriptionUpload) => void;
   addHospital: (hospital: Hospital) => void;
   updateFilterRequestStatus: (id: string, status: 'approved' | 'rejected') => void;
-  addFilterRequest: (corporationId: string, hospitalId: string) => void;
+  addFilterRequest: (corporationId: string, hospitalId: string, requestMessage?: string) => void;
+  addFilterRequestNewHospital: (
+    corporationId: string,
+    payload: { hospitalName: string; businessNumber: string; address: string; representativeName: string; requestMessage?: string }
+  ) => void;
+  addDealer: (dealer: Dealer) => void;
 };
 
 const initialState: AppState = {
@@ -37,6 +44,7 @@ const initialState: AppState = {
   salesRows: mockSalesRows,
   prescriptionUploads: mockPrescriptionUploads,
   filterRequests: mockFilterRequests,
+  dealers: mockDealers,
 };
 
 const AppContext = createContext<AppState & AppActions | null>(null);
@@ -52,6 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     initialState.prescriptionUploads
   );
   const [filterRequests, setFilterRequests] = useState<FilterRequest[]>(initialState.filterRequests);
+  const [dealers, setDealers] = useState<Dealer[]>(initialState.dealers);
 
   const updateFilterRequestStatus = useCallback((id: string, status: 'approved' | 'rejected') => {
     const processedAt = new Date().toISOString().slice(0, 19);
@@ -62,14 +71,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const addFilterRequest = useCallback((corporationId: string, hospitalId: string) => {
-    const id = `fr-${Date.now()}`;
-    const requestedAt = new Date().toISOString().slice(0, 19);
-    setFilterRequests((prev) => [
-      ...prev,
-      { id, corporationId, hospitalId, status: 'pending', requestedAt },
-    ]);
-  }, []);
+  const addFilterRequest = useCallback(
+    (corporationId: string, hospitalId: string, requestMessage?: string) => {
+      const id = `fr-${Date.now()}`;
+      const requestedAt = new Date().toISOString().slice(0, 19);
+      setFilterRequests((prev) => [
+        ...prev,
+        { id, corporationId, hospitalId, status: 'pending', requestedAt, requestMessage },
+      ]);
+    },
+    []
+  );
+
+  const addFilterRequestNewHospital = useCallback(
+    (
+      corporationId: string,
+      payload: {
+        hospitalName: string;
+        businessNumber: string;
+        address: string;
+        representativeName: string;
+        requestMessage?: string;
+      }
+    ) => {
+      const id = `fr-${Date.now()}`;
+      const requestedAt = new Date().toISOString().slice(0, 19);
+      const hospitalId = `new-${id}`;
+      setFilterRequests((prev) => [
+        ...prev,
+        {
+          id,
+          corporationId,
+          hospitalId,
+          status: 'pending',
+          requestedAt,
+          hospitalName: payload.hospitalName,
+          businessNumber: payload.businessNumber,
+          address: payload.address,
+          representativeName: payload.representativeName,
+          requestMessage: payload.requestMessage,
+        },
+      ]);
+    },
+    []
+  );
 
   const value = useMemo<AppState & AppActions>(
     () => ({
@@ -80,6 +125,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       salesRows,
       prescriptionUploads,
       filterRequests,
+      dealers,
       setUserRole,
       setCurrentCorporationId,
       addSalesRows: (rows) => setSalesRows((prev) => [...prev, ...rows]),
@@ -87,8 +133,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addHospital: (hospital) => setHospitals((prev) => [...prev, hospital]),
       updateFilterRequestStatus,
       addFilterRequest,
+      addFilterRequestNewHospital,
+      addDealer: (dealer) => setDealers((prev) => [...prev, dealer]),
     }),
-    [userRole, currentCorporationId, hospitals, salesRows, prescriptionUploads, filterRequests, updateFilterRequestStatus, addFilterRequest]
+    [userRole, currentCorporationId, hospitals, salesRows, prescriptionUploads, filterRequests, dealers, updateFilterRequestStatus, addFilterRequest, addFilterRequestNewHospital]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

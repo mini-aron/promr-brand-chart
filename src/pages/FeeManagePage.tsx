@@ -111,7 +111,7 @@ const addFormRow = css({
     borderRadius: theme.radius.md,
     border: 'none',
     backgroundColor: theme.colors.primary,
-    color: 'white',
+    color: theme.colors.buttonText,
     cursor: 'pointer',
     '&:hover': { backgroundColor: theme.colors.primaryHover },
   },

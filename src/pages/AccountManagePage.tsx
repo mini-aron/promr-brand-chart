@@ -80,7 +80,7 @@ const addFormSection = css({
     borderRadius: theme.radius.md,
     border: 'none',
     backgroundColor: theme.colors.primary,
-    color: 'white',
+    color: theme.colors.buttonText,
     cursor: 'pointer',
     minHeight: 48,
     '&:hover': { backgroundColor: theme.colors.primaryHover },
@@ -110,7 +110,7 @@ const openAddButton = css({
   borderRadius: theme.radius.md,
   border: 'none',
   backgroundColor: theme.colors.primary,
-  color: 'white',
+  color: theme.colors.buttonText,
   cursor: 'pointer',
   '&:hover': { backgroundColor: theme.colors.primaryHover },
 });
@@ -118,7 +118,7 @@ const openAddButton = css({
 const modalOverlay = css({
   position: 'fixed',
   inset: 0,
-  backgroundColor: 'rgba(0,0,0,0.4)',
+  backgroundColor: theme.colors.overlay,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

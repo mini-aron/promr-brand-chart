@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from '@/context/AppContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { Layout } from '@/components/Layout';
 import { HomePage } from '@/pages/HomePage';
 import { SalesUploadPage } from '@/pages/SalesUploadPage';
@@ -9,11 +10,14 @@ import { AccountManagePage } from '@/pages/AccountManagePage';
 import { FeeManagePage } from '@/pages/FeeManagePage';
 import { SettlementByCorpPage } from '@/pages/SettlementByCorpPage';
 import { FilterApprovalPage } from '@/pages/FilterApprovalPage';
+import { FilterRequestPage } from '@/pages/FilterRequestPage';
+import { DealerManagePage } from '@/pages/DealerManagePage';
 
 export default function App() {
   return (
-    <AppProvider>
-      <Routes>
+    <ThemeProvider>
+      <AppProvider>
+        <Routes>
         <Route element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="upload" element={<Navigate to="/upload/sales" replace />} />
@@ -24,9 +28,12 @@ export default function App() {
           <Route path="fees" element={<FeeManagePage />} />
           <Route path="settlement" element={<SettlementByCorpPage />} />
           <Route path="filter-approval" element={<FilterApprovalPage />} />
+          <Route path="filter-request" element={<FilterRequestPage />} />
+          <Route path="dealer-manage" element={<DealerManagePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
-      </Routes>
-    </AppProvider>
+        </Routes>
+      </AppProvider>
+    </ThemeProvider>
   );
 }

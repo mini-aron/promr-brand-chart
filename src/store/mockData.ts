@@ -1,4 +1,4 @@
-import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest } from '@/types';
+import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest, Dealer } from '@/types';
 
 /** ========== 더미: 법인 ========== */
 export const mockCorporations: Corporation[] = [
@@ -112,4 +112,12 @@ export const mockFilterRequests: FilterRequest[] = [
   { id: 'fr-3', corporationId: 'corp-2', hospitalId: 'h-2', status: 'pending', requestedAt: '2026-02-23T14:00:00' },
   { id: 'fr-4', corporationId: 'corp-2', hospitalId: 'h-6', status: 'approved', requestedAt: '2026-02-22T10:00:00', processedAt: '2026-02-23T09:00:00' },
   { id: 'fr-5', corporationId: 'corp-3', hospitalId: 'h-3', status: 'rejected', requestedAt: '2026-02-21T16:00:00', processedAt: '2026-02-22T11:00:00' },
+];
+
+/** ========== 더미: 딜러(영업사원) ========== */
+export const mockDealers: Dealer[] = [
+  { id: 'd-1', corporationId: 'corp-1', salespersonName: '김영업', phone: '010-1234-5678', email: 'kim@corp1.com', reportCertUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=신고필증', contractUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=계약서', businessLicenseUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=사업자등록증', createdAt: '2026-01-10T10:00:00' },
+  { id: 'd-2', corporationId: 'corp-1', salespersonName: '이딜러', phone: '010-2345-6789', email: 'lee@corp1.com', reportCertUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=신고필증', contractUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=계약서', createdAt: '2026-01-15T14:00:00' },
+  { id: 'd-3', corporationId: 'corp-2', salespersonName: '박세일', phone: '010-3456-7890', email: 'park@corp2.com', reportCertUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=신고필증', createdAt: '2026-01-20T09:00:00' },
+  { id: 'd-4', corporationId: 'corp-2', salespersonName: '최대리', phone: '010-4567-8901', email: 'choi@corp2.com', reportCertUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=신고필증', contractUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=계약서', businessLicenseUrl: 'https://placehold.co/400x300/e2e8f0/64748b?text=사업자등록증', createdAt: '2026-02-01T11:00:00' },
 ];

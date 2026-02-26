@@ -90,7 +90,7 @@ const inquiryButton = css({
   borderRadius: theme.radius.md,
   border: `2px solid ${theme.colors.primary}`,
   backgroundColor: theme.colors.primary,
-  color: 'white',
+  color: theme.colors.buttonText,
   cursor: 'pointer',
   '&:hover': { backgroundColor: theme.colors.primaryHover },
 });

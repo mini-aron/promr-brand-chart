@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { css } from '@emotion/react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useThemeMode } from '@/context/ThemeContext';
 import { theme } from '@/theme';
 
 const layoutStyles = css({
@@ -92,8 +93,20 @@ const subNavStyles = css({
   },
 });
 
-const roleBadgeStyles = css({
+const themeToggleStyles = css({
   marginTop: 'auto',
+  marginBottom: theme.spacing(1),
+  fontSize: 13,
+  padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+  borderRadius: theme.radius.md,
+  border: `1px solid ${theme.colors.border}`,
+  backgroundColor: theme.colors.background,
+  color: theme.colors.text,
+  cursor: 'pointer',
+  '&:hover': { backgroundColor: theme.colors.border },
+});
+
+const roleBadgeStyles = css({
   fontSize: 14,
   color: theme.colors.textMuted,
   padding: `${theme.buttonPadding.y}px ${theme.spacing(2)}px`,
@@ -115,6 +128,7 @@ const mainStyles = css({
 export function Layout() {
   const location = useLocation();
   const { userRole, setUserRole } = useApp();
+  const { themeMode, toggleTheme } = useThemeMode();
   const isUploadPath = location.pathname.startsWith('/upload/');
   const [uploadOpen, setUploadOpen] = useState(isUploadPath);
 
@@ -162,6 +176,12 @@ export function Layout() {
                   </Link>
                 </div>
               )}
+              <Link
+                to="/dealer-manage"
+                css={isActive('/dealer-manage') ? activeLinkStyles : undefined}
+              >
+                계약관리
+              </Link>
             </>
           )}
           {userRole === 'pharma' && (
@@ -199,14 +219,25 @@ export function Layout() {
             </>
           )}
           {userRole === 'corporation' && (
-            <Link
-              to="/aggregate"
-              css={isActive('/aggregate') ? activeLinkStyles : undefined}
-            >
-              법인 실적 조회
-            </Link>
+            <>
+              <Link
+                to="/aggregate"
+                css={isActive('/aggregate') ? activeLinkStyles : undefined}
+              >
+                법인 실적 조회
+              </Link>
+              <Link
+                to="/filter-request"
+                css={isActive('/filter-request') ? activeLinkStyles : undefined}
+              >
+                필터링 요청
+              </Link>
+            </>
           )}
         </nav>
+        <button type="button" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
+          {themeMode === 'light' ? '다크 모드' : '라이트 모드'}
+        </button>
         <select
           value={userRole}
           onChange={(e) => setUserRole(e.target.value as 'corporation' | 'pharma')}

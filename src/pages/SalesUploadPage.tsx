@@ -11,7 +11,7 @@ import { theme } from '@/theme';
 /** 엑셀 양식 다운로드 */
 function downloadExcelTemplate() {
   const wb = XLSX.utils.book_new();
-  const headers = ['병원', '제품명', '수량', '금액'];
+  const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   XLSX.utils.book_append_sheet(wb, ws, '실적');
   XLSX.writeFile(wb, '실적_업로드_양식.xlsx');
@@ -39,17 +39,29 @@ function downloadHospitalCodes(hospitals: { id: string; name: string }[]) {
 }
 
 /** 더미데이터 다운로드 (업로드 테스트용, 양식과 동일 컬럼) */
-function downloadDummyExcel(hospitals: { id: string; name: string }[], productNames: string[]) {
-  const headers = ['병원', '제품명', '수량', '금액'];
+function downloadDummyExcel(hospitals: { id: string; name: string; businessNumber?: string }[], productNames: string[]) {
+  const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
   const rows: (string | number)[][] = [headers];
-  const hospitalNames = hospitals.map((h) => h.name);
-  if (hospitalNames.length === 0 || productNames.length === 0) return;
+  const hospitalList = hospitals.map((h) => ({ name: h.name, businessNumber: h.businessNumber }));
+  if (hospitalList.length === 0 || productNames.length === 0) return;
+  
+  const validCodes = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
+  const invalidCodes = ['P999', 'INVALID', 'X001', 'BAD123'];
+  
   for (let i = 0; i < 15; i++) {
-    const hospital = hospitalNames[i % hospitalNames.length];
+    const hospital = hospitalList[i % hospitalList.length];
     const product = productNames[i % productNames.length];
+    
+    let productCode: string;
+    if (i === 3 || i === 7 || i === 12) {
+      productCode = invalidCodes[i % invalidCodes.length];
+    } else {
+      productCode = validCodes[i % validCodes.length];
+    }
+    
     const quantity = 5 + (i % 20);
     const amount = quantity * (40000 + (i % 10) * 3000);
-    rows.push([hospital, product, quantity, amount]);
+    rows.push([hospital.name, hospital.businessNumber || '', product, productCode, quantity, amount]);
   }
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -96,7 +108,7 @@ const tableWrapStyles = css({
     backgroundColor: theme.colors.background,
   },
   '& tfoot td': { padding: theme.spacing(2) },
-  '& td input': {
+  '& td input, & td select': {
     padding: `${theme.spacing(1)}px ${theme.spacing(1.5)}px`,
     fontSize: 12,
     border: `1px solid ${theme.colors.border}`,
@@ -106,6 +118,16 @@ const tableWrapStyles = css({
     '&:focus': { outline: 'none', borderColor: theme.colors.primary },
   },
   '& td input[type="text"]': { width: '100%', minWidth: 80 },
+  '& td select': { 
+    width: '100%', 
+    minWidth: 120,
+    cursor: 'pointer',
+    appearance: 'none',
+    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px center',
+    paddingRight: 28,
+  },
   '& td input[type="number"]': {
     width: 56,
     minWidth: 56,
@@ -164,7 +186,7 @@ const uploadedFilesRowStyles = css({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      '&:hover': { backgroundColor: theme.colors.error, color: 'white' },
+      '&:hover': { backgroundColor: theme.colors.error, color: theme.colors.buttonText },
     },
   },
 });
@@ -183,6 +205,18 @@ const errorStyles = css({
   backgroundColor: `${theme.colors.error}14`,
   color: theme.colors.error,
   borderRadius: theme.radius.md,
+});
+
+const errorRowStyles = css({
+  backgroundColor: '#ffebee !important',
+  '& td': {
+    backgroundColor: '#ffebee !important',
+  },
+});
+
+const errorCellStyles = css({
+  color: theme.colors.error,
+  fontWeight: 600,
 });
 
 const downloadRowStyles = css({
@@ -204,7 +238,9 @@ const downloadRowStyles = css({
 /** 엑셀 컬럼 매핑 (실제 시트 컬럼명에 맞게 수정 가능) */
 const COLUMNS = {
   hospital: ['병원', '병의원', '병원명', 'hospital'],
+  businessNumber: ['사업자번호', '사업자등록번호', 'business_number', 'businessNumber'],
   product: ['제품', '품목', '제품명', 'product'],
+  productCode: ['제품코드', '품목코드', 'product_code', 'productCode'],
   quantity: ['수량', 'quantity', 'qty'],
   amount: ['금액', '매출', 'amount', 'sales'],
 } as const;
@@ -238,7 +274,9 @@ function parseExcelToSalesRows(
         }
         const first = json[0];
         const hospitalKey = findColumnKey(first, COLUMNS.hospital);
+        const businessNumberKey = findColumnKey(first, COLUMNS.businessNumber);
         const productKey = findColumnKey(first, COLUMNS.product);
+        const productCodeKey = findColumnKey(first, COLUMNS.productCode);
         const quantityKey = findColumnKey(first, COLUMNS.quantity);
         const amountKey = findColumnKey(first, COLUMNS.amount);
         if (!hospitalKey || !productKey) {
@@ -254,7 +292,9 @@ function parseExcelToSalesRows(
         for (let i = 0; i < json.length; i++) {
           const r = json[i];
           const hospitalName = String(r[hospitalKey] ?? '').trim();
+          const businessNumber = businessNumberKey ? String(r[businessNumberKey] ?? '').trim() : undefined;
           const productName = String(r[productKey] ?? '').trim();
+          const productCode = productCodeKey ? String(r[productCodeKey] ?? '').trim() : undefined;
           const q = quantityKey ? r[quantityKey] : undefined;
           const a = amountKey ? r[amountKey] : undefined;
           const quantity = typeof q === 'number' ? q : Number(q) || 0;
@@ -269,6 +309,8 @@ function parseExcelToSalesRows(
             quantity,
             amount,
             uploadedAt: now,
+            businessNumber: businessNumber || hospital?.businessNumber,
+            productCode,
           });
         }
         resolve({ rows });
@@ -285,10 +327,12 @@ export function SalesUploadPage() {
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
   const [isDrag, setIsDrag] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; rows: SalesRow[] }[]>([]);
-  const [editedOverrides, setEditedOverrides] = useState<Record<string, { quantity?: number; productName?: string }>>({});
+  const [editedOverrides, setEditedOverrides] = useState<Record<string, { quantity?: number; productName?: string; hospitalId?: string }>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const previewSectionRef = useRef<HTMLDivElement>(null);
+
+  const validProductCodes = useMemo(() => new Set(mockProductFees.map((p) => p.productCode)), []);
 
   const { preview, separatorAfterIndices, showFileSums } = useMemo(() => {
     const allRows: SalesRow[] = [];
@@ -310,6 +354,7 @@ export function SalesUploadPage() {
         ...r,
         quantity: editedOverrides[r.id]?.quantity ?? r.quantity,
         productName: editedOverrides[r.id]?.productName ?? r.productName,
+        hospitalId: editedOverrides[r.id]?.hospitalId ?? r.hospitalId,
       })),
     [preview, editedOverrides]
   );
@@ -333,7 +378,11 @@ export function SalesUploadPage() {
     };
   }, [effectiveRows, uploadedFiles]);
 
-  const setRowEdit = useCallback((rowId: string, field: 'quantity' | 'productName', value: number | string) => {
+  const invalidProductCodeCount = useMemo(() => {
+    return preview.filter((r) => r.productCode && !validProductCodes.has(r.productCode)).length;
+  }, [preview, validProductCodes]);
+
+  const setRowEdit = useCallback((rowId: string, field: 'quantity' | 'productName' | 'hospitalId', value: number | string) => {
     setEditedOverrides((prev) => ({
       ...prev,
       [rowId]: {
@@ -406,8 +455,6 @@ export function SalesUploadPage() {
   const openConfirmModal = useCallback(() => {
     if (preview?.length) setShowConfirmModal(true);
   }, [preview?.length]);
-
-  const hospitalName = (id: string) => hospitals.find((h) => h.id === id)?.name ?? id;
 
   if (userRole === 'pharma') return <Navigate to="/" replace />;
 
@@ -500,12 +547,28 @@ export function SalesUploadPage() {
           <p css={css({ color: theme.colors.textMuted, marginBottom: theme.spacing(3), fontSize: 14 })}>
             아래 표의 데이터가 맞는지 확인한 뒤 <strong>실적 등록</strong> 버튼을 클릭하세요.
           </p>
+          {invalidProductCodeCount > 0 && (
+            <div css={css({
+              padding: theme.spacing(2),
+              marginBottom: theme.spacing(3),
+              backgroundColor: `${theme.colors.error}14`,
+              color: theme.colors.error,
+              borderRadius: theme.radius.md,
+              fontSize: 14,
+              fontWeight: 500,
+            })}>
+              ⚠ {invalidProductCodeCount}개의 제품코드가 품목 마스터에 존재하지 않습니다. 붉은색으로 표시된 행을 확인하세요.
+            </div>
+          )}
           <div css={tableWrapStyles}>
             <table>
               <thead>
                 <tr>
+                  <th style={{ width: 50, textAlign: 'center' }}>#</th>
                   <th>병의원</th>
+                  <th>사업자번호</th>
                   <th>제품명</th>
+                  <th>제품코드</th>
                   <th className="col-num">수량</th>
                   <th className="col-num">금액</th>
                 </tr>
@@ -514,9 +577,27 @@ export function SalesUploadPage() {
                 {preview.flatMap((r, i) => {
                   const qty = editedOverrides[r.id]?.quantity ?? r.quantity;
                   const productName = editedOverrides[r.id]?.productName ?? r.productName;
+                  const hospitalId = editedOverrides[r.id]?.hospitalId ?? r.hospitalId;
+                  const isInvalidProductCode = r.productCode && !validProductCodes.has(r.productCode);
                   const row = (
-                    <tr key={r.id}>
-                      <td>{hospitalName(r.hospitalId)}</td>
+                    <tr key={r.id} css={isInvalidProductCode ? errorRowStyles : undefined}>
+                      <td style={{ textAlign: 'center', color: theme.colors.textMuted, fontSize: 11 }}>
+                        {i + 1}
+                      </td>
+                      <td>
+                        <select
+                          value={hospitalId}
+                          onChange={(e) => setRowEdit(r.id, 'hospitalId', e.target.value)}
+                          aria-label={`${r.id} 병의원`}
+                        >
+                          {corporationHospitals.map((h) => (
+                            <option key={h.id} value={h.id}>
+                              {h.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>{r.businessNumber || '-'}</td>
                       <td>
                         <input
                           type="text"
@@ -524,6 +605,9 @@ export function SalesUploadPage() {
                           onChange={(e) => setRowEdit(r.id, 'productName', e.target.value)}
                           aria-label={`${r.id} 제품명`}
                         />
+                      </td>
+                      <td css={isInvalidProductCode ? errorCellStyles : undefined}>
+                        {r.productCode || '-'}
                       </td>
                       <td className="col-num">
                         <input
@@ -544,7 +628,7 @@ export function SalesUploadPage() {
                         const ft = fileTotals[fileIndex];
                         return ft ? (
                           <tr key={`sum-${i}`} css={fileSumRowStyles}>
-                            <td colSpan={2}>
+                            <td colSpan={5}>
                               {ft.fileName} 합계
                             </td>
                             <td className="col-num">{ft.totalQuantity.toLocaleString()}</td>
@@ -552,13 +636,13 @@ export function SalesUploadPage() {
                           </tr>
                         ) : (
                           <tr key={`sep-${i}`} css={separatorRowStyles}>
-                            <td colSpan={4} />
+                            <td colSpan={7} />
                           </tr>
                         );
                       })()
                     ) : (
                       <tr key={`sep-${i}`} css={separatorRowStyles}>
-                        <td colSpan={4} />
+                        <td colSpan={7} />
                       </tr>
                     )
                   ) : null;
@@ -567,7 +651,7 @@ export function SalesUploadPage() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={2}>합계</td>
+                  <td colSpan={5}>합계</td>
                   <td className="col-num">{totals.totalQuantity.toLocaleString()}</td>
                   <td className="col-num">{totals.totalAmount.toLocaleString()}</td>
                 </tr>
@@ -581,7 +665,7 @@ export function SalesUploadPage() {
               marginTop: theme.spacing(2),
               padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x * 1.5}px`,
               backgroundColor: theme.colors.primary,
-              color: 'white',
+              color: theme.colors.buttonText,
               border: 'none',
               borderRadius: theme.radius.md,
               cursor: 'pointer',
@@ -602,7 +686,7 @@ export function SalesUploadPage() {
           css={css({
             position: 'fixed',
             inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.4)',
+            backgroundColor: theme.colors.overlay,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -646,7 +730,7 @@ export function SalesUploadPage() {
                   border: 'none',
                   borderRadius: theme.radius.md,
                   backgroundColor: theme.colors.primary,
-                  color: 'white',
+                  color: theme.colors.buttonText,
                   cursor: 'pointer',
                   fontWeight: 600,
                   '&:hover': { backgroundColor: theme.colors.primaryHover },

@@ -158,13 +158,13 @@ const btnGroup = css({
 
 const btnApprove = css({
   backgroundColor: theme.colors.success,
-  color: 'white',
+  color: theme.colors.buttonText,
   '&:hover': { opacity: 0.9 },
 });
 
 const btnReject = css({
   backgroundColor: theme.colors.error,
-  color: 'white',
+  color: theme.colors.buttonText,
   '&:hover': { opacity: 0.9 },
 });
 
@@ -196,7 +196,7 @@ const addFormStyles = css({
     borderRadius: theme.radius.md,
     border: 'none',
     backgroundColor: theme.colors.primary,
-    color: 'white',
+    color: theme.colors.buttonText,
     cursor: 'pointer',
     '&:hover': { backgroundColor: theme.colors.primaryHover },
     '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
@@ -384,7 +384,7 @@ export function FilterApprovalPage() {
                   <tbody>
                     {requestsForCorp.map((r) => (
                       <tr key={r.id}>
-                        <td>{getHospital(r.hospitalId)?.name ?? '-'}</td>
+                        <td>{getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-'}</td>
                         <td>{formatDateTime(r.requestedAt)}</td>
                         <td>
                           <span css={statusBadge(r.status)}>{STATUS_LABEL[r.status] ?? r.status}</span>

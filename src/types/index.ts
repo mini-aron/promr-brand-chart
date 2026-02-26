@@ -42,6 +42,10 @@ export interface SalesRow {
   settlementMonth?: string;
   /** 영업사원명 (프로엠알 법인 딜러 실적 표시용) */
   salespersonName?: string;
+  /** 병원 사업자번호 */
+  businessNumber?: string;
+  /** 제품코드 */
+  productCode?: string;
 }
 
 /** 처방 사진 업로드 단위 (병원별 또는 전체) */
@@ -66,11 +70,34 @@ export interface AggregateFilter {
 export interface FilterRequest {
   id: string;
   corporationId: string;
-  /** 거래 허용 여부를 묻는 대상 병의원 ID */
+  /** 거래 허용 여부를 묻는 대상 병의원 ID. 신규 추가 요청 시 'new-{id}' 형태 */
   hospitalId: string;
   /** pending | approved | rejected */
   status: 'pending' | 'approved' | 'rejected';
   requestedAt: string;
   /** 승인/반려 처리 시각 (optional) */
   processedAt?: string;
+  /** 요청 문의 (법인 발송 메시지) */
+  requestMessage?: string;
+  /** 신규 병의원 추가 요청 시 입력 정보 (hospitalId가 new- 로 시작할 때) */
+  hospitalName?: string;
+  businessNumber?: string;
+  address?: string;
+  representativeName?: string;
+}
+
+/** 딜러(영업사원) 정보 */
+export interface Dealer {
+  id: string;
+  corporationId: string;
+  salespersonName: string;
+  phone: string;
+  email: string;
+  /** 신고필증 파일 URL */
+  reportCertUrl?: string;
+  /** 계약서 파일 URL */
+  contractUrl?: string;
+  /** 사업자 등록증 파일 URL */
+  businessLicenseUrl?: string;
+  createdAt: string;
 }
