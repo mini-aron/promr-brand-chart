@@ -103,6 +103,17 @@ const dealerCountBadge = css({
   color: theme.colors.textMuted,
 });
 
+const promrBadge = css({
+  display: 'inline-block',
+  marginLeft: theme.spacing(1),
+  padding: '2px 8px',
+  fontSize: 11,
+  fontWeight: 600,
+  borderRadius: 12,
+  backgroundColor: `${theme.colors.primary}20`,
+  color: theme.colors.primary,
+});
+
 const contentWrap = css({
   flex: 1,
   minHeight: 0,
@@ -313,6 +324,7 @@ export function DealerViewPage() {
                   onClick={() => handleCorpSelect(corp.id)}
                 >
                   {corp.name}
+                  {corp.isPromr && <span css={promrBadge}>프로엠알</span>}
                   {dealerCount > 0 && (
                     <span css={dealerCountBadge}>{dealerCount}</span>
                   )}
@@ -325,7 +337,10 @@ export function DealerViewPage() {
         <div css={mainArea}>
           <div css={contentWrap}>
             <div css={contentHeader}>
-              <h2>{selectedCorp?.name ?? '법인 선택'}</h2>
+              <h2>
+                {selectedCorp?.name ?? '법인 선택'}
+                {selectedCorp?.isPromr && <span css={promrBadge}>프로엠알</span>}
+              </h2>
               <p>
                 {dealersForCorp.length > 0
                   ? `총 ${dealersForCorp.length}명의 딜러가 등록되어 있습니다.`

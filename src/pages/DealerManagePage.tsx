@@ -256,8 +256,30 @@ const linkButton = css({
   '&:hover': { textDecoration: 'underline' },
 });
 
+const deleteButton = css({
+  padding: `${theme.spacing(0.5)}px ${theme.spacing(1.5)}px`,
+  fontSize: 11,
+  fontWeight: 500,
+  borderRadius: theme.radius.sm,
+  border: `1px solid #dc2626`,
+  backgroundColor: theme.colors.surface,
+  color: '#dc2626',
+  cursor: 'pointer',
+  '&:hover': { backgroundColor: '#fee2e2', borderColor: '#b91c1c' },
+});
+
+const confirmModalBox = css({
+  backgroundColor: theme.colors.surface,
+  borderRadius: theme.radius.lg,
+  boxShadow: theme.shadow.md,
+  width: '100%',
+  maxWidth: 480,
+  padding: theme.spacing(4),
+  position: 'relative',
+});
+
 export function DealerManagePage() {
-  const { userRole, dealers, currentCorporationId, addDealer } = useApp();
+  const { userRole, dealers, currentCorporationId, addDealer, deleteDealer } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSalespersonName, setNewSalespersonName] = useState('');
   const [newPhone, setNewPhone] = useState('');
@@ -268,6 +290,7 @@ export function DealerManagePage() {
   const [addError, setAddError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewTitle, setPreviewTitle] = useState<string>('');
+  const [deleteConfirmDealer, setDeleteConfirmDealer] = useState<Dealer | null>(null);
 
   const filteredDealers = useMemo(() => {
     return dealers.filter((d) => d.corporationId === currentCorporationId);
@@ -345,6 +368,21 @@ export function DealerManagePage() {
   const closePreviewModal = useCallback(() => {
     setPreviewUrl(null);
     setPreviewTitle('');
+  }, []);
+
+  const handleDeleteClick = useCallback((dealer: Dealer) => {
+    setDeleteConfirmDealer(dealer);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (deleteConfirmDealer) {
+      deleteDealer(deleteConfirmDealer.id);
+      setDeleteConfirmDealer(null);
+    }
+  }, [deleteConfirmDealer, deleteDealer]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteConfirmDealer(null);
   }, []);
 
   if (userRole === 'pharma') return <Navigate to="/" replace />;
@@ -488,6 +526,47 @@ export function DealerManagePage() {
         </div>
       )}
 
+      {deleteConfirmDealer && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-modal-title"
+          css={modalOverlay}
+          onClick={handleDeleteCancel}
+        >
+          <div css={confirmModalBox} onClick={(e) => e.stopPropagation()}>
+            <div css={modalHeader}>
+              <h2 id="delete-modal-title">딜러 삭제</h2>
+              <button type="button" css={modalCloseBtn} onClick={handleDeleteCancel} aria-label="닫기">
+                ×
+              </button>
+            </div>
+            <p css={css({ marginBottom: theme.spacing(3), color: theme.colors.text })}>
+              <strong>{deleteConfirmDealer.salespersonName}</strong> 딜러를 삭제하시겠습니까?
+            </p>
+            <p css={css({ fontSize: 14, color: theme.colors.textMuted, marginBottom: theme.spacing(4) })}>
+              이 작업은 되돌릴 수 없습니다.
+            </p>
+            <div css={modalActions}>
+              <button type="button" css={secondaryButton} onClick={handleDeleteCancel}>
+                취소
+              </button>
+              <button 
+                type="button" 
+                css={css(actionButton, {
+                  backgroundColor: '#dc2626',
+                  color: '#fff',
+                  '&:hover': { backgroundColor: '#b91c1c' },
+                })} 
+                onClick={handleDeleteConfirm}
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div css={tableWrap}>
         <table>
           <thead>
@@ -498,6 +577,7 @@ export function DealerManagePage() {
               <th>신고필증</th>
               <th>계약서</th>
               <th>사업자 등록증</th>
+              <th style={{ width: 80 }}>관리</th>
             </tr>
           </thead>
           <tbody>
@@ -568,6 +648,11 @@ export function DealerManagePage() {
                       업로드
                     </button>
                   )}
+                </td>
+                <td>
+                  <button type="button" css={deleteButton} onClick={() => handleDeleteClick(d)}>
+                    삭제
+                  </button>
                 </td>
               </tr>
             ))}

@@ -34,6 +34,7 @@ type AppActions = {
     payload: { hospitalName: string; businessNumber: string; address: string; representativeName: string; requestMessage?: string }
   ) => void;
   addDealer: (dealer: Dealer) => void;
+  deleteDealer: (dealerId: string) => void;
 };
 
 const initialState: AppState = {
@@ -135,6 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addFilterRequest,
       addFilterRequestNewHospital,
       addDealer: (dealer) => setDealers((prev) => [...prev, dealer]),
+      deleteDealer: (dealerId) => setDealers((prev) => prev.filter((d) => d.id !== dealerId)),
     }),
     [userRole, currentCorporationId, hospitals, salesRows, prescriptionUploads, filterRequests, dealers, updateFilterRequestStatus, addFilterRequest, addFilterRequestNewHospital]
   );
