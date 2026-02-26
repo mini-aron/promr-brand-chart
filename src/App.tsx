@@ -12,6 +12,7 @@ import { SettlementByCorpPage } from '@/pages/SettlementByCorpPage';
 import { FilterApprovalPage } from '@/pages/FilterApprovalPage';
 import { FilterRequestPage } from '@/pages/FilterRequestPage';
 import { DealerManagePage } from '@/pages/DealerManagePage';
+import { DealerViewPage } from '@/pages/DealerViewPage';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="filter-approval" element={<FilterApprovalPage />} />
           <Route path="filter-request" element={<FilterRequestPage />} />
           <Route path="dealer-manage" element={<DealerManagePage />} />
+          <Route path="dealer-view" element={<DealerViewPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
         </Routes>

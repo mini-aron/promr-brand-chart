@@ -216,6 +216,12 @@ export function Layout() {
               >
                 법인별 필터링 승인요청
               </Link>
+              <Link
+                to="/dealer-view"
+                css={isActive('/dealer-view') ? activeLinkStyles : undefined}
+              >
+                법인별 계약 조회
+              </Link>
             </>
           )}
           {userRole === 'corporation' && (
