@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
+import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
@@ -271,7 +272,7 @@ export function AccountManagePage() {
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="add-modal-title">거래처 추가</h2>
-              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기">×</Button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </div>
 
             <div css={[addFormSection, hospitalSearchRow]}>

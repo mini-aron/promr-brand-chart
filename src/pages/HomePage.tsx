@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { css } from '@emotion/react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { HiArrowDown, HiArrowUp } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 
@@ -228,7 +229,7 @@ export function HomePage() {
                     color: corporationStats.growthRate >= 0 ? '#10b981' : '#ef4444',
                     fontWeight: 600,
                   }}>
-                    {corporationStats.growthRate >= 0 ? '▲' : '▼'} {Math.abs(corporationStats.growthRate).toFixed(1)}%
+                    {corporationStats.growthRate >= 0 ? <HiArrowUp size={14} style={{ verticalAlign: 'middle' }} /> : <HiArrowDown size={14} style={{ verticalAlign: 'middle' }} />} {Math.abs(corporationStats.growthRate).toFixed(1)}%
                   </span>
                 )}
               </div>
@@ -279,7 +280,7 @@ export function HomePage() {
                     color: pharmaStats.growthRate >= 0 ? '#10b981' : '#ef4444',
                     fontWeight: 600,
                   }}>
-                    {pharmaStats.growthRate >= 0 ? '▲' : '▼'} {Math.abs(pharmaStats.growthRate).toFixed(1)}%
+                    {pharmaStats.growthRate >= 0 ? <HiArrowUp size={14} style={{ verticalAlign: 'middle' }} /> : <HiArrowDown size={14} style={{ verticalAlign: 'middle' }} />} {Math.abs(pharmaStats.growthRate).toFixed(1)}%
                   </span>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { css } from '@emotion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useThemeMode } from '@/context/ThemeContext';
+import { HiChevronRight } from 'react-icons/hi';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { SingleSelect } from '@/components/Common/Select';
@@ -120,7 +121,7 @@ export function Sidebar() {
               aria-expanded={uploadOpen}
             >
               실적 등록
-              <span css={chevronStyles(uploadOpen)}>›</span>
+              <span css={chevronStyles(uploadOpen)}><HiChevronRight size={14} /></span>
             </Button>
             {uploadOpen && (
               <div css={subNavStyles}>
@@ -156,7 +157,7 @@ export function Sidebar() {
               aria-expanded={masterOpen}
             >
               기준정보 관리
-              <span css={chevronStyles(masterOpen)}>›</span>
+              <span css={chevronStyles(masterOpen)}><HiChevronRight size={14} /></span>
             </Button>
             {masterOpen && (
               <div css={subNavStyles}>

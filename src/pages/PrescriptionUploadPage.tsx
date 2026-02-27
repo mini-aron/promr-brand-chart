@@ -2,6 +2,7 @@
 import { useCallback, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
+import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import type { PrescriptionUpload } from '@/types';
 import { theme } from '@/theme';
@@ -302,7 +303,7 @@ export function PrescriptionUploadPage() {
                   onClick={(e) => { e.stopPropagation(); removeImageAt(i); }}
                   aria-label={`이미지 ${i + 1} 삭제`}
                 >
-                  ×
+                  <HiOutlineX size={18} />
                 </Button>
               </div>
             ))}

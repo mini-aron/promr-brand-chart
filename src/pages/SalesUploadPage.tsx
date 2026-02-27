@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { SalesRow } from '@/types';
+import { HiOutlineX } from 'react-icons/hi';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { SingleSelect } from '@/components/Common/Select';
@@ -435,7 +436,7 @@ export function SalesUploadPage() {
                 onClick={(e) => { e.stopPropagation(); removeFileAt(i); }}
                 aria-label={`${f.fileName} 제거`}
               >
-                ×
+                <HiOutlineX size={18} />
               </Button>
             </span>
           ))}

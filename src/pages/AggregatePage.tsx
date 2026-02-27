@@ -1,6 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
+import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -316,10 +317,10 @@ export function AggregatePage() {
               <th colSpan={2}>원외</th>
             </tr>
             <tr>
-              <th className="col-inout">품목수 <span css={sortIcon}>▼</span></th>
-              <th className="col-inout">처방액 <span css={sortIcon}>▼</span></th>
-              <th className="col-inout">품목수 <span css={sortIcon}>▼</span></th>
-              <th className="col-inout">처방액 <span css={sortIcon}>▼</span></th>
+              <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
+              <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
+              <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
+              <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
             </tr>
           </thead>
           <tbody>

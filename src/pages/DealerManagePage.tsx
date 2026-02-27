@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
+import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import type { Dealer } from '@/types';
 import { theme } from '@/theme';
@@ -338,7 +339,7 @@ export function DealerManagePage() {
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="add-modal-title">딜러 추가</h2>
-              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기">×</Button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </div>
 
             <div css={formSection}>
@@ -437,7 +438,7 @@ export function DealerManagePage() {
           <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
-              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기">×</Button>
+              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </div>
             <div css={previewContent}>
               <img src={previewUrl} alt={previewTitle} />
@@ -457,7 +458,7 @@ export function DealerManagePage() {
           <div css={confirmModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="delete-modal-title">딜러 삭제</h2>
-              <Button variant="ghost" size="icon" onClick={handleDeleteCancel} aria-label="닫기">×</Button>
+              <Button variant="ghost" size="icon" onClick={handleDeleteCancel} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </div>
             <p css={css({ marginBottom: theme.spacing(3), color: theme.colors.text })}>
               <strong>{deleteConfirmDealer.salespersonName}</strong> 딜러를 삭제하시겠습니까?

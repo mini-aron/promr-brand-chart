@@ -2,6 +2,7 @@
 import { createPortal } from 'react-dom';
 import { css } from '@emotion/react';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
 import { theme } from '@/theme';
 
 export type Option = {
@@ -256,8 +257,8 @@ export function SingleSelect({
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <span>{selectedLabel}</span>
-        <span css={css({ fontSize: 12, color: theme.colors.textMuted })}>
-          {isOpen ? '▲' : '▼'}
+        <span css={css({ fontSize: 12, color: theme.colors.textMuted, display: 'inline-flex' })}>
+          {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
         </span>
       </div>
       {isOpen && createPortal(dropdownContent, document.body)}
@@ -391,8 +392,8 @@ export function MultipleSelect({
         onClick={() => setIsOpen((prev) => !prev)}
       >
         <span>{selectedItems.length > 0 ? selectedLabels : placeholder}</span>
-        <span css={css({ fontSize: 12, color: theme.colors.textMuted })}>
-          {isOpen ? '▲' : '▼'}
+        <span css={css({ fontSize: 12, color: theme.colors.textMuted, display: 'inline-flex' })}>
+          {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
         </span>
       </div>
       {isOpen && createPortal(dropdownContent, document.body)}

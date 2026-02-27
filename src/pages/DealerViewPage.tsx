@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
+import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -438,7 +439,7 @@ export function DealerViewPage() {
           <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
-              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기">×</Button>
+              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </div>
             <div css={previewContent}>
               <img src={previewUrl} alt={previewTitle} />
