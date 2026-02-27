@@ -1,3 +1,5 @@
+export * from './models';
+
 /** 사용자 유형 */
 export type UserRole = 'corporation' | 'pharma';
 

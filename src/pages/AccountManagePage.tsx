@@ -5,6 +5,8 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
+import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -104,15 +106,6 @@ const addFormGrid = css({
 
 const openAddButton = css({
   marginBottom: theme.spacing(4),
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(4)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
 });
 
 const modalOverlay = css({
@@ -145,20 +138,6 @@ const modalHeader = css({
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
 });
 
-const modalCloseBtn = css({
-  width: 32,
-  height: 32,
-  padding: 0,
-  border: 'none',
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.background,
-  cursor: 'pointer',
-  fontSize: 18,
-  lineHeight: 1,
-  color: theme.colors.textMuted,
-  '&:hover': { backgroundColor: theme.colors.border, color: theme.colors.text },
-});
-
 const modalActions = css({
   display: 'flex',
   gap: theme.spacing(2),
@@ -179,6 +158,7 @@ export function AccountManagePage() {
   const [addError, setAddError] = useState<string | null>(null);
   const [hospitalSearch, setHospitalSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [hospitalTemplateSelect, setHospitalTemplateSelect] = useState<string | number | null>('');
 
   const hospitalsForSelect = useMemo(() => {
     const q = hospitalSearch.trim().toLowerCase();
@@ -276,9 +256,9 @@ export function AccountManagePage() {
         />
       </div>
 
-      <button type="button" css={openAddButton} onClick={() => setShowAddModal(true)}>
+      <Button variant="primary" css={openAddButton} onClick={() => setShowAddModal(true)}>
         거래처 추가
-      </button>
+      </Button>
 
       {showAddModal && (
         <div
@@ -291,9 +271,7 @@ export function AccountManagePage() {
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="add-modal-title">거래처 추가</h2>
-              <button type="button" css={modalCloseBtn} onClick={closeAddModal} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기">×</Button>
             </div>
 
             <div css={[addFormSection, hospitalSearchRow]}>
@@ -307,27 +285,28 @@ export function AccountManagePage() {
                 css={css({ maxWidth: '100%', marginBottom: theme.spacing(2) })}
                 aria-label="병의원 검색"
               />
-              <select
+              <SingleSelect
                 id="hospital-search-select"
-                value=""
-                onChange={(e) => {
-                  const id = e.target.value;
-                  if (id) {
-                    const h = hospitals.find((x) => x.id === id);
+                options={[
+                  { label: '선택하세요 (사업자번호·주소 자동 입력)', value: '' },
+                  ...hospitalsForSelect.map((h) => ({
+                    label: `${h.name} ${h.accountCode ? ` · ${h.accountCode}` : ''} ${h.businessNumber ? ` · ${h.businessNumber}` : ''}`.trim(),
+                    value: h.id,
+                  })),
+                ]}
+                selected={hospitalTemplateSelect}
+                onChange={(v) => {
+                  if (v !== '') {
+                    const h = hospitals.find((x) => x.id === v);
                     if (h) applyHospitalTemplate(h);
+                    setHospitalTemplateSelect('');
+                  } else {
+                    setHospitalTemplateSelect(v);
                   }
-                  (e.target as HTMLSelectElement).value = '';
                 }}
-                css={css({ maxWidth: '100%' })}
+                placeholder="선택하세요 (사업자번호·주소 자동 입력)"
                 aria-label="선택 시 거래처명·사업자번호·주소 자동 입력"
-              >
-                <option value="">선택하세요 (사업자번호·주소 자동 입력)</option>
-                {hospitalsForSelect.map((h) => (
-                  <option key={h.id} value={h.id}>
-                    {h.name} {h.accountCode ? ` · ${h.accountCode}` : ''} {h.businessNumber ? ` · ${h.businessNumber}` : ''}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div css={[addFormSection, addFormGrid]}>
@@ -353,17 +332,14 @@ export function AccountManagePage() {
               </div>
               <div>
                 <label htmlFor="new-corp">소속법인 *</label>
-                <select
+                <SingleSelect
                   id="new-corp"
-                  value={newCorpId}
-                  onChange={(e) => setNewCorpId(e.target.value)}
-                >
-                  {corporations.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+                  options={corporations.map((c) => ({ label: c.name, value: c.id }))}
+                  selected={newCorpId}
+                  onChange={(v) => setNewCorpId(String(v))}
+                  placeholder="법인 선택"
+                  aria-label="소속법인"
+                />
               </div>
               <div>
                 <label htmlFor="new-business-number">사업자번호</label>
@@ -385,9 +361,9 @@ export function AccountManagePage() {
                   onChange={(e) => setNewAddress(e.target.value)}
                 />
               </div>
-              <button type="button" onClick={handleAdd}>
+              <Button variant="primary" onClick={handleAdd}>
                 추가
-              </button>
+              </Button>
             </div>
             {addError && (
               <p css={css({ marginTop: theme.spacing(2), fontSize: 14, color: theme.colors.error })}>
@@ -395,9 +371,9 @@ export function AccountManagePage() {
               </p>
             )}
             <div css={modalActions}>
-              <button type="button" css={css({ padding: `${theme.buttonPadding.y}px ${theme.spacing(3)}px`, border: `1px solid ${theme.colors.border}`, borderRadius: theme.radius.md, backgroundColor: theme.colors.surface, cursor: 'pointer', fontWeight: 500 })} onClick={closeAddModal}>
+              <Button variant="secondary" onClick={closeAddModal}>
                 취소
-              </button>
+              </Button>
             </div>
           </div>
         </div>

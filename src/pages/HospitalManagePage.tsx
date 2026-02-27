@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -34,18 +35,6 @@ const searchRow = css({
       boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
     },
   },
-});
-
-const addButton = css({
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(4)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
 });
 
 const tableWrap = css({
@@ -95,20 +84,6 @@ const modalHeader = css({
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
 });
 
-const modalCloseBtn = css({
-  width: 32,
-  height: 32,
-  padding: 0,
-  border: 'none',
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.background,
-  cursor: 'pointer',
-  fontSize: 18,
-  lineHeight: 1,
-  color: theme.colors.textMuted,
-  '&:hover': { backgroundColor: theme.colors.border, color: theme.colors.text },
-});
-
 const formSection = css({
   '& label': {
     display: 'block',
@@ -136,33 +111,6 @@ const modalActions = css({
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(3),
   borderTop: `1px solid ${theme.colors.border}`,
-});
-
-const actionButton = css({
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(4)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  cursor: 'pointer',
-  minHeight: 48,
-});
-
-const primaryButton = css(actionButton, {
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
-  '&:disabled': {
-    backgroundColor: theme.colors.border,
-    cursor: 'not-allowed',
-  },
-});
-
-const secondaryButton = css(actionButton, {
-  border: `1px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  '&:hover': { backgroundColor: theme.colors.background },
 });
 
 const infoBox = css({
@@ -295,9 +243,9 @@ export function HospitalManagePage() {
             aria-label="병의원 검색"
           />
         </div>
-        <button type="button" css={addButton} onClick={() => setShowAddModal(true)}>
+        <Button variant="primary" onClick={() => setShowAddModal(true)}>
           병의원 추가
-        </button>
+        </Button>
       </div>
 
       {showAddModal && (
@@ -311,9 +259,7 @@ export function HospitalManagePage() {
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="add-modal-title">사업자번호로 병의원 추가</h2>
-              <button type="button" css={modalCloseBtn} onClick={closeAddModal} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기">×</Button>
             </div>
 
             <div css={formSection}>
@@ -364,22 +310,13 @@ export function HospitalManagePage() {
             )}
 
             <div css={modalActions}>
-              <button type="button" css={secondaryButton} onClick={closeAddModal}>
-                취소
-              </button>
+              <Button variant="secondary" onClick={closeAddModal}>취소</Button>
               {!searchedHospital ? (
-                <button 
-                  type="button" 
-                  css={primaryButton} 
-                  onClick={handleSearch}
-                  disabled={isSearching}
-                >
+                <Button variant="primary" onClick={handleSearch} disabled={isSearching}>
                   {isSearching ? '조회 중...' : '조회'}
-                </button>
+                </Button>
               ) : (
-                <button type="button" css={primaryButton} onClick={handleAdd}>
-                  추가
-                </button>
+                <Button variant="primary" onClick={handleAdd}>추가</Button>
               )}
             </div>
           </div>

@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import type { PrescriptionUpload } from '@/types';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -113,15 +114,6 @@ const removeImageBtn = css({
 
 const buttonStyles = css({
   marginTop: theme.spacing(3),
-  padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x * 1.5}px`,
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  border: 'none',
-  borderRadius: theme.radius.md,
-  cursor: 'pointer',
-  fontWeight: 600,
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
-  '&:disabled': { opacity: 0.6, cursor: 'not-allowed' },
 });
 
 const successStyles = css({
@@ -303,14 +295,15 @@ export function PrescriptionUploadPage() {
             {previewUrls.map((url, i) => (
               <div key={url} css={previewItemWrap}>
                 <img src={url} alt={`처방 ${i + 1}`} />
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   css={removeImageBtn}
                   onClick={(e) => { e.stopPropagation(); removeImageAt(i); }}
                   aria-label={`이미지 ${i + 1} 삭제`}
                 >
                   ×
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -319,14 +312,9 @@ export function PrescriptionUploadPage() {
 
       {message && <div css={successStyles}>{message}</div>}
 
-      <button
-        type="button"
-        css={buttonStyles}
-        onClick={submitUpload}
-        disabled={files.length === 0}
-      >
+      <Button variant="primary" css={buttonStyles} onClick={submitUpload} disabled={files.length === 0}>
         처방사진 등록
-      </button>
+      </Button>
     </div>
   );
 }

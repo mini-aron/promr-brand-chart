@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   width: '100%',
@@ -95,37 +96,12 @@ const hospitalListStyles = css({
   },
 });
 
-const btnPrimary = css({
-  padding: `${theme.spacing(1.5)}px ${theme.spacing(3)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
-  '&:disabled': { opacity: 0.6, cursor: 'not-allowed' },
-});
-
 const successMsg = css({
   marginTop: theme.spacing(2),
   padding: theme.spacing(2),
   backgroundColor: `${theme.colors.success}14`,
   color: theme.colors.success,
   borderRadius: theme.radius.md,
-});
-
-const btnSecondary = css({
-  padding: `${theme.spacing(1.5)}px ${theme.spacing(3)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.background },
 });
 
 const modalOverlay = css({
@@ -359,9 +335,9 @@ export function FilterRequestPage() {
                   {hospitalSearch.trim() ? '검색 결과가 없습니다.' : '병의원명·거래처코드·사업자번호로 검색하세요.'}
                 </p>
                 {hospitalSearch.trim() && (
-                  <button type="button" css={btnPrimary} onClick={() => setShowNewHospitalModal(true)}>
+                  <Button variant="primary" onClick={() => setShowNewHospitalModal(true)}>
                     추가 요청
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
@@ -394,14 +370,9 @@ export function FilterRequestPage() {
               />
             </div>
           )}
-          <button
-            type="button"
-            css={btnPrimary}
-            onClick={handleSubmitExisting}
-            disabled={!selectedHospitalId}
-          >
+          <Button variant="primary" onClick={handleSubmitExisting} disabled={!selectedHospitalId}>
             요청 보내기
-          </button>
+          </Button>
         </section>
       </div>
 
@@ -470,12 +441,12 @@ export function FilterRequestPage() {
               />
             </div>
             <div css={modalActions}>
-              <button type="button" css={btnSecondary} onClick={() => setShowNewHospitalModal(false)}>
+              <Button variant="secondary" onClick={() => setShowNewHospitalModal(false)}>
                 취소
-              </button>
-              <button type="button" css={btnPrimary} onClick={handleSubmitNew} disabled={!canSubmitNew}>
+              </Button>
+              <Button variant="primary" onClick={handleSubmitNew} disabled={!canSubmitNew}>
                 요청 보내기
-              </button>
+              </Button>
             </div>
           </div>
         </div>

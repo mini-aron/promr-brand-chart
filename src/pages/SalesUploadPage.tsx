@@ -7,6 +7,8 @@ import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { SalesRow, Hospital } from '@/types';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
+import { SingleSelect } from '@/components/Common/Select';
 
 /** 엑셀 양식 다운로드 */
 function downloadExcelTemplate() {
@@ -464,24 +466,24 @@ export function SalesUploadPage() {
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. (일반 실적은 병의원·월 구분 없이 등록됩니다.)</p>
 
       <div css={downloadRowStyles}>
-        <button type="button" onClick={downloadExcelTemplate}>
+        <Button variant="secondary" onClick={downloadExcelTemplate}>
           엑셀 양식 다운로드
-        </button>
-        <button type="button" onClick={downloadProductFees}>
+        </Button>
+        <Button variant="secondary" onClick={downloadProductFees}>
           품목 다운로드
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
           onClick={() => downloadHospitalCodes(corporationHospitals)}
         >
           거래처 다운로드
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="secondary"
           onClick={() => downloadDummyExcel(corporationHospitals, mockProductFees.map((p) => p.productName))}
         >
           더미데이터 다운로드
-        </button>
+        </Button>
       </div>
 
       <h2 css={css({ fontSize: 16, marginBottom: theme.spacing(2), color: theme.colors.text })}>
@@ -513,13 +515,14 @@ export function SalesUploadPage() {
           {uploadedFiles.map((f, i) => (
             <span key={`${f.fileName}-${i}`} className="file-chip">
               <span className="name" title={f.fileName}>{f.fileName}</span>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={(e) => { e.stopPropagation(); removeFileAt(i); }}
                 aria-label={`${f.fileName} 제거`}
               >
                 ×
-              </button>
+              </Button>
             </span>
           ))}
         </div>
@@ -585,17 +588,13 @@ export function SalesUploadPage() {
                         {i + 1}
                       </td>
                       <td>
-                        <select
-                          value={hospitalId}
-                          onChange={(e) => setRowEdit(r.id, 'hospitalId', e.target.value)}
+                        <SingleSelect
+                          options={corporationHospitals.map((h) => ({ label: h.name, value: h.id }))}
+                          selected={hospitalId}
+                          onChange={(v) => setRowEdit(r.id, 'hospitalId', String(v))}
+                          placeholder="병의원"
                           aria-label={`${r.id} 병의원`}
-                        >
-                          {corporationHospitals.map((h) => (
-                            <option key={h.id} value={h.id}>
-                              {h.name}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </td>
                       <td>{r.businessNumber || '-'}</td>
                       <td>
@@ -658,23 +657,9 @@ export function SalesUploadPage() {
               </tfoot>
             </table>
           </div>
-          <button
-            type="button"
-            onClick={openConfirmModal}
-            css={css({
-              marginTop: theme.spacing(2),
-              padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x * 1.5}px`,
-              backgroundColor: theme.colors.primary,
-              color: theme.colors.buttonText,
-              border: 'none',
-              borderRadius: theme.radius.md,
-              cursor: 'pointer',
-              fontWeight: 600,
-              '&:hover': { backgroundColor: theme.colors.primaryHover },
-            })}
-          >
+          <Button variant="primary" onClick={openConfirmModal}>
             실적 등록
-          </button>
+          </Button>
         </div>
       )}
 
@@ -708,36 +693,12 @@ export function SalesUploadPage() {
               정말로 등록하시겠습니까?
             </p>
             <div css={css({ display: 'flex', gap: theme.spacing(2), justifyContent: 'flex-end' })}>
-              <button
-                type="button"
-                onClick={() => setShowConfirmModal(false)}
-                css={css({
-                  padding: `${theme.buttonPadding.y}px ${theme.spacing(3)}px`,
-                  border: `1px solid ${theme.colors.border}`,
-                  borderRadius: theme.radius.md,
-                  backgroundColor: theme.colors.surface,
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                })}
-              >
+              <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
                 아니오
-              </button>
-              <button
-                type="button"
-                onClick={doRegister}
-                css={css({
-                  padding: `${theme.buttonPadding.y}px ${theme.spacing(3)}px`,
-                  border: 'none',
-                  borderRadius: theme.radius.md,
-                  backgroundColor: theme.colors.primary,
-                  color: theme.colors.buttonText,
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  '&:hover': { backgroundColor: theme.colors.primaryHover },
-                })}
-              >
-                네
-              </button>
+              </Button>
+              <Button variant="primary" onClick={doRegister}>
+                예
+              </Button>
             </div>
           </div>
         </div>

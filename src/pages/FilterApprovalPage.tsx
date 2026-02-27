@@ -4,6 +4,8 @@ import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
+import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
   display: 'flex',
@@ -146,26 +148,6 @@ const statusBadge = (status: string) =>
 const btnGroup = css({
   display: 'flex',
   gap: theme.spacing(1),
-  '& button': {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    fontSize: 13,
-    fontWeight: 600,
-    borderRadius: theme.radius.md,
-    border: 'none',
-    cursor: 'pointer',
-  },
-});
-
-const btnApprove = css({
-  backgroundColor: theme.colors.success,
-  color: theme.colors.buttonText,
-  '&:hover': { opacity: 0.9 },
-});
-
-const btnReject = css({
-  backgroundColor: theme.colors.error,
-  color: theme.colors.buttonText,
-  '&:hover': { opacity: 0.9 },
 });
 
 const addFormStyles = css({
@@ -333,42 +315,26 @@ export function FilterApprovalPage() {
               <div css={addFormStyles}>
                 <div css={css({ flex: '1 1 260px' })}>
                   <label htmlFor="filter-add-hospital">병의원 선택 (거래 허용 요청 추가)</label>
-                  <select
+                  <SingleSelect
                     id="filter-add-hospital"
-                    value={selectedHospitalId}
-                    onChange={(e) => setSelectedHospitalId(e.target.value)}
-                    css={css({
-                      width: '100%',
-                      minHeight: 40,
-                      padding: `0 ${theme.spacing(2)}px`,
-                      paddingRight: 36,
-                      fontSize: 14,
-                      borderRadius: theme.radius.md,
-                      border: `2px solid ${theme.colors.border}`,
-                      backgroundColor: theme.colors.surface,
-                      appearance: 'none',
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-                      backgroundRepeat: 'no-repeat',
-                      backgroundPosition: 'right 10px center',
-                      '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-                    })}
+                    options={[
+                      {
+                        label: addableHospitals.length === 0
+                          ? '추가 가능한 병의원 없음 (이미 요청됨)'
+                          : '병의원 선택',
+                        value: '',
+                      },
+                      ...addableHospitals.map((h) => ({ label: h.name, value: h.id })),
+                    ]}
+                    selected={selectedHospitalId}
+                    onChange={(v) => setSelectedHospitalId(String(v))}
+                    placeholder={addableHospitals.length === 0 ? '추가 가능한 병의원 없음 (이미 요청됨)' : '병의원 선택'}
                     aria-label="병의원 선택"
-                  >
-                    <option value="">
-                      {addableHospitals.length === 0
-                        ? '추가 가능한 병의원 없음 (이미 요청됨)'
-                        : '병의원 선택'}
-                    </option>
-                    {addableHospitals.map((h) => (
-                      <option key={h.id} value={h.id}>
-                        {h.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
-                <button type="button" onClick={handleAddFilter} disabled={!selectedHospitalId}>
+                <Button variant="primary" onClick={handleAddFilter} disabled={!selectedHospitalId}>
                   요청 추가
-                </button>
+                </Button>
               </div>
               <div css={listWrap}>
                 <table>
@@ -392,20 +358,12 @@ export function FilterApprovalPage() {
                         <td>{r.processedAt ? formatDateTime(r.processedAt) : '-'}</td>
                         <td>
                           <div css={btnGroup}>
-                            <button
-                              type="button"
-                              css={btnApprove}
-                              onClick={() => updateFilterRequestStatus(r.id, 'approved')}
-                            >
+                            <Button variant="primary" size="small" onClick={() => updateFilterRequestStatus(r.id, 'approved')}>
                               승인
-                            </button>
-                            <button
-                              type="button"
-                              css={btnReject}
-                              onClick={() => updateFilterRequestStatus(r.id, 'rejected')}
-                            >
+                            </Button>
+                            <Button variant="danger" size="small" onClick={() => updateFilterRequestStatus(r.id, 'rejected')}>
                               승인불가
-                            </button>
+                            </Button>
                           </div>
                         </td>
                       </tr>

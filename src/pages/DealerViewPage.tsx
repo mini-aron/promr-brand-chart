@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   display: 'flex',
@@ -211,20 +212,6 @@ const modalHeader = css({
   justifyContent: 'space-between',
   marginBottom: theme.spacing(4),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
-});
-
-const modalCloseBtn = css({
-  width: 32,
-  height: 32,
-  padding: 0,
-  border: 'none',
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.background,
-  cursor: 'pointer',
-  fontSize: 18,
-  lineHeight: 1,
-  color: theme.colors.textMuted,
-  '&:hover': { backgroundColor: theme.colors.border, color: theme.colors.text },
 });
 
 const previewContent = css({
@@ -451,9 +438,7 @@ export function DealerViewPage() {
           <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
-              <button type="button" css={modalCloseBtn} onClick={closePreviewModal} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기">×</Button>
             </div>
             <div css={previewContent}>
               <img src={previewUrl} alt={previewTitle} />

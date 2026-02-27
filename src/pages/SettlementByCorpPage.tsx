@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   display: 'flex',
@@ -432,15 +433,16 @@ export function SettlementByCorpPage() {
           </div>
           <div className="corp-list">
             {corporationsFiltered.map((c) => (
-              <button
+              <Button
                 key={c.id}
-                type="button"
-                data-active={selectedCorpId === c.id}
+                variant="menu"
+                size="menu"
+                active={selectedCorpId === c.id}
                 onClick={() => setSelectedCorpId(c.id)}
               >
                 {c.name}
                 {c.isPromr && <span css={promrBadge}>프로엠알</span>}
-              </button>
+              </Button>
             ))}
           </div>
         </aside>

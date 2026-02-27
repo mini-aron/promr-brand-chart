@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
+import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -81,18 +83,6 @@ const inquiryRow = css({
   marginTop: theme.spacing(3),
   paddingTop: theme.spacing(3),
   borderTop: `1px solid ${theme.colors.border}`,
-});
-
-const inquiryButton = css({
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(3)}px`,
-  fontSize: 15,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.primary}`,
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
 });
 
 const tableWrap = css({
@@ -251,22 +241,18 @@ export function AggregatePage() {
           {!isCorporation && (
             <div>
               <label htmlFor="aggregate-corporation">법인</label>
-              <select
+              <SingleSelect
                 id="aggregate-corporation"
-                value={corporationId}
-                onChange={(e) => {
-                  setCorporationId(e.target.value);
+                options={[{ label: '전체', value: '' }, ...corporations.map((c) => ({ label: c.name, value: c.id }))]}
+                selected={corporationId}
+                onChange={(v) => {
+                  setCorporationId(String(v));
                   setHospitalId('');
                   setHospitalSearchQuery('');
                 }}
-              >
-                <option value="">전체</option>
-                {corporations.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                placeholder="전체"
+                aria-label="법인"
+              />
             </div>
           )}
           <div>
@@ -281,18 +267,14 @@ export function AggregatePage() {
           </div>
           <div>
             <label htmlFor="aggregate-hospital">병의원</label>
-            <select
+            <SingleSelect
               id="aggregate-hospital"
-              value={hospitalId}
-              onChange={(e) => setHospitalId(e.target.value)}
-            >
-              <option value="">전체</option>
-              {hospitalFilterListFiltered.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
+              options={[{ label: '전체', value: '' }, ...hospitalFilterListFiltered.map((h) => ({ label: h.name, value: h.id }))]}
+              selected={hospitalId}
+              onChange={(v) => setHospitalId(String(v))}
+              placeholder="전체"
+              aria-label="병의원"
+            />
           </div>
           <div>
             <label htmlFor="aggregate-product">품목 검색</label>
@@ -310,9 +292,9 @@ export function AggregatePage() {
             <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>
               선택된 병의원: <strong css={css({ color: theme.colors.text })}>{selectedHospital.name}</strong>
             </span>
-            <button type="button" css={inquiryButton} onClick={handleInquiry}>
+            <Button variant="primary" onClick={handleInquiry}>
               문의
-            </button>
+            </Button>
           </div>
         )}
       </div>

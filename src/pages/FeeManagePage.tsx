@@ -6,6 +6,8 @@ import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { ProductFee } from '@/types';
 import { theme } from '@/theme';
+import { SingleSelect } from '@/components/Common/Select';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -233,17 +235,14 @@ export function FeeManagePage() {
       <div css={cardStyles}>
         <div css={monthSelectStyles}>
           <label htmlFor="fee-month">적용 월</label>
-          <select
+          <SingleSelect
             id="fee-month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-          >
-            {MONTH_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            options={MONTH_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
+            selected={selectedMonth}
+            onChange={(v) => setSelectedMonth(String(v))}
+            placeholder="월 선택"
+            aria-label="적용 월"
+          />
         </div>
 
         <div css={tableWrap}>
@@ -292,23 +291,23 @@ export function FeeManagePage() {
               onChange={(e) => setProductSearch(e.target.value)}
               aria-label="품목명 검색"
             />
-            <select
+            <SingleSelect
               id="product-select"
-              value={selectedProduct ? selectedProduct.productCode : ''}
-              onChange={(e) => {
-                const code = e.target.value;
-                const p = addableProducts.find((x) => x.productCode === code) ?? null;
+              options={[
+                { label: '선택하세요 (품목코드 · 품목명)', value: '' },
+                ...addableProducts.map((p) => ({
+                  label: `${p.productCode} · ${p.productName}`,
+                  value: p.productCode,
+                })),
+              ]}
+              selected={selectedProduct ? selectedProduct.productCode : ''}
+              onChange={(v) => {
+                const p = addableProducts.find((x) => x.productCode === v) ?? null;
                 setSelectedProduct(p);
               }}
+              placeholder="선택하세요 (품목코드 · 품목명)"
               aria-label="추가할 품목 선택"
-            >
-              <option value="">선택하세요 (품목코드 · 품목명)</option>
-              {addableProducts.map((p) => (
-                <option key={p.productCode} value={p.productCode}>
-                  {p.productCode} · {p.productName}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div className="fee-input-wrap">
             <label htmlFor="new-fee-rate">수수료율</label>
@@ -328,9 +327,9 @@ export function FeeManagePage() {
               <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>%</span>
             </div>
           </div>
-          <button type="button" onClick={addProduct}>
+          <Button variant="primary" onClick={addProduct}>
             품목 추가
-          </button>
+          </Button>
         </div>
         {addError && (
           <p css={css({ marginTop: theme.spacing(2), fontSize: 14, color: theme.colors.error })}>

@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import type { Dealer } from '@/types';
 import { theme } from '@/theme';
+import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -16,18 +17,6 @@ const headerRow = css({
   justifyContent: 'space-between',
   alignItems: 'center',
   marginBottom: theme.spacing(4),
-});
-
-const addButton = css({
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(4)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
 });
 
 const tableWrap = css({
@@ -77,20 +66,6 @@ const modalHeader = css({
   justifyContent: 'space-between',
   marginBottom: theme.spacing(4),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
-});
-
-const modalCloseBtn = css({
-  width: 32,
-  height: 32,
-  padding: 0,
-  border: 'none',
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.background,
-  cursor: 'pointer',
-  fontSize: 18,
-  lineHeight: 1,
-  color: theme.colors.textMuted,
-  '&:hover': { backgroundColor: theme.colors.border, color: theme.colors.text },
 });
 
 const formSection = css({
@@ -168,29 +143,6 @@ const modalActions = css({
   borderTop: `1px solid ${theme.colors.border}`,
 });
 
-const actionButton = css({
-  padding: `${theme.buttonPadding.y}px ${theme.spacing(4)}px`,
-  fontSize: 14,
-  fontWeight: 600,
-  borderRadius: theme.radius.md,
-  border: 'none',
-  cursor: 'pointer',
-  minHeight: 48,
-});
-
-const primaryButton = css(actionButton, {
-  backgroundColor: theme.colors.primary,
-  color: theme.colors.buttonText,
-  '&:hover': { backgroundColor: theme.colors.primaryHover },
-});
-
-const secondaryButton = css(actionButton, {
-  border: `1px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  '&:hover': { backgroundColor: theme.colors.background },
-});
-
 const linkStyles = css({
   color: theme.colors.primary,
   textDecoration: 'none',
@@ -201,18 +153,6 @@ const fileActionGroup = css({
   display: 'flex',
   gap: theme.spacing(1),
   alignItems: 'center',
-});
-
-const uploadButton = css({
-  padding: `${theme.spacing(0.5)}px ${theme.spacing(1.5)}px`,
-  fontSize: 11,
-  fontWeight: 500,
-  borderRadius: theme.radius.sm,
-  border: `1px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: theme.colors.background, borderColor: theme.colors.primary },
 });
 
 const previewModalBox = css({
@@ -254,18 +194,6 @@ const linkButton = css({
   textDecoration: 'none',
   cursor: 'pointer',
   '&:hover': { textDecoration: 'underline' },
-});
-
-const deleteButton = css({
-  padding: `${theme.spacing(0.5)}px ${theme.spacing(1.5)}px`,
-  fontSize: 11,
-  fontWeight: 500,
-  borderRadius: theme.radius.sm,
-  border: `1px solid #dc2626`,
-  backgroundColor: theme.colors.surface,
-  color: '#dc2626',
-  cursor: 'pointer',
-  '&:hover': { backgroundColor: '#fee2e2', borderColor: '#b91c1c' },
 });
 
 const confirmModalBox = css({
@@ -394,9 +322,9 @@ export function DealerManagePage() {
 
       <div css={headerRow}>
         <div />
-        <button type="button" css={addButton} onClick={() => setShowAddModal(true)}>
+        <Button variant="primary" onClick={() => setShowAddModal(true)}>
           딜러 추가
-        </button>
+        </Button>
       </div>
 
       {showAddModal && (
@@ -410,9 +338,7 @@ export function DealerManagePage() {
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="add-modal-title">딜러 추가</h2>
-              <button type="button" css={modalCloseBtn} onClick={closeAddModal} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기">×</Button>
             </div>
 
             <div css={formSection}>
@@ -493,12 +419,8 @@ export function DealerManagePage() {
             )}
 
             <div css={modalActions}>
-              <button type="button" css={secondaryButton} onClick={closeAddModal}>
-                취소
-              </button>
-              <button type="button" css={primaryButton} onClick={handleAdd}>
-                추가
-              </button>
+              <Button variant="secondary" onClick={closeAddModal}>취소</Button>
+              <Button variant="primary" onClick={handleAdd}>추가</Button>
             </div>
           </div>
         </div>
@@ -515,9 +437,7 @@ export function DealerManagePage() {
           <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
-              <button type="button" css={modalCloseBtn} onClick={closePreviewModal} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기">×</Button>
             </div>
             <div css={previewContent}>
               <img src={previewUrl} alt={previewTitle} />
@@ -537,9 +457,7 @@ export function DealerManagePage() {
           <div css={confirmModalBox} onClick={(e) => e.stopPropagation()}>
             <div css={modalHeader}>
               <h2 id="delete-modal-title">딜러 삭제</h2>
-              <button type="button" css={modalCloseBtn} onClick={handleDeleteCancel} aria-label="닫기">
-                ×
-              </button>
+              <Button variant="ghost" size="icon" onClick={handleDeleteCancel} aria-label="닫기">×</Button>
             </div>
             <p css={css({ marginBottom: theme.spacing(3), color: theme.colors.text })}>
               <strong>{deleteConfirmDealer.salespersonName}</strong> 딜러를 삭제하시겠습니까?
@@ -548,20 +466,8 @@ export function DealerManagePage() {
               이 작업은 되돌릴 수 없습니다.
             </p>
             <div css={modalActions}>
-              <button type="button" css={secondaryButton} onClick={handleDeleteCancel}>
-                취소
-              </button>
-              <button 
-                type="button" 
-                css={css(actionButton, {
-                  backgroundColor: '#dc2626',
-                  color: '#fff',
-                  '&:hover': { backgroundColor: '#b91c1c' },
-                })} 
-                onClick={handleDeleteConfirm}
-              >
-                삭제
-              </button>
+              <Button variant="secondary" onClick={handleDeleteCancel}>취소</Button>
+              <Button variant="danger" onClick={handleDeleteConfirm}>삭제</Button>
             </div>
           </div>
         </div>
@@ -589,70 +495,73 @@ export function DealerManagePage() {
                 <td>
                   {d.reportCertUrl ? (
                     <div css={fileActionGroup}>
-                      <button 
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="small"
                         css={linkButton}
                         onClick={() => handlePreview(d.reportCertUrl!, '신고필증 미리보기')}
                       >
                         미리보기
-                      </button>
+                      </Button>
                       <span css={css({ color: theme.colors.textMuted })}>|</span>
                       <a href={d.reportCertUrl} download css={linkStyles}>
                         다운로드
                       </a>
                     </div>
                   ) : (
-                    <button type="button" css={uploadButton} onClick={() => handleUpload(d.id, 'reportCert')}>
+                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'reportCert')}>
                       업로드
-                    </button>
+                    </Button>
                   )}
                 </td>
                 <td>
                   {d.contractUrl ? (
                     <div css={fileActionGroup}>
-                      <button 
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="small"
                         css={linkButton}
                         onClick={() => handlePreview(d.contractUrl!, '계약서 미리보기')}
                       >
                         미리보기
-                      </button>
+                      </Button>
                       <span css={css({ color: theme.colors.textMuted })}>|</span>
                       <a href={d.contractUrl} download css={linkStyles}>
                         다운로드
                       </a>
                     </div>
                   ) : (
-                    <button type="button" css={uploadButton} onClick={() => handleUpload(d.id, 'contract')}>
+                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'contract')}>
                       업로드
-                    </button>
+                    </Button>
                   )}
                 </td>
                 <td>
                   {d.businessLicenseUrl ? (
                     <div css={fileActionGroup}>
-                      <button 
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="small"
                         css={linkButton}
                         onClick={() => handlePreview(d.businessLicenseUrl!, '사업자 등록증 미리보기')}
                       >
                         미리보기
-                      </button>
+                      </Button>
                       <span css={css({ color: theme.colors.textMuted })}>|</span>
                       <a href={d.businessLicenseUrl} download css={linkStyles}>
                         다운로드
                       </a>
                     </div>
                   ) : (
-                    <button type="button" css={uploadButton} onClick={() => handleUpload(d.id, 'businessLicense')}>
+                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'businessLicense')}>
                       업로드
-                    </button>
+                    </Button>
                   )}
                 </td>
                 <td>
-                  <button type="button" css={deleteButton} onClick={() => handleDeleteClick(d)}>
+                  <Button variant="danger" size="small" onClick={() => handleDeleteClick(d)}>
                     삭제
-                  </button>
+                  </Button>
                 </td>
               </tr>
             ))}
