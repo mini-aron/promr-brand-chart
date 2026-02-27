@@ -7,18 +7,19 @@ import { useThemeMode } from '@/context/ThemeContext';
 import { HiChevronRight } from 'react-icons/hi';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { Column } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 
-const sidebarStyles = css({
+const asideStyles = css({
   width: 220,
   minWidth: 220,
   flexShrink: 0,
-  backgroundColor: theme.colors.surface,
-  borderRight: `1px solid ${theme.colors.border}`,
-  padding: theme.spacing(3),
   display: 'flex',
   flexDirection: 'column',
   gap: theme.spacing(2),
+  backgroundColor: theme.colors.surface,
+  borderRight: `1px solid ${theme.colors.border}`,
+  padding: theme.spacing(3),
   boxShadow: theme.shadow.sm,
   borderRadius: theme.radius.lg,
 });
@@ -35,10 +36,7 @@ const logoStyles = css({
   '& .logo-pf': { color: theme.colors.text },
 });
 
-const navStyles = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(1),
+const navLinks = css({
   '& a': {
     color: theme.colors.text,
     textDecoration: 'none',
@@ -54,10 +52,7 @@ const activeLinkStyles = css({
   backgroundColor: `${theme.colors.primary}12`,
 });
 
-const subNavStyles = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 1,
+const subNavWrap = css({
   paddingLeft: theme.spacing(2),
   marginTop: 2,
   borderLeft: `2px solid ${theme.colors.border}`,
@@ -102,12 +97,13 @@ export function Sidebar() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <aside css={sidebarStyles}>
+    <aside css={asideStyles}>
       <Link to="/" css={logoStyles} aria-label="PROPF 홈">
         <span className="logo-pro">PRO</span>
         <span className="logo-pf">PF</span>
       </Link>
-      <nav css={navStyles}>
+      <nav>
+        <Column gap={theme.spacing(1)} css={navLinks}>
         <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>
           홈
         </Link>
@@ -124,7 +120,7 @@ export function Sidebar() {
               <span css={chevronStyles(uploadOpen)}><HiChevronRight size={14} /></span>
             </Button>
             {uploadOpen && (
-              <div css={subNavStyles}>
+              <Column gap={1} css={subNavWrap}>
                 <Link
                   to="/upload/sales"
                   css={isActive('/upload/sales') ? activeLinkStyles : undefined}
@@ -137,7 +133,7 @@ export function Sidebar() {
                 >
                   처방사진 업로드
                 </Link>
-              </div>
+              </Column>
             )}
             <Link
               to="/dealer-manage"
@@ -160,7 +156,7 @@ export function Sidebar() {
               <span css={chevronStyles(masterOpen)}><HiChevronRight size={14} /></span>
             </Button>
             {masterOpen && (
-              <div css={subNavStyles}>
+              <Column gap={1} css={subNavWrap}>
                 <Link
                   to="/accounts"
                   css={isActive('/accounts') ? activeLinkStyles : undefined}
@@ -179,7 +175,7 @@ export function Sidebar() {
                 >
                   수수료관리
                 </Link>
-              </div>
+              </Column>
             )}
             <Link
               to="/aggregate"
@@ -223,6 +219,7 @@ export function Sidebar() {
             </Link>
           </>
         )}
+        </Column>
       </nav>
       <Button variant="ghost" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
         {themeMode === 'light' ? '다크 모드' : '라이트 모드'}

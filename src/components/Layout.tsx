@@ -2,17 +2,14 @@
 import { css } from '@emotion/react';
 import { Outlet } from 'react-router-dom';
 import { theme } from '@/theme';
+import { Flex } from '@/components/Common/Flex';
 import { Sidebar } from '@/components/Sidebar';
 
-const layoutStyles = css({
+const layoutWrap = css({
   height: '100vh',
   maxHeight: '100dvh',
   overflow: 'hidden',
   backgroundColor: theme.colors.background,
-  display: 'flex',
-  paddingLeft: theme.spacing(3),
-  paddingTop: theme.spacing(3),
-  paddingBottom: theme.spacing(3),
   boxSizing: 'border-box',
 });
 
@@ -28,11 +25,11 @@ const mainStyles = css({
 
 export function Layout() {
   return (
-    <div css={layoutStyles}>
+    <Flex direction="row" gap={0} alignItems="stretch" css={layoutWrap}>
       <Sidebar />
       <main css={mainStyles}>
         <Outlet />
       </main>
-    </div>
+    </Flex>
   );
 }
