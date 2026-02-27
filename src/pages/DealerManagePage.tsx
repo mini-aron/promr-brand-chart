@@ -7,16 +7,14 @@ import { useApp } from '@/context/AppContext';
 import type { Dealer } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { Flex, Row } from '@/components/Common/Flex';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
   '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
 });
 
-const headerRow = css({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
+const headerRowWrap = css({
   marginBottom: theme.spacing(4),
 });
 
@@ -43,9 +41,6 @@ const modalOverlay = css({
   position: 'fixed',
   inset: 0,
   backgroundColor: theme.colors.overlay,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
   zIndex: 1000,
 });
 
@@ -61,10 +56,7 @@ const modalBox = css({
   position: 'relative',
 });
 
-const modalHeader = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+const modalHeaderWrap = css({
   marginBottom: theme.spacing(4),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
 });
@@ -135,10 +127,7 @@ const fileNameDisplay = css({
   marginTop: theme.spacing(0.5),
 });
 
-const modalActions = css({
-  display: 'flex',
-  gap: theme.spacing(2),
-  justifyContent: 'flex-end',
+const modalActionsWrap = css({
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(3),
   borderTop: `1px solid ${theme.colors.border}`,
@@ -321,26 +310,20 @@ export function DealerManagePage() {
       <h1>계약관리</h1>
       <p>딜러(영업사원) 정보를 관리합니다.</p>
 
-      <div css={headerRow}>
+      <Row justifyContent="space-between" alignItems="center" css={headerRowWrap}>
         <div />
         <Button variant="primary" onClick={() => setShowAddModal(true)}>
           딜러 추가
         </Button>
-      </div>
+      </Row>
 
       {showAddModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="add-modal-title"
-          css={modalOverlay}
-          onClick={closeAddModal}
-        >
+        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={closeAddModal}>
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
-            <div css={modalHeader}>
+            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
               <h2 id="add-modal-title">딜러 추가</h2>
               <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
-            </div>
+            </Row>
 
             <div css={formSection}>
               <label htmlFor="new-salesperson-name">영업사원명 *</label>
@@ -419,59 +402,47 @@ export function DealerManagePage() {
               </p>
             )}
 
-            <div css={modalActions}>
+            <Row gap={theme.spacing(2)} justifyContent="flex-end" css={modalActionsWrap}>
               <Button variant="secondary" onClick={closeAddModal}>취소</Button>
               <Button variant="primary" onClick={handleAdd}>추가</Button>
-            </div>
+            </Row>
           </div>
-        </div>
+        </Flex>
       )}
 
       {previewUrl && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="preview-modal-title"
-          css={modalOverlay}
-          onClick={closePreviewModal}
-        >
+        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={closePreviewModal}>
           <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
-            <div css={modalHeader}>
+            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
               <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
-            </div>
+            </Row>
             <div css={previewContent}>
               <img src={previewUrl} alt={previewTitle} />
             </div>
           </div>
-        </div>
+        </Flex>
       )}
 
       {deleteConfirmDealer && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-modal-title"
-          css={modalOverlay}
-          onClick={handleDeleteCancel}
-        >
+        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={handleDeleteCancel}>
           <div css={confirmModalBox} onClick={(e) => e.stopPropagation()}>
-            <div css={modalHeader}>
+            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
               <h2 id="delete-modal-title">딜러 삭제</h2>
               <Button variant="ghost" size="icon" onClick={handleDeleteCancel} aria-label="닫기"><HiOutlineX size={18} /></Button>
-            </div>
+            </Row>
             <p css={css({ marginBottom: theme.spacing(3), color: theme.colors.text })}>
               <strong>{deleteConfirmDealer.salespersonName}</strong> 딜러를 삭제하시겠습니까?
             </p>
             <p css={css({ fontSize: 14, color: theme.colors.textMuted, marginBottom: theme.spacing(4) })}>
               이 작업은 되돌릴 수 없습니다.
             </p>
-            <div css={modalActions}>
+            <Row gap={theme.spacing(2)} justifyContent="flex-end" css={modalActionsWrap}>
               <Button variant="secondary" onClick={handleDeleteCancel}>취소</Button>
               <Button variant="danger" onClick={handleDeleteConfirm}>삭제</Button>
-            </div>
+            </Row>
           </div>
-        </div>
+        </Flex>
       )}
 
       <div css={tableWrap}>

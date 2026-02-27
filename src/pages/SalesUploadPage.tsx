@@ -9,68 +9,69 @@ import type { SalesRow } from '@/types';
 import { HiOutlineX } from 'react-icons/hi';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
 
+function downloadRowsAsExcel(fileName: string, sheetName: string, rows: (string | number)[][]) {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, fileName);
+}
+
 /** 엑셀 양식 다운로드 */
 function downloadExcelTemplate() {
-  const wb = XLSX.utils.book_new();
   const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
-  const ws = XLSX.utils.aoa_to_sheet([headers]);
-  XLSX.utils.book_append_sheet(wb, ws, '실적');
-  XLSX.writeFile(wb, '실적_업로드_양식.xlsx');
+  const rows: (string | number)[][] = [headers];
+  downloadRowsAsExcel('실적_업로드_양식.xlsx', '실적', rows);
 }
 
 /** 품목 다운로드 */
 function downloadProductFees() {
-  const wb = XLSX.utils.book_new();
-  const rows = [
+  const rows: (string | number)[][] = [
     ['품목코드', '품목명', '수수료율(%)'],
     ...mockProductFees.map((p) => [p.productCode, p.productName, p.feeRate]),
   ];
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, '품목');
-  XLSX.writeFile(wb, '품목.xlsx');
+  downloadRowsAsExcel('품목.xlsx', '품목', rows);
 }
 
 /** 거래처 다운로드 (해당 법인 소속 거래처만) */
 function downloadHospitalCodes(hospitals: { id: string; name: string }[]) {
-  const wb = XLSX.utils.book_new();
-  const rows = [['거래처코드', '거래처명'], ...hospitals.map((h) => [h.id, h.name])];
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, '거래처');
-  XLSX.writeFile(wb, '거래처.xlsx');
+  const rows: (string | number)[][] = [['거래처코드', '거래처명'], ...hospitals.map((h) => [h.id, h.name])];
+  downloadRowsAsExcel('거래처.xlsx', '거래처', rows);
 }
 
 /** 더미데이터 다운로드 (업로드 테스트용, 양식과 동일 컬럼) */
-function downloadDummyExcel(hospitals: { id: string; name: string; businessNumber?: string }[], productNames: string[]) {
+function downloadDummyExcel(
+  hospitals: { id: string; name: string; businessNumber?: string }[],
+  productNames: string[],
+) {
   const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
   const rows: (string | number)[][] = [headers];
   const hospitalList = hospitals.map((h) => ({ name: h.name, businessNumber: h.businessNumber }));
   if (hospitalList.length === 0 || productNames.length === 0) return;
-  
+
   const validCodes = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
   const invalidCodes = ['P999', 'INVALID', 'X001', 'BAD123'];
-  
+
   for (let i = 0; i < 15; i++) {
     const hospital = hospitalList[i % hospitalList.length];
     const product = productNames[i % productNames.length];
-    
+
     let productCode: string;
     if (i === 3 || i === 7 || i === 12) {
       productCode = invalidCodes[i % invalidCodes.length];
     } else {
       productCode = validCodes[i % validCodes.length];
     }
-    
+
     const quantity = 5 + (i % 20);
     const amount = quantity * (40000 + (i % 10) * 3000);
     rows.push([hospital.name, hospital.businessNumber || '', product, productCode, quantity, amount]);
   }
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, '실적');
-  XLSX.writeFile(wb, '실적_더미데이터.xlsx');
+
+  downloadRowsAsExcel('실적_더미데이터.xlsx', '실적', rows);
 }
 
 const pageStyles = css({
@@ -158,16 +159,9 @@ const fileSumRowStyles = css({
   '& .col-num': { textAlign: 'right' },
 });
 
-const uploadedFilesRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(2),
+const uploadedFilesWrap = css({
   marginTop: theme.spacing(2),
-  alignItems: 'center',
   '& .file-chip': {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
     padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     fontSize: 13,
     backgroundColor: theme.colors.background,
@@ -223,10 +217,7 @@ const errorCellStyles = css({
   fontWeight: 600,
 });
 
-const downloadRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(2),
+const downloadRowWrap = css({
   marginBottom: theme.spacing(4),
   '& button': {
     padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x}px`,
@@ -380,7 +371,7 @@ export function SalesUploadPage() {
       <h1>실적 업로드</h1>
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. (일반 실적은 병의원·월 구분 없이 등록됩니다.)</p>
 
-      <div css={downloadRowStyles}>
+      <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
         <Button variant="secondary" onClick={downloadExcelTemplate}>
           엑셀 양식 다운로드
         </Button>
@@ -399,7 +390,7 @@ export function SalesUploadPage() {
         >
           더미데이터 다운로드
         </Button>
-      </div>
+      </Row>
 
       <h2 css={css({ fontSize: 16, marginBottom: theme.spacing(2), color: theme.colors.text })}>
         1. 엑셀 업로드
@@ -423,7 +414,7 @@ export function SalesUploadPage() {
       </div>
 
       {uploadedFiles.length > 0 && (
-        <div css={uploadedFilesRowStyles}>
+        <Row wrap="wrap" gap={theme.spacing(2)} alignItems="center" css={uploadedFilesWrap}>
           <span css={css({ fontSize: 13, color: theme.colors.textMuted, marginRight: theme.spacing(1) })}>
             업로드된 파일:
           </span>
@@ -440,7 +431,7 @@ export function SalesUploadPage() {
               </Button>
             </span>
           ))}
-        </div>
+        </Row>
       )}
 
       {message && (
@@ -579,17 +570,14 @@ export function SalesUploadPage() {
       )}
 
       {showConfirmModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="confirm-title"
+        <Flex
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
           css={css({
             position: 'fixed',
             inset: 0,
             backgroundColor: theme.colors.overlay,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             zIndex: 1000,
           })}
           onClick={() => setShowConfirmModal(false)}
@@ -607,16 +595,16 @@ export function SalesUploadPage() {
             <p id="confirm-title" css={css({ marginBottom: theme.spacing(3), fontWeight: 600, color: theme.colors.text })}>
               정말로 등록하시겠습니까?
             </p>
-            <div css={css({ display: 'flex', gap: theme.spacing(2), justifyContent: 'flex-end' })}>
+            <Row gap={theme.spacing(2)} justifyContent="flex-end">
               <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
                 아니오
               </Button>
               <Button variant="primary" onClick={doRegister}>
                 예
               </Button>
-            </div>
+            </Row>
           </div>
-        </div>
+        </Flex>
       )}
     </div>
   );

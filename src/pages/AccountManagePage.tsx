@@ -7,6 +7,7 @@ import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
@@ -113,9 +114,6 @@ const modalOverlay = css({
   position: 'fixed',
   inset: 0,
   backgroundColor: theme.colors.overlay,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
   zIndex: 1000,
 });
 
@@ -131,18 +129,12 @@ const modalBox = css({
   position: 'relative',
 });
 
-const modalHeader = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+const modalHeaderWrap = css({
   marginBottom: theme.spacing(4),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
 });
 
-const modalActions = css({
-  display: 'flex',
-  gap: theme.spacing(2),
-  justifyContent: 'flex-end',
+const modalActionsWrap = css({
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(3),
   borderTop: `1px solid ${theme.colors.border}`,
@@ -262,18 +254,18 @@ export function AccountManagePage() {
       </Button>
 
       {showAddModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="add-modal-title"
+        <Flex
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
           css={modalOverlay}
           onClick={closeAddModal}
         >
           <div css={modalBox} onClick={(e) => e.stopPropagation()}>
-            <div css={modalHeader}>
+            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
               <h2 id="add-modal-title">거래처 추가</h2>
               <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
-            </div>
+            </Row>
 
             <div css={[addFormSection, hospitalSearchRow]}>
               <label htmlFor="hospital-search-filter">병의원 검색</label>
@@ -371,13 +363,13 @@ export function AccountManagePage() {
                 {addError}
               </p>
             )}
-            <div css={modalActions}>
+            <Row gap={theme.spacing(2)} justifyContent="flex-end" css={modalActionsWrap}>
               <Button variant="secondary" onClick={closeAddModal}>
                 취소
               </Button>
-            </div>
+            </Row>
           </div>
-        </div>
+        </Flex>
       )}
 
       <div css={tableWrap}>

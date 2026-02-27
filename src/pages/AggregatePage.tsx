@@ -5,6 +5,7 @@ import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
@@ -77,10 +78,7 @@ const filterRow = css({
   },
 });
 
-const inquiryRow = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(2),
+const inquiryRowWrap = css({
   marginTop: theme.spacing(3),
   paddingTop: theme.spacing(3),
   borderTop: `1px solid ${theme.colors.border}`,
@@ -289,14 +287,14 @@ export function AggregatePage() {
           </div>
         </div>
         {selectedHospital && (
-          <div css={inquiryRow}>
+          <Row alignItems="center" gap={theme.spacing(2)} css={inquiryRowWrap}>
             <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>
               선택된 병의원: <strong css={css({ color: theme.colors.text })}>{selectedHospital.name}</strong>
             </span>
             <Button variant="primary" onClick={handleInquiry}>
               문의
             </Button>
-          </div>
+          </Row>
         )}
       </div>
 
