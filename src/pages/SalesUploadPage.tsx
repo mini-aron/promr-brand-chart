@@ -550,9 +550,18 @@ export function SalesUploadPage() {
               </tfoot>
             </table>
           </div>
-          <Button variant="primary" onClick={openConfirmModal}>
-            실적 등록
-          </Button>
+          <Row
+            gap={theme.spacing(2)}
+            alignItems="center"
+            css={css({ marginTop: theme.spacing(4) })}
+          >
+            <Button variant="primary" onClick={openConfirmModal}>
+              실적 등록
+            </Button>
+            <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>
+              전체 {preview.length}건
+            </span>
+          </Row>
         </div>
       )}
 

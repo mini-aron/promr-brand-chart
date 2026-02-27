@@ -198,9 +198,6 @@ export function AggregatePage() {
       </p>
 
       <div css={filterCard}>
-        <h2 css={css({ fontSize: 16, fontWeight: 600, marginBottom: theme.spacing(3), color: theme.colors.text })}>
-          필터
-        </h2>
         <div css={filterRow}>
           {!isCorporation && (
             <div>

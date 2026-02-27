@@ -166,6 +166,15 @@ export function Sidebar() {
         <span className="logo-pro">PRO</span>
         <span className="logo-pf">PF</span>
       </Link>
+      {userRole === 'corporation' && pharmas.length > 0 && (
+        <SingleSelect
+          options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
+          selected={currentPharmaId}
+          onChange={(v) => setCurrentPharmaId(String(v))}
+          placeholder="제약사 선택"
+          aria-label="제약사"
+        />
+      )}
       <nav>
         <Column gap={theme.spacing(1)} css={navLinks}>
           <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>
@@ -219,15 +228,6 @@ export function Sidebar() {
         <Button variant="ghost" css={themeToggleStyles} onClick={() => logout()} aria-label="로그아웃">
           로그아웃
         </Button>
-        {userRole === 'corporation' && pharmas.length > 0 && (
-          <SingleSelect
-            options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
-            selected={currentPharmaId}
-            onChange={(v) => setCurrentPharmaId(String(v))}
-            placeholder="제약사 선택"
-            aria-label="제약사"
-          />
-        )}
         <SingleSelect
           options={[
             { label: '법인', value: 'corporation' },

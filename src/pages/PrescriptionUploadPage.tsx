@@ -67,16 +67,19 @@ const fieldStyles = css({
   },
 });
 
-const dropzoneStyles = (isDrag: boolean) =>
+const dropzoneStyles = (isDrag: boolean, disabled: boolean) =>
   css({
-    border: `2px dashed ${isDrag ? theme.colors.primary : theme.colors.border}`,
+    border: `2px dashed ${disabled ? theme.colors.border : isDrag ? theme.colors.primary : theme.colors.border}`,
     borderRadius: theme.radius.lg,
     padding: theme.spacing(6),
     textAlign: 'center',
-    backgroundColor: isDrag ? `${theme.colors.primary}08` : theme.colors.surface,
-    cursor: 'pointer',
+    backgroundColor: disabled ? theme.colors.background : isDrag ? `${theme.colors.primary}08` : theme.colors.surface,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.7 : 1,
     transition: 'background-color 0.2s, border-color 0.2s',
-    '&:hover': { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}08` },
+    ...(!disabled && {
+      '&:hover': { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}08` },
+    }),
   });
 
 const previewGrid = css({
@@ -152,6 +155,7 @@ export function PrescriptionUploadPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   const filteredHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
+  const canUploadImages = Boolean(settlementMonth && hospitalId);
   const targetSalesRows = salesRows.filter((r) => {
     if (r.corporationId !== currentCorporationId) return false;
     if (hospitalId && r.hospitalId !== hospitalId) return false;
@@ -170,19 +174,21 @@ export function PrescriptionUploadPage() {
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDrag(false);
+    if (!settlementMonth || !hospitalId) return;
     const items = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith('image/'));
     if (items.length === 0) return;
     setFiles((prev) => [...prev, ...items]);
     setPreviewUrls((prev) => [...prev, ...items.map((f) => URL.createObjectURL(f))]);
-  }, []);
+  }, [settlementMonth, hospitalId]);
 
   const onFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!settlementMonth || !hospitalId) return;
     const items = Array.from(e.target.files ?? []).filter((f) => f.type.startsWith('image/'));
     if (items.length === 0) return;
     setFiles((prev) => [...prev, ...items]);
     setPreviewUrls((prev) => [...prev, ...items.map((f) => URL.createObjectURL(f))]);
     e.target.value = '';
-  }, []);
+  }, [settlementMonth, hospitalId]);
 
   const removeImageAt = useCallback((index: number) => {
     setPreviewUrls((prev) => {
@@ -275,21 +281,27 @@ export function PrescriptionUploadPage() {
           해당 실적 {targetSalesRows.length}건에 연결됩니다.
         </label>
         <div
-          css={dropzoneStyles(isDrag)}
-          onDragOver={(e) => { e.preventDefault(); setIsDrag(true); }}
+          css={dropzoneStyles(isDrag, !canUploadImages)}
+          onDragOver={(e) => { e.preventDefault(); if (canUploadImages) setIsDrag(true); }}
           onDragLeave={() => setIsDrag(false)}
           onDrop={onDrop}
-          onClick={() => document.getElementById('rx-input')?.click()}
+          onClick={() => canUploadImages && document.getElementById('rx-input')?.click()}
+          role="button"
+          aria-disabled={!canUploadImages}
+          tabIndex={canUploadImages ? 0 : undefined}
         >
           <input
             id="rx-input"
             type="file"
             accept="image/*"
             multiple
+            disabled={!canUploadImages}
             onChange={onFileInput}
             css={css({ display: 'none' })}
           />
-          이미지를 여기에 놓거나 클릭하여 선택하세요
+          {canUploadImages
+            ? '이미지를 여기에 놓거나 클릭하여 선택하세요'
+            : '먼저 위에서 처방월과 병의원을 선택하세요.'}
         </div>
         {previewUrls.length > 0 && (
           <div css={previewGrid}>
@@ -313,7 +325,7 @@ export function PrescriptionUploadPage() {
 
       {message && <div css={successStyles}>{message}</div>}
 
-      <Button variant="primary" css={buttonStyles} onClick={submitUpload} disabled={files.length === 0}>
+      <Button variant="primary" css={buttonStyles} onClick={submitUpload} disabled={!canUploadImages || files.length === 0}>
         처방사진 등록
       </Button>
     </div>
