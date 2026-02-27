@@ -81,6 +81,11 @@ const tableWrapStyles = css({
     minWidth: 56,
     textAlign: 'right',
   },
+  '& td[data-invalid="true"]': {
+    outline: `2px solid ${theme.colors.error}`,
+    outlineOffset: -2,
+    backgroundColor: `${theme.colors.error}14`,
+  },
 });
 
 const separatorRowStyles = css({
@@ -148,18 +153,6 @@ const errorStyles = css({
   borderRadius: theme.radius.md,
 });
 
-const errorRowStyles = css({
-  backgroundColor: '#ffebee !important',
-  '& td': {
-    backgroundColor: '#ffebee !important',
-  },
-});
-
-const errorCellStyles = css({
-  color: theme.colors.error,
-  fontWeight: 600,
-});
-
 const downloadRowWrap = css({
   marginBottom: theme.spacing(4),
   '& button': {
@@ -184,6 +177,10 @@ export function SalesUploadPage() {
   const previewSectionRef = useRef<HTMLDivElement>(null);
 
   const validProductCodes = useMemo(() => new Set(mockProductFees.map((p) => p.productCode)), []);
+  const validBusinessNumbers = useMemo(
+    () => new Set(corporationHospitals.map((h) => h.businessNumber).filter(Boolean)),
+    [corporationHospitals]
+  );
 
   const { preview, separatorAfterIndices, showFileSums } = useMemo(() => {
     const allRows: SalesRow[] = [];
@@ -232,6 +229,12 @@ export function SalesUploadPage() {
   const invalidProductCodeCount = useMemo(() => {
     return preview.filter((r) => r.productCode && !validProductCodes.has(r.productCode)).length;
   }, [preview, validProductCodes]);
+
+  const invalidHospitalCount = useMemo(() => {
+    return preview.filter(
+      (r) => r.businessNumber && r.businessNumber.trim() !== '' && !validBusinessNumbers.has(r.businessNumber)
+    ).length;
+  }, [preview, validBusinessNumbers]);
 
   const setRowEdit = useCallback((rowId: string, field: 'quantity' | 'productName' | 'hospitalId', value: number | string) => {
     setEditedOverrides((prev) => ({
@@ -333,8 +336,9 @@ export function SalesUploadPage() {
     if (hospitalList.length === 0 || productNames.length === 0) return;
 
     const rows: (string | number)[][] = [EXCEL_TEMPLATE_HEADERS];
+    const wrongHospital = { name: '존재하지않는병원', businessNumber: '000-00-00000' };
     for (let i = 0; i < 15; i++) {
-      const hospital = hospitalList[i % hospitalList.length];
+      const hospital = i === 5 ? wrongHospital : hospitalList[i % hospitalList.length];
       const product = productNames[i % productNames.length];
       const productCode =
         i === 3 || i === 7 || i === 12
@@ -433,7 +437,7 @@ export function SalesUploadPage() {
           <p css={css({ color: theme.colors.textMuted, marginBottom: theme.spacing(3), fontSize: 14 })}>
             아래 표의 데이터가 맞는지 확인한 뒤 <strong>실적 등록</strong> 버튼을 클릭하세요.
           </p>
-          {invalidProductCodeCount > 0 && (
+          {(invalidHospitalCount > 0 || invalidProductCodeCount > 0) && (
             <div css={css({
               padding: theme.spacing(2),
               marginBottom: theme.spacing(3),
@@ -443,7 +447,9 @@ export function SalesUploadPage() {
               fontSize: 14,
               fontWeight: 500,
             })}>
-              ⚠ {invalidProductCodeCount}개의 제품코드가 품목 마스터에 존재하지 않습니다. 붉은색으로 표시된 행을 확인하세요.
+              ⚠
+              {invalidHospitalCount > 0 && ` ${invalidHospitalCount}건의 병의원 사업자번호가 등록된 거래처와 일치하지 않습니다. 병의원 셀을 확인하세요.`}
+              {invalidProductCodeCount > 0 && ` ${invalidProductCodeCount}건의 제품코드가 품목 마스터에 없습니다. 제품코드 셀을 확인하세요.`}
             </div>
           )}
           <div css={tableWrapStyles}>
@@ -465,12 +471,16 @@ export function SalesUploadPage() {
                   const productName = editedOverrides[r.id]?.productName ?? r.productName;
                   const hospitalId = editedOverrides[r.id]?.hospitalId ?? r.hospitalId;
                   const isInvalidProductCode = r.productCode && !validProductCodes.has(r.productCode);
+                  const isInvalidHospital =
+                    r.businessNumber &&
+                    r.businessNumber.trim() !== '' &&
+                    !validBusinessNumbers.has(r.businessNumber);
                   const row = (
-                    <tr key={r.id} css={isInvalidProductCode ? errorRowStyles : undefined}>
+                    <tr key={r.id}>
                       <td style={{ textAlign: 'center', color: theme.colors.textMuted, fontSize: 11 }}>
                         {i + 1}
                       </td>
-                      <td>
+                      <td {...(isInvalidHospital && { 'data-invalid': 'true' })}>
                         <SingleSelect
                           options={corporationHospitals.map((h) => ({ label: h.name, value: h.id }))}
                           selected={hospitalId}
@@ -488,7 +498,7 @@ export function SalesUploadPage() {
                           aria-label={`${r.id} 제품명`}
                         />
                       </td>
-                      <td css={isInvalidProductCode ? errorCellStyles : undefined}>
+                      <td {...(isInvalidProductCode && { 'data-invalid': 'true' })}>
                         {r.productCode || '-'}
                       </td>
                       <td className="col-num">
