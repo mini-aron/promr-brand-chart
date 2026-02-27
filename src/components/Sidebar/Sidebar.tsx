@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { css } from '@emotion/react';
 import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useAuthContext } from '@/context/AuthContext';
 import { useThemeMode } from '@/context/ThemeContext';
 import { HiChevronRight } from 'react-icons/hi';
 import { theme } from '@/theme';
@@ -71,15 +72,22 @@ const chevronStyles = (open: boolean) =>
   });
 
 const themeToggleStyles = css({
-  marginTop: 'auto',
-  marginBottom: theme.spacing(1),
   fontSize: 13,
   padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+});
+
+const bottomBlockStyles = css({
+  marginTop: 'auto',
+  paddingTop: theme.spacing(2),
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
 });
 
 export function Sidebar() {
   const location = useLocation();
   const { userRole, setUserRole, pharmas, currentPharmaId, setCurrentPharmaId } = useApp();
+  const { logout } = useAuthContext();
   const { themeMode, toggleTheme } = useThemeMode();
   const isUploadPath = location.pathname.startsWith('/upload/');
   const isMasterPath = ['/accounts', '/hospitals', '/fees'].includes(location.pathname);
@@ -221,28 +229,33 @@ export function Sidebar() {
         )}
         </Column>
       </nav>
-      <Button variant="ghost" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
-        {themeMode === 'light' ? '다크 모드' : '라이트 모드'}
-      </Button>
-      {userRole === 'corporation' && pharmas.length > 0 && (
+      <div css={bottomBlockStyles}>
+        <Button variant="ghost" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
+          {themeMode === 'light' ? '다크 모드' : '라이트 모드'}
+        </Button>
+        <Button variant="ghost" css={themeToggleStyles} onClick={() => logout()} aria-label="로그아웃">
+          로그아웃
+        </Button>
+        {userRole === 'corporation' && pharmas.length > 0 && (
+          <SingleSelect
+            options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
+            selected={currentPharmaId}
+            onChange={(v) => setCurrentPharmaId(String(v))}
+            placeholder="제약사 선택"
+            aria-label="제약사"
+          />
+        )}
         <SingleSelect
-          options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
-          selected={currentPharmaId}
-          onChange={(v) => setCurrentPharmaId(String(v))}
-          placeholder="제약사 선택"
-          aria-label="제약사"
+          options={[
+            { label: '법인', value: 'corporation' },
+            { label: '제약사', value: 'pharma' },
+          ]}
+          selected={userRole}
+          onChange={(v) => setUserRole(v as 'corporation' | 'pharma')}
+          placeholder="역할 선택"
+          aria-label="사용자 역할"
         />
-      )}
-      <SingleSelect
-        options={[
-          { label: '법인', value: 'corporation' },
-          { label: '제약사', value: 'pharma' },
-        ]}
-        selected={userRole}
-        onChange={(v) => setUserRole(v as 'corporation' | 'pharma')}
-        placeholder="역할 선택"
-        aria-label="사용자 역할"
-      />
+      </div>
     </aside>
   );
 }

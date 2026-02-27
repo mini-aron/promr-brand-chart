@@ -1,4 +1,6 @@
 export { HomePage } from './HomePage';
+export { LoginPage } from './LoginPage';
+export { PromotionPage } from './PromotionPage';
 export { SalesUploadPage } from './SalesUploadPage';
 export { PrescriptionUploadPage } from './PrescriptionUploadPage';
 export { DealerManagePage } from './DealerManagePage';

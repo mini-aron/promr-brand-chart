@@ -1,9 +1,15 @@
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { getStorage } from '@/utils/storage';
+
+const AUTH_TOKEN_KEY = 'auth_token';
 
 export function setupInterceptors(instance: AxiosInstance): void {
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // 토큰 등 공통 헤더 추가
+      const token = getStorage<string>(AUTH_TOKEN_KEY);
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
     },
     (error) => Promise.reject(error)
