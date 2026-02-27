@@ -189,7 +189,7 @@ function formatDateTime(iso: string): string {
 }
 
 export function FilterRequestPage() {
-  const { userRole, currentCorporationId, hospitals, filterRequests, addFilterRequest, addFilterRequestNewHospital } =
+  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, filterRequests, addFilterRequest, addFilterRequestNewHospital } =
     useApp();
   const [hospitalSearch, setHospitalSearch] = useState('');
   const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
@@ -220,14 +220,15 @@ export function FilterRequestPage() {
   }, [corporationHospitals, hospitalSearch]);
 
   const handleSubmitExisting = useCallback(() => {
-    if (!selectedHospitalId) return;
-    addFilterRequest(currentCorporationId, selectedHospitalId, requestMessage.trim() || undefined);
+    if (!selectedHospitalId || !currentPharmaId) return;
+    addFilterRequest(currentCorporationId, currentPharmaId, selectedHospitalId, requestMessage.trim() || undefined);
     setSuccessText('필터링 요청이 접수되었습니다. 제약사 승인 후 거래 가능 여부가 반영됩니다.');
     setSelectedHospitalId(null);
     setRequestMessage('');
-  }, [currentCorporationId, selectedHospitalId, requestMessage, addFilterRequest]);
+  }, [currentCorporationId, currentPharmaId, selectedHospitalId, requestMessage, addFilterRequest]);
 
   const getHospital = useCallback((id: string) => hospitals.find((h) => h.id === id), [hospitals]);
+  const getPharma = useCallback((id: string) => pharmas.find((p) => p.id === id), [pharmas]);
 
   const myRequests = useMemo(
     () =>
@@ -243,7 +244,7 @@ export function FilterRequestPage() {
     const addr = newAddress.trim();
     const rep = newRepresentativeName.trim();
     if (!name || !biz || !addr || !rep) return;
-    addFilterRequestNewHospital(currentCorporationId, {
+    addFilterRequestNewHospital(currentCorporationId, currentPharmaId, {
       hospitalName: name,
       businessNumber: biz,
       address: addr,
@@ -259,6 +260,7 @@ export function FilterRequestPage() {
     setShowNewHospitalModal(false);
   }, [
     currentCorporationId,
+    currentPharmaId,
     newHospitalName,
     newBusinessNumber,
     newAddress,
@@ -266,6 +268,8 @@ export function FilterRequestPage() {
     newRequestMessage,
     addFilterRequestNewHospital,
   ]);
+
+  const canSubmitExisting = currentPharmaId && selectedHospitalId;
 
   const canSubmitNew =
     newHospitalName.trim() &&
@@ -278,7 +282,7 @@ export function FilterRequestPage() {
   return (
     <div css={pageStyles}>
       <h1>필터링 요청</h1>
-      <p>거래 허용이 필요한 병의원을 검색해 요청하거나, 등록되지 않은 병의원은 정보를 입력해 추가 요청할 수 있습니다.</p>
+      <p>거래 허용이 필요한 병의원을 검색해 요청하세요. 제출 대상 제약사는 좌측 사이드바에서 선택합니다.</p>
 
       <div css={twoColLayout}>
         <section css={cardStyles}>
@@ -287,26 +291,28 @@ export function FilterRequestPage() {
             <table>
               <thead>
                 <tr>
-                  <th>요청일시</th>
                   <th>병의원</th>
+                  <th>제약사</th>
                   <th>승인상태</th>
+                  <th>요청일시</th>
                 </tr>
               </thead>
               <tbody>
                 {myRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={3} css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
+                    <td colSpan={4} css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
                       요청한 필터링 내역이 없습니다.
                     </td>
                   </tr>
                 ) : (
                   myRequests.map((r) => (
                     <tr key={r.id}>
-                      <td>{formatDateTime(r.requestedAt)}</td>
                       <td>{getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-'}</td>
+                      <td>{r.pharmaId ? getPharma(r.pharmaId)?.name ?? r.pharmaId : '-'}</td>
                       <td>
                         <span css={statusBadge(r.status)}>{STATUS_LABEL[r.status] ?? r.status}</span>
                       </td>
+                      <td>{formatDateTime(r.requestedAt)}</td>
                     </tr>
                   ))
                 )}
@@ -370,7 +376,7 @@ export function FilterRequestPage() {
               />
             </div>
           )}
-          <Button variant="primary" onClick={handleSubmitExisting} disabled={!selectedHospitalId}>
+          <Button variant="primary" onClick={handleSubmitExisting} disabled={!canSubmitExisting}>
             요청 보내기
           </Button>
         </section>

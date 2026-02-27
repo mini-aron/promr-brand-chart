@@ -70,6 +70,7 @@ const tableWrap = css({
   },
   '& th:last-child, & td:last-child': { borderRight: 'none' },
   '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
+  '& .col-no': { width: 40, minWidth: 40, maxWidth: 40, textAlign: 'center' },
   '& .col-amount, & .col-inout': { textAlign: 'right' },
   '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
   '& tfoot tr': {
@@ -355,7 +356,7 @@ export function SettlementByCorpPage() {
                 <table>
                   <thead>
                     <tr>
-                      <th rowSpan={2}>No.</th>
+                      <th rowSpan={2} className="col-no">No.</th>
                       <th rowSpan={2}>영업사원명</th>
                       <th rowSpan={2}>상태</th>
                       <th rowSpan={2}>정산월</th>
@@ -380,7 +381,7 @@ export function SettlementByCorpPage() {
                       const h = getHospital(row.hospitalId);
                       return (
                         <tr key={selectedCorp.isPromr ? `${row.hospitalId}-${row.salespersonLabel}-${idx}` : row.hospitalId}>
-                          <td>{idx + 1}</td>
+                          <td className="col-no">{idx + 1}</td>
                           <td>{row.salespersonLabel}</td>
                           <td>승인</td>
                           <td>{정산월}</td>

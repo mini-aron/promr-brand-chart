@@ -174,7 +174,7 @@ const downloadRowWrap = css({
 });
 
 export function SalesUploadPage() {
-  const { userRole, currentCorporationId, hospitals, addSalesRows } = useApp();
+  const { userRole, currentCorporationId, currentPharmaId, hospitals, addSalesRows } = useApp();
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
   const [isDrag, setIsDrag] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; rows: SalesRow[] }[]>([]);
@@ -295,13 +295,13 @@ export function SalesUploadPage() {
   );
 
   const doRegister = useCallback(() => {
-    if (!effectiveRows.length) return;
-    addSalesRows(effectiveRows);
+    if (!effectiveRows.length || !currentPharmaId) return;
+    addSalesRows(effectiveRows.map((r) => ({ ...r, pharmaId: currentPharmaId })));
     setMessage({ type: 'success', text: `${effectiveRows.length}건의 실적이 업로드되었습니다.` });
     setUploadedFiles([]);
     setEditedOverrides({});
     setShowConfirmModal(false);
-  }, [effectiveRows, addSalesRows]);
+  }, [effectiveRows, currentPharmaId, addSalesRows]);
 
   const openConfirmModal = useCallback(() => {
     if (preview?.length) setShowConfirmModal(true);
@@ -352,7 +352,7 @@ export function SalesUploadPage() {
   return (
     <div css={pageStyles}>
       <h1>실적 업로드</h1>
-      <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. (일반 실적은 병의원·월 구분 없이 등록됩니다.)</p>
+      <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. 제출 대상 제약사는 좌측 사이드바에서 선택하세요.</p>
 
       <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
         <Button variant="secondary" onClick={handleDownloadExcelTemplate}>

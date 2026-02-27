@@ -207,7 +207,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function FilterApprovalPage() {
-  const { userRole, corporations, hospitals, filterRequests, updateFilterRequestStatus, addFilterRequest } = useApp();
+  const { userRole, corporations, hospitals, currentPharmaId, filterRequests, updateFilterRequestStatus, addFilterRequest } = useApp();
   const [selectedCorpId, setSelectedCorpId] = useState<string | null>(null);
   const [corpSearch, setCorpSearch] = useState('');
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
@@ -262,9 +262,9 @@ export function FilterApprovalPage() {
 
   const handleAddFilter = useCallback(() => {
     if (!selectedCorpId || !selectedHospitalId) return;
-    addFilterRequest(selectedCorpId, selectedHospitalId);
+    addFilterRequest(selectedCorpId, currentPharmaId, selectedHospitalId);
     setSelectedHospitalId('');
-  }, [selectedCorpId, selectedHospitalId, addFilterRequest]);
+  }, [selectedCorpId, selectedHospitalId, currentPharmaId, addFilterRequest]);
 
   if (userRole === 'corporation') return <Navigate to="/" replace />;
 

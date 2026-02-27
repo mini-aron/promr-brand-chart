@@ -3,6 +3,12 @@ export * from './models';
 /** 사용자 유형 */
 export type UserRole = 'corporation' | 'pharma';
 
+/** 제약사 정보 */
+export interface Pharma {
+  id: string;
+  name: string;
+}
+
 /** 법인(업로더) 정보 */
 export interface Corporation {
   id: string;
@@ -35,6 +41,7 @@ export interface ProductFee {
 export interface SalesRow {
   id: string;
   corporationId: string;
+  pharmaId?: string;
   hospitalId: string;
   productName: string;
   quantity: number;
@@ -72,6 +79,7 @@ export interface AggregateFilter {
 export interface FilterRequest {
   id: string;
   corporationId: string;
+  pharmaId?: string;
   /** 거래 허용 여부를 묻는 대상 병의원 ID. 신규 추가 요청 시 'new-{id}' 형태 */
   hospitalId: string;
   /** pending | approved | rejected */

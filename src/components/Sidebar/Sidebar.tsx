@@ -79,7 +79,7 @@ const themeToggleStyles = css({
 
 export function Sidebar() {
   const location = useLocation();
-  const { userRole, setUserRole } = useApp();
+  const { userRole, setUserRole, pharmas, currentPharmaId, setCurrentPharmaId } = useApp();
   const { themeMode, toggleTheme } = useThemeMode();
   const isUploadPath = location.pathname.startsWith('/upload/');
   const isMasterPath = ['/accounts', '/hospitals', '/fees'].includes(location.pathname);
@@ -224,6 +224,15 @@ export function Sidebar() {
       <Button variant="ghost" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
         {themeMode === 'light' ? '다크 모드' : '라이트 모드'}
       </Button>
+      {userRole === 'corporation' && pharmas.length > 0 && (
+        <SingleSelect
+          options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
+          selected={currentPharmaId}
+          onChange={(v) => setCurrentPharmaId(String(v))}
+          placeholder="제약사 선택"
+          aria-label="제약사"
+        />
+      )}
       <SingleSelect
         options={[
           { label: '법인', value: 'corporation' },

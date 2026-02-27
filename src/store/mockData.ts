@@ -1,4 +1,11 @@
-import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest, Dealer } from '@/types';
+import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest, Dealer, Pharma } from '@/types';
+
+/** ========== 더미: 제약사 ========== */
+export const mockPharmas: Pharma[] = [
+  { id: 'pharma-1', name: '프로엠알' },
+  { id: 'pharma-2', name: '건강제약' },
+  { id: 'pharma-3', name: '바이오팜' },
+];
 
 /** ========== 더미: 법인 ========== */
 export const mockCorporations: Corporation[] = [
