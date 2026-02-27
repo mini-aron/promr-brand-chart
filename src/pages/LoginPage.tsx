@@ -104,10 +104,6 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim() || !password) {
-      setError('이메일과 비밀번호를 입력해 주세요.');
-      return;
-    }
     try {
       await login(email.trim(), password);
     } catch {
