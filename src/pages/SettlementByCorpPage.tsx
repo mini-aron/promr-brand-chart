@@ -7,6 +7,7 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { formatAmount } from '@/utils/formatNumber';
 import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
+import { FilterInput } from '@/components/Common/Input';
 import type { Corporation, Hospital } from '@/types';
 import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
 
@@ -170,22 +171,6 @@ const filterRowStyles = css({
   flexWrap: 'wrap',
   gap: theme.spacing(2),
   marginBottom: theme.spacing(2),
-  '& input': {
-    width: '100%',
-    maxWidth: 280,
-    minWidth: 140,
-    minHeight: 40,
-    padding: `0 ${theme.spacing(2)}px`,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    '&:focus': {
-      outline: 'none',
-      borderColor: theme.colors.primary,
-      boxShadow: `0 0 0 2px ${theme.colors.primary}20`,
-    },
-    '&::placeholder': { color: theme.colors.textMuted },
-  },
 });
 
 // --- Helpers ---
@@ -369,20 +354,22 @@ export function SettlementByCorpPage() {
               </p>
               <div css={filterRowStyles}>
                 {selectedCorp.isPromr && (
-                  <input
+                  <FilterInput
                     type="search"
                     placeholder="영업사원명 검색"
                     value={salespersonSearch}
                     onChange={(e) => setSalespersonSearch(e.target.value)}
                     aria-label="영업사원명 검색"
+                    css={css({ maxWidth: 280, minWidth: 140 })}
                   />
                 )}
-                <input
+                <FilterInput
                   type="search"
                   placeholder="거래처 검색"
                   value={hospitalSearch}
                   onChange={(e) => setHospitalSearch(e.target.value)}
                   aria-label="거래처 검색"
+                  css={css({ maxWidth: 280, minWidth: 140 })}
                 />
               </div>
               <SettlementTable
