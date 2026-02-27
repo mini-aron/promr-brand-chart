@@ -84,23 +84,79 @@ const bottomBlockStyles = css({
   gap: theme.spacing(1),
 });
 
+type NavLink = { to: string; label: string };
+
+type NavSection = {
+  label: string;
+  children: NavLink[];
+};
+
+type NavItem = NavLink | NavSection;
+
+function isNavSection(item: NavItem): item is NavSection {
+  return 'children' in item;
+}
+
+const corporationNavItems: NavItem[] = [
+  {
+    label: '실적 등록',
+    children: [
+      { to: '/upload/sales', label: '실적 업로드' },
+      { to: '/upload/prescription', label: '처방사진 업로드' },
+    ],
+  },
+  { to: '/dealer-manage', label: '계약관리' },
+  { to: '/aggregate', label: '법인 실적 조회' },
+  { to: '/filter-request', label: '필터링 요청' },
+];
+
+const pharmaNavItems: NavItem[] = [
+  {
+    label: '기준정보 관리',
+    children: [
+      { to: '/accounts', label: '거래처관리' },
+      { to: '/hospitals', label: '병의원 관리' },
+      { to: '/fees', label: '수수료관리' },
+    ],
+  },
+  { to: '/aggregate', label: '정산확인' },
+  { to: '/settlement', label: '법인별 정산확인' },
+  { to: '/filter-approval', label: '법인별 필터링 승인요청' },
+  { to: '/dealer-view', label: '법인별 계약 조회' },
+];
+
+function getNavItems(role: 'corporation' | 'pharma'): NavItem[] {
+  return role === 'corporation' ? corporationNavItems : pharmaNavItems;
+}
+
+function isSectionActive(section: NavSection, pathname: string): boolean {
+  return section.children.some((c) => c.to === pathname || pathname.startsWith(c.to + '/'));
+}
+
 export function Sidebar() {
   const location = useLocation();
   const { userRole, setUserRole, pharmas, currentPharmaId, setCurrentPharmaId } = useApp();
   const { logout } = useAuthContext();
   const { themeMode, toggleTheme } = useThemeMode();
-  const isUploadPath = location.pathname.startsWith('/upload/');
-  const isMasterPath = ['/accounts', '/hospitals', '/fees'].includes(location.pathname);
-  const [uploadOpen, setUploadOpen] = useState(isUploadPath);
-  const [masterOpen, setMasterOpen] = useState(isMasterPath);
+
+  const navItems = userRole === 'corporation' || userRole === 'pharma' ? getNavItems(userRole) : [];
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (isUploadPath) setUploadOpen(true);
-  }, [isUploadPath]);
+    if (userRole !== 'corporation' && userRole !== 'pharma') return;
+    const items = getNavItems(userRole);
+    const next: Record<string, boolean> = {};
+    items.forEach((item) => {
+      if (isNavSection(item) && isSectionActive(item, location.pathname)) {
+        next[item.label] = true;
+      }
+    });
+    setOpenSections((prev) => ({ ...prev, ...next }));
+  }, [location.pathname, userRole]);
 
-  useEffect(() => {
-    if (isMasterPath) setMasterOpen(true);
-  }, [isMasterPath]);
+  const toggleSection = (label: string) => {
+    setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -112,121 +168,48 @@ export function Sidebar() {
       </Link>
       <nav>
         <Column gap={theme.spacing(1)} css={navLinks}>
-        <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>
-          홈
-        </Link>
-        {userRole === 'corporation' && (
-          <>
-            <Button
-              variant="menu"
-              size="menu"
-              css={isUploadPath ? activeLinkStyles : undefined}
-              onClick={() => setUploadOpen((o) => !o)}
-              aria-expanded={uploadOpen}
-            >
-              실적 등록
-              <span css={chevronStyles(uploadOpen)}><HiChevronRight size={14} /></span>
-            </Button>
-            {uploadOpen && (
-              <Column gap={1} css={subNavWrap}>
-                <Link
-                  to="/upload/sales"
-                  css={isActive('/upload/sales') ? activeLinkStyles : undefined}
+          <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>
+            홈
+          </Link>
+          {navItems.map((item) =>
+            isNavSection(item) ? (
+              <div key={item.label}>
+                <Button
+                  variant="menu"
+                  size="menu"
+                  css={isSectionActive(item, location.pathname) ? activeLinkStyles : undefined}
+                  onClick={() => toggleSection(item.label)}
+                  aria-expanded={openSections[item.label]}
                 >
-                  실적 업로드
-                </Link>
-                <Link
-                  to="/upload/prescription"
-                  css={isActive('/upload/prescription') ? activeLinkStyles : undefined}
-                >
-                  처방사진 업로드
-                </Link>
-              </Column>
-            )}
-            <Link
-              to="/dealer-manage"
-              css={isActive('/dealer-manage') ? activeLinkStyles : undefined}
-            >
-              계약관리
-            </Link>
-          </>
-        )}
-        {userRole === 'pharma' && (
-          <>
-            <Button
-              variant="menu"
-              size="menu"
-              css={isMasterPath ? activeLinkStyles : undefined}
-              onClick={() => setMasterOpen((o) => !o)}
-              aria-expanded={masterOpen}
-            >
-              기준정보 관리
-              <span css={chevronStyles(masterOpen)}><HiChevronRight size={14} /></span>
-            </Button>
-            {masterOpen && (
-              <Column gap={1} css={subNavWrap}>
-                <Link
-                  to="/accounts"
-                  css={isActive('/accounts') ? activeLinkStyles : undefined}
-                >
-                  거래처관리
-                </Link>
-                <Link
-                  to="/hospitals"
-                  css={isActive('/hospitals') ? activeLinkStyles : undefined}
-                >
-                  병의원 관리
-                </Link>
-                <Link
-                  to="/fees"
-                  css={isActive('/fees') ? activeLinkStyles : undefined}
-                >
-                  수수료관리
-                </Link>
-              </Column>
-            )}
-            <Link
-              to="/aggregate"
-              css={isActive('/aggregate') ? activeLinkStyles : undefined}
-            >
-              정산확인
-            </Link>
-            <Link
-              to="/settlement"
-              css={isActive('/settlement') ? activeLinkStyles : undefined}
-            >
-              법인별 정산확인
-            </Link>
-            <Link
-              to="/filter-approval"
-              css={isActive('/filter-approval') ? activeLinkStyles : undefined}
-            >
-              법인별 필터링 승인요청
-            </Link>
-            <Link
-              to="/dealer-view"
-              css={isActive('/dealer-view') ? activeLinkStyles : undefined}
-            >
-              법인별 계약 조회
-            </Link>
-          </>
-        )}
-        {userRole === 'corporation' && (
-          <>
-            <Link
-              to="/aggregate"
-              css={isActive('/aggregate') ? activeLinkStyles : undefined}
-            >
-              법인 실적 조회
-            </Link>
-            <Link
-              to="/filter-request"
-              css={isActive('/filter-request') ? activeLinkStyles : undefined}
-            >
-              필터링 요청
-            </Link>
-          </>
-        )}
+                  {item.label}
+                  <span css={chevronStyles(!!openSections[item.label])}>
+                    <HiChevronRight size={14} />
+                  </span>
+                </Button>
+                {openSections[item.label] && (
+                  <Column gap={1} css={subNavWrap}>
+                    {item.children.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        css={isActive(link.to) ? activeLinkStyles : undefined}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </Column>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={item.to}
+                to={item.to}
+                css={isActive(item.to) ? activeLinkStyles : undefined}
+              >
+                {item.label}
+              </Link>
+            )
+          )}
         </Column>
       </nav>
       <div css={bottomBlockStyles}>
