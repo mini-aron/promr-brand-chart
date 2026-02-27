@@ -102,6 +102,11 @@ const chartCard = css({
   boxShadow: theme.shadow.sm,
 });
 
+/** 금액을 천 단위 구분 포맷(예: 1,234,567)으로 반환 */
+function formatAmount(value: number): string {
+  return value.toLocaleString('ko-KR');
+}
+
 export function HomePage() {
   const { userRole, salesRows, prescriptionUploads, currentCorporationId, dealers, hospitals, corporations, filterRequests } = useApp();
 
@@ -199,7 +204,7 @@ export function HomePage() {
       .slice(-6)
       .map((item) => ({
         month: item.month.slice(5) + '월',
-        매출액: Math.round(item.amount / 10000),
+        매출액: item.amount,
         건수: item.count,
       }));
 
@@ -218,8 +223,8 @@ export function HomePage() {
             <div css={primaryStatCard}>
               <div className="stat-label">이번 달 총 매출</div>
               <div className="stat-value">
-                {(corporationStats.thisMonthAmount / 10000).toFixed(0)}
-                <span className="stat-unit">만원</span>
+                {formatAmount(corporationStats.thisMonthAmount)}
+                <span className="stat-unit">원</span>
               </div>
               <div className="stat-detail">
                 {corporationStats.thisMonthSalesCount}건
@@ -238,7 +243,7 @@ export function HomePage() {
               <div className="stat-label">전체 실적</div>
               <div className="stat-value">{corporationStats.totalSalesCount}</div>
               <div className="stat-detail">
-                총 {(corporationStats.totalAmount / 10000).toFixed(0)}만원
+                총 {formatAmount(corporationStats.totalAmount)}원
               </div>
             </div>
             <div css={statCard}>
@@ -269,8 +274,8 @@ export function HomePage() {
             <div css={primaryStatCard}>
               <div className="stat-label">이번 달 총 매출</div>
               <div className="stat-value">
-                {(pharmaStats.thisMonthAmount / 10000).toFixed(0)}
-                <span className="stat-unit">만원</span>
+                {formatAmount(pharmaStats.thisMonthAmount)}
+                <span className="stat-unit">원</span>
               </div>
               <div className="stat-detail">
                 {pharmaStats.thisMonthSalesCount}건
@@ -289,7 +294,7 @@ export function HomePage() {
               <div className="stat-label">전체 실적</div>
               <div className="stat-value">{pharmaStats.totalSalesCount}</div>
               <div className="stat-detail">
-                총 {(pharmaStats.totalAmount / 10000).toFixed(0)}만원
+                총 {formatAmount(pharmaStats.totalAmount)}원
               </div>
             </div>
             <div css={statCard}>
@@ -370,7 +375,8 @@ export function HomePage() {
                 <YAxis 
                   stroke={theme.colors.textMuted}
                   style={{ fontSize: 12 }}
-                  label={{ value: '매출액 (만원)', angle: -90, position: 'insideLeft', style: { fill: theme.colors.textMuted } }}
+                  tickFormatter={formatAmount}
+                  label={{ value: '매출액 (원)', angle: -90, position: 'insideLeft', style: { fill: theme.colors.textMuted } }}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -379,6 +385,7 @@ export function HomePage() {
                     borderRadius: theme.radius.md,
                   }}
                   labelStyle={{ color: theme.colors.text }}
+                  formatter={(value: number) => [formatAmount(value), '매출액']}
                 />
                 <Line 
                   type="monotone" 
