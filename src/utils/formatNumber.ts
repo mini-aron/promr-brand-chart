@@ -3,3 +3,7 @@ export function formatNumber(value: number | string, options?: Intl.NumberFormat
   if (Number.isNaN(n)) return '0';
   return new Intl.NumberFormat('ko-KR', options).format(n);
 }
+
+export function formatAmount(n: number): string {
+  return formatNumber(n, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}

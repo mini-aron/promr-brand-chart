@@ -1,11 +1,16 @@
 /** @jsxImportSource @emotion/react */
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { formatAmount } from '@/utils/formatNumber';
+import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
+import type { Corporation, Hospital } from '@/types';
+import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
+
+// --- Styles ---
 
 const pageStyles = css({
   display: 'flex',
@@ -160,10 +165,6 @@ const promrBadge = css({
 
 const sortIcon = css({ marginLeft: 4, opacity: 0.6, fontSize: 10 });
 
-function formatAmount(n: number): string {
-  return n.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
 const filterRowStyles = css({
   display: 'flex',
   flexWrap: 'wrap',
@@ -187,136 +188,168 @@ const filterRowStyles = css({
   },
 });
 
+// --- Helpers ---
+
+function getSettlementMonths(): { 정산월: string; 처방월: string } {
+  const now = new Date();
+  const 정산월 = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const 처방월 = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+  return { 정산월, 처방월 };
+}
+
+// --- Sub-components ---
+
+interface CorpListSidebarProps {
+  corporations: Corporation[];
+  selectedCorpId: string | null;
+  corpSearch: string;
+  onSelectCorp: (id: string) => void;
+  onCorpSearchChange: (value: string) => void;
+}
+
+function CorpListSidebar({
+  corporations,
+  selectedCorpId,
+  corpSearch,
+  onSelectCorp,
+  onCorpSearchChange,
+}: CorpListSidebarProps) {
+  return (
+    <aside css={corpListSidebar}>
+      <div className="corp-search">
+        <input
+          type="search"
+          placeholder="법인 검색"
+          value={corpSearch}
+          onChange={(e) => onCorpSearchChange(e.target.value)}
+          aria-label="법인 검색"
+        />
+      </div>
+      <div className="corp-list">
+        {corporations.map((c) => (
+          <Button
+            key={c.id}
+            variant="menu"
+            size="menu"
+            active={selectedCorpId === c.id}
+            onClick={() => onSelectCorp(c.id)}
+          >
+            {c.name}
+            {c.isPromr && <span css={promrBadge}>프로엠알</span>}
+          </Button>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+interface SettlementTableProps {
+  rows: SettlementDisplayRow[];
+  totals: SettlementTotals;
+  getHospital: (id: string) => Hospital | undefined;
+  isPromr: boolean;
+  정산월: string;
+  처방월: string;
+}
+
+function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방월 }: SettlementTableProps) {
+  return (
+    <div css={tableWrap}>
+      <table>
+        <thead>
+          <tr>
+            <th rowSpan={2} className="col-no">
+              No.
+            </th>
+            <th rowSpan={2}>영업사원명</th>
+            <th rowSpan={2}>상태</th>
+            <th rowSpan={2}>정산월</th>
+            <th rowSpan={2}>처방월</th>
+            <th rowSpan={2}>거래처코드</th>
+            <th rowSpan={2}>거래처명</th>
+            <th rowSpan={2}>사업자번호</th>
+            <th rowSpan={2}>주소</th>
+            <th rowSpan={2} className="col-amount">
+              금액
+            </th>
+            <th colSpan={2}>원내</th>
+            <th colSpan={2}>원외</th>
+          </tr>
+          <tr>
+            <th className="col-inout">
+              품목수 <span css={sortIcon}><HiChevronDown size={12} /></span>
+            </th>
+            <th className="col-inout">
+              처방액 <span css={sortIcon}><HiChevronDown size={12} /></span>
+            </th>
+            <th className="col-inout">
+              품목수 <span css={sortIcon}><HiChevronDown size={12} /></span>
+            </th>
+            <th className="col-inout">
+              처방액 <span css={sortIcon}><HiChevronDown size={12} /></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, idx) => {
+            const h = getHospital(row.hospitalId);
+            return (
+              <tr key={isPromr ? `${row.hospitalId}-${row.salespersonLabel}-${idx}` : row.hospitalId}>
+                <td className="col-no">{idx + 1}</td>
+                <td>{row.salespersonLabel}</td>
+                <td>승인</td>
+                <td>{정산월}</td>
+                <td>{처방월}</td>
+                <td>{h?.accountCode ?? '-'}</td>
+                <td>{h?.name ?? row.hospitalId}</td>
+                <td>{h?.businessNumber ?? '-'}</td>
+                <td>{h?.address ?? '-'}</td>
+                <td className="col-amount">{formatAmount(row.amount)}</td>
+                <td className="col-inout">{row.inHouseItemCount}</td>
+                <td className="col-inout">{formatAmount(row.inHouseAmount)}</td>
+                <td className="col-inout">{row.outHouseItemCount}</td>
+                <td className="col-inout">{formatAmount(row.outHouseAmount)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={10}>합계</td>
+            <td className="col-inout">{totals.totalInHouseItems}</td>
+            <td className="col-inout">{formatAmount(totals.totalInHouseAmount)}</td>
+            <td className="col-inout">{totals.totalOutHouseItems}</td>
+            <td className="col-inout">{formatAmount(totals.totalOutHouseAmount)}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+}
+
+// --- Page ---
+
 export function SettlementByCorpPage() {
   const { userRole, corporations, hospitals, salesRows } = useApp();
-  const [selectedCorpId, setSelectedCorpId] = useState<string | null>(null);
-  const [corpSearch, setCorpSearch] = useState('');
-  const [salespersonSearch, setSalespersonSearch] = useState('');
-  const [hospitalSearch, setHospitalSearch] = useState('');
+  const settlement = useSettlementByCorp({ corporations, hospitals, salesRows });
+  const { 정산월, 처방월 } = getSettlementMonths();
 
-  useEffect(() => {
-    setSalespersonSearch('');
-    setHospitalSearch('');
-  }, [selectedCorpId]);
-
-  const corporationsFiltered = useMemo(() => {
-    const q = corpSearch.trim().toLowerCase();
-    if (!q) return corporations;
-    return corporations.filter((c) => c.name.toLowerCase().includes(q));
-  }, [corporations, corpSearch]);
-
-  const filtered = useMemo(() => {
-    if (!selectedCorpId) return [];
-    return salesRows.filter((r) => r.corporationId === selectedCorpId);
-  }, [salesRows, selectedCorpId]);
-
-  const settlementRows = useMemo(() => {
-    const byHospital = new Map<string, { amount: number; itemCount: number }>();
-    for (const r of filtered) {
-      const cur = byHospital.get(r.hospitalId);
-      const amount = (cur?.amount ?? 0) + r.amount;
-      const itemCount = (cur?.itemCount ?? 0) + r.quantity;
-      byHospital.set(r.hospitalId, { amount, itemCount });
-    }
-    return Array.from(byHospital.entries())
-      .map(([hospitalId, agg]) => ({
-        hospitalId,
-        amount: agg.amount,
-        inHouseItemCount: 0,
-        inHouseAmount: 0,
-        outHouseItemCount: agg.itemCount,
-        outHouseAmount: agg.amount,
-      }))
-      .sort((a, b) => a.hospitalId.localeCompare(b.hospitalId));
-  }, [filtered]);
-
-  const dealerSettlementRows = useMemo(() => {
-    const key = (h: string, s: string) => `${h}\t${s}`;
-    const byKey = new Map<string, { amount: number; itemCount: number }>();
-    for (const r of filtered) {
-      const name = r.salespersonName ?? '-';
-      const k = key(r.hospitalId, name);
-      const cur = byKey.get(k);
-      const amount = (cur?.amount ?? 0) + r.amount;
-      const itemCount = (cur?.itemCount ?? 0) + r.quantity;
-      byKey.set(k, { amount, itemCount });
-    }
-    return Array.from(byKey.entries())
-      .map(([k, agg]) => {
-        const [hospitalId, salespersonName] = k.split('\t');
-        return {
-          hospitalId,
-          salespersonName,
-          amount: agg.amount,
-          inHouseItemCount: 0,
-          inHouseAmount: 0,
-          outHouseItemCount: agg.itemCount,
-          outHouseAmount: agg.amount,
-        };
-      })
-      .sort((a, b) =>
-        a.hospitalId.localeCompare(b.hospitalId) || a.salespersonName.localeCompare(b.salespersonName)
-      );
-  }, [filtered]);
-
-  const totals = useMemo(() => ({
-    totalInHouseItems: settlementRows.reduce((s, r) => s + r.inHouseItemCount, 0),
-    totalInHouseAmount: settlementRows.reduce((s, r) => s + r.inHouseAmount, 0),
-    totalOutHouseItems: settlementRows.reduce((s, r) => s + r.outHouseItemCount, 0),
-    totalOutHouseAmount: settlementRows.reduce((s, r) => s + r.outHouseAmount, 0),
-  }), [settlementRows]);
-
-  const dealerTotals = useMemo(
-    () => ({
-      totalInHouseItems: dealerSettlementRows.reduce((s, r) => s + r.inHouseItemCount, 0),
-      totalInHouseAmount: dealerSettlementRows.reduce((s, r) => s + r.inHouseAmount, 0),
-      totalOutHouseItems: dealerSettlementRows.reduce((s, r) => s + r.outHouseItemCount, 0),
-      totalOutHouseAmount: dealerSettlementRows.reduce((s, r) => s + r.outHouseAmount, 0),
-    }),
-    [dealerSettlementRows]
-  );
-
-  const getHospital = useCallback((id: string) => hospitals.find((h) => h.id === id), [hospitals]);
-  const selectedCorp = selectedCorpId ? corporations.find((c) => c.id === selectedCorpId) : null;
-
-  const displayRows = useMemo(() => {
-    if (!selectedCorp) return [];
-    if (selectedCorp.isPromr) {
-      return dealerSettlementRows.map((r) => ({ ...r, salespersonLabel: r.salespersonName }));
-    }
-    return settlementRows.map((r) => ({ ...r, salespersonLabel: selectedCorp.name }));
-  }, [selectedCorp, dealerSettlementRows, settlementRows]);
-
-  const filteredDisplayRows = useMemo(() => {
-    let rows = displayRows;
-    if (selectedCorp?.isPromr) {
-      const q = salespersonSearch.trim().toLowerCase();
-      if (q) rows = rows.filter((r) => r.salespersonLabel?.toLowerCase().includes(q));
-    }
-    const hq = hospitalSearch.trim().toLowerCase();
-    if (hq) {
-      rows = rows.filter((r) => {
-        const name = getHospital(r.hospitalId)?.name ?? r.hospitalId;
-        return name.toLowerCase().includes(hq);
-      });
-    }
-    return rows;
-  }, [selectedCorp?.isPromr, displayRows, salespersonSearch, hospitalSearch, getHospital]);
-
-  const displayTotals = useMemo(() => {
-    const hasFilter = salespersonSearch.trim() || hospitalSearch.trim();
-    if (!hasFilter && !selectedCorp?.isPromr) return totals;
-    if (!hasFilter && selectedCorp?.isPromr) return dealerTotals;
-    return {
-      totalInHouseItems: filteredDisplayRows.reduce((s, r) => s + r.inHouseItemCount, 0),
-      totalInHouseAmount: filteredDisplayRows.reduce((s, r) => s + r.inHouseAmount, 0),
-      totalOutHouseItems: filteredDisplayRows.reduce((s, r) => s + r.outHouseItemCount, 0),
-      totalOutHouseAmount: filteredDisplayRows.reduce((s, r) => s + r.outHouseAmount, 0),
-    };
-  }, [selectedCorp?.isPromr, totals, dealerTotals, salespersonSearch, hospitalSearch, filteredDisplayRows]);
-
-  const 정산월 = '2026-02';
-  const 처방월 = '2026-01';
+  const {
+    selectedCorpId,
+    setSelectedCorpId,
+    corpSearch,
+    setCorpSearch,
+    salespersonSearch,
+    setSalespersonSearch,
+    hospitalSearch,
+    setHospitalSearch,
+    corporationsFiltered,
+    selectedCorp,
+    filteredDisplayRows,
+    displayTotals,
+    getHospital,
+  } = settlement;
 
   if (userRole === 'corporation') return <Navigate to="/" replace />;
 
@@ -352,64 +385,14 @@ export function SettlementByCorpPage() {
                   aria-label="거래처 검색"
                 />
               </div>
-              <div css={tableWrap}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th rowSpan={2} className="col-no">No.</th>
-                      <th rowSpan={2}>영업사원명</th>
-                      <th rowSpan={2}>상태</th>
-                      <th rowSpan={2}>정산월</th>
-                      <th rowSpan={2}>처방월</th>
-                      <th rowSpan={2}>거래처코드</th>
-                      <th rowSpan={2}>거래처명</th>
-                      <th rowSpan={2}>사업자번호</th>
-                      <th rowSpan={2}>주소</th>
-                      <th rowSpan={2} className="col-amount">금액</th>
-                      <th colSpan={2}>원내</th>
-                      <th colSpan={2}>원외</th>
-                    </tr>
-                    <tr>
-                      <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-                      <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-                      <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-                      <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredDisplayRows.map((row, idx) => {
-                      const h = getHospital(row.hospitalId);
-                      return (
-                        <tr key={selectedCorp.isPromr ? `${row.hospitalId}-${row.salespersonLabel}-${idx}` : row.hospitalId}>
-                          <td className="col-no">{idx + 1}</td>
-                          <td>{row.salespersonLabel}</td>
-                          <td>승인</td>
-                          <td>{정산월}</td>
-                          <td>{처방월}</td>
-                          <td>{h?.accountCode ?? '-'}</td>
-                          <td>{h?.name ?? row.hospitalId}</td>
-                          <td>{h?.businessNumber ?? '-'}</td>
-                          <td>{h?.address ?? '-'}</td>
-                          <td className="col-amount">{formatAmount(row.amount)}</td>
-                          <td className="col-inout">{row.inHouseItemCount}</td>
-                          <td className="col-inout">{formatAmount(row.inHouseAmount)}</td>
-                          <td className="col-inout">{row.outHouseItemCount}</td>
-                          <td className="col-inout">{formatAmount(row.outHouseAmount)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                  <tfoot>
-                    <tr>
-                      <td colSpan={10}>합계</td>
-                      <td className="col-inout">{displayTotals.totalInHouseItems}</td>
-                      <td className="col-inout">{formatAmount(displayTotals.totalInHouseAmount)}</td>
-                      <td className="col-inout">{displayTotals.totalOutHouseItems}</td>
-                      <td className="col-inout">{formatAmount(displayTotals.totalOutHouseAmount)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+              <SettlementTable
+                rows={filteredDisplayRows}
+                totals={displayTotals}
+                getHospital={getHospital}
+                isPromr={selectedCorp.isPromr ?? false}
+                정산월={정산월}
+                처방월={처방월}
+              />
               {filteredDisplayRows.length === 0 && (
                 <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
                   해당 법인의 정산 실적이 없습니다.
@@ -417,37 +400,17 @@ export function SettlementByCorpPage() {
               )}
             </>
           ) : (
-            <p css={css({ color: theme.colors.textMuted, padding: theme.spacing(4) })}>
-              우측에서 법인을 선택하세요.
-            </p>
+            <p css={css({ color: theme.colors.textMuted, padding: theme.spacing(4) })}>우측에서 법인을 선택하세요.</p>
           )}
         </main>
 
-        <aside css={corpListSidebar}>
-          <div className="corp-search">
-            <input
-              type="search"
-              placeholder="법인 검색"
-              value={corpSearch}
-              onChange={(e) => setCorpSearch(e.target.value)}
-              aria-label="법인 검색"
-            />
-          </div>
-          <div className="corp-list">
-            {corporationsFiltered.map((c) => (
-              <Button
-                key={c.id}
-                variant="menu"
-                size="menu"
-                active={selectedCorpId === c.id}
-                onClick={() => setSelectedCorpId(c.id)}
-              >
-                {c.name}
-                {c.isPromr && <span css={promrBadge}>프로엠알</span>}
-              </Button>
-            ))}
-          </div>
-        </aside>
+        <CorpListSidebar
+          corporations={corporationsFiltered}
+          selectedCorpId={selectedCorpId}
+          corpSearch={corpSearch}
+          onSelectCorp={setSelectedCorpId}
+          onCorpSearchChange={setCorpSearch}
+        />
       </div>
     </div>
   );
