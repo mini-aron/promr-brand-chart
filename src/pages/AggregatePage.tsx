@@ -1,12 +1,11 @@
 /** @jsxImportSource @emotion/react */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
-import { Button } from '@/components/Common/Button';
-import { Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
+import { FilterInput } from '@/components/Common/Input';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -58,30 +57,6 @@ const filterRow = css({
     },
     '&:disabled': { opacity: 0.8, cursor: 'not-allowed' },
   },
-  '& input': {
-    display: 'block',
-    width: '100%',
-    minHeight: 48,
-    padding: `0 ${theme.spacing(3)}px`,
-    fontSize: 15,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    '&::placeholder': { color: theme.colors.textMuted },
-    '&:hover': { borderColor: theme.colors.primary },
-    '&:focus': {
-      outline: 'none',
-      borderColor: theme.colors.primary,
-      boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
-    },
-  },
-});
-
-const inquiryRowWrap = css({
-  marginTop: theme.spacing(3),
-  paddingTop: theme.spacing(3),
-  borderTop: `1px solid ${theme.colors.border}`,
 });
 
 const tableWrap = css({
@@ -137,7 +112,6 @@ export function AggregatePage() {
     () => (isCorporation ? currentCorporationId : '')
   );
   const [hospitalId, setHospitalId] = useState<string | ''>('');
-  const [hospitalSearchQuery, setHospitalSearchQuery] = useState('');
   const [productSearch, setProductSearch] = useState('');
 
   useEffect(() => {
@@ -165,11 +139,10 @@ export function AggregatePage() {
     return hospitals.filter((h) => h.corporationId === effectiveCorporationId);
   }, [effectiveCorporationId, hospitals]);
 
-  const hospitalFilterListFiltered = useMemo(() => {
-    const q = hospitalSearchQuery.trim().toLowerCase();
-    if (!q) return hospitalFilterList;
-    return hospitalFilterList.filter((h) => h.name.toLowerCase().includes(q));
-  }, [hospitalFilterList, hospitalSearchQuery]);
+  const hospitalOptions = useMemo(
+    () => [{ label: '전체', value: '' as string }, ...hospitalFilterList.map((h) => ({ label: h.name, value: h.id }))],
+    [hospitalFilterList]
+  );
 
   /** 병의원별로 묶어서 정산 행 생성 (거래처 단위). 제약사는 원내 없음 → 원내 0, 원외만 집계 */
   const settlementRows = useMemo(() => {
@@ -211,14 +184,6 @@ export function AggregatePage() {
   }, [settlementRows]);
 
   const getHospital = (id: string) => hospitals.find((h) => h.id === id);
-  const selectedHospital = hospitalId ? getHospital(hospitalId) : null;
-
-  const handleInquiry = useCallback(() => {
-    if (!selectedHospital) return;
-    const subject = encodeURIComponent(`[문의] ${selectedHospital.name}`);
-    const body = encodeURIComponent(`병의원: ${selectedHospital.name}\n거래처코드: ${selectedHospital.accountCode ?? '-'}\n\n문의 내용:\n`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  }, [selectedHospital]);
 
   const 정산월 = '2026-02';
   const 처방월 = '2026-01';
@@ -247,7 +212,6 @@ export function AggregatePage() {
                 onChange={(v) => {
                   setCorporationId(String(v));
                   setHospitalId('');
-                  setHospitalSearchQuery('');
                 }}
                 placeholder="전체"
                 aria-label="법인"
@@ -255,47 +219,35 @@ export function AggregatePage() {
             </div>
           )}
           <div>
-            <label htmlFor="aggregate-hospital-search">병의원 검색</label>
-            <input
-              id="aggregate-hospital-search"
-              type="search"
-              placeholder="병의원명으로 검색"
-              value={hospitalSearchQuery}
-              onChange={(e) => setHospitalSearchQuery(e.target.value)}
-            />
-          </div>
-          <div>
             <label htmlFor="aggregate-hospital">병의원</label>
             <SingleSelect
               id="aggregate-hospital"
-              options={[{ label: '전체', value: '' }, ...hospitalFilterListFiltered.map((h) => ({ label: h.name, value: h.id }))]}
-              selected={hospitalId}
+              options={hospitalOptions}
+              selected={hospitalId || null}
               onChange={(v) => setHospitalId(String(v))}
               placeholder="전체"
               aria-label="병의원"
+              enableSearch
             />
           </div>
           <div>
             <label htmlFor="aggregate-product">품목 검색</label>
-            <input
+            <FilterInput
               id="aggregate-product"
               type="search"
               placeholder="제품명으로 검색"
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
+              aria-label="품목 검색"
+              css={css({
+                minHeight: 32,
+                padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+                fontSize: 13,
+                borderRadius: theme.radius.sm,
+              })}
             />
           </div>
         </div>
-        {selectedHospital && (
-          <Row alignItems="center" gap={theme.spacing(2)} css={inquiryRowWrap}>
-            <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>
-              선택된 병의원: <strong css={css({ color: theme.colors.text })}>{selectedHospital.name}</strong>
-            </span>
-            <Button variant="primary" onClick={handleInquiry}>
-              문의
-            </Button>
-          </Row>
-        )}
       </div>
 
       <div css={tableWrap}>
