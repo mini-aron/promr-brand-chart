@@ -2,7 +2,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
-import * as XLSX from 'xlsx';
 import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { SalesRow } from '@/types';
@@ -12,67 +11,11 @@ import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
+import { downloadRowsAsExcel } from '@/utils/salesUploadExcelDownload';
 
-function downloadRowsAsExcel(fileName: string, sheetName: string, rows: (string | number)[][]) {
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  XLSX.writeFile(wb, fileName);
-}
-
-/** 엑셀 양식 다운로드 */
-function downloadExcelTemplate() {
-  const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
-  const rows: (string | number)[][] = [headers];
-  downloadRowsAsExcel('실적_업로드_양식.xlsx', '실적', rows);
-}
-
-/** 품목 다운로드 */
-function downloadProductFees() {
-  const rows: (string | number)[][] = [
-    ['품목코드', '품목명', '수수료율(%)'],
-    ...mockProductFees.map((p) => [p.productCode, p.productName, p.feeRate]),
-  ];
-  downloadRowsAsExcel('품목.xlsx', '품목', rows);
-}
-
-/** 거래처 다운로드 (해당 법인 소속 거래처만) */
-function downloadHospitalCodes(hospitals: { id: string; name: string }[]) {
-  const rows: (string | number)[][] = [['거래처코드', '거래처명'], ...hospitals.map((h) => [h.id, h.name])];
-  downloadRowsAsExcel('거래처.xlsx', '거래처', rows);
-}
-
-/** 더미데이터 다운로드 (업로드 테스트용, 양식과 동일 컬럼) */
-function downloadDummyExcel(
-  hospitals: { id: string; name: string; businessNumber?: string }[],
-  productNames: string[],
-) {
-  const headers = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
-  const rows: (string | number)[][] = [headers];
-  const hospitalList = hospitals.map((h) => ({ name: h.name, businessNumber: h.businessNumber }));
-  if (hospitalList.length === 0 || productNames.length === 0) return;
-
-  const validCodes = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
-  const invalidCodes = ['P999', 'INVALID', 'X001', 'BAD123'];
-
-  for (let i = 0; i < 15; i++) {
-    const hospital = hospitalList[i % hospitalList.length];
-    const product = productNames[i % productNames.length];
-
-    let productCode: string;
-    if (i === 3 || i === 7 || i === 12) {
-      productCode = invalidCodes[i % invalidCodes.length];
-    } else {
-      productCode = validCodes[i % validCodes.length];
-    }
-
-    const quantity = 5 + (i % 20);
-    const amount = quantity * (40000 + (i % 10) * 3000);
-    rows.push([hospital.name, hospital.businessNumber || '', product, productCode, quantity, amount]);
-  }
-
-  downloadRowsAsExcel('실적_더미데이터.xlsx', '실적', rows);
-}
+const EXCEL_TEMPLATE_HEADERS = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
+const VALID_PRODUCT_CODES = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
+const INVALID_PRODUCT_CODES = ['P999', 'INVALID', 'X001', 'BAD123'];
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -364,6 +307,46 @@ export function SalesUploadPage() {
     if (preview?.length) setShowConfirmModal(true);
   }, [preview?.length]);
 
+  const handleDownloadExcelTemplate = useCallback(() => {
+    downloadRowsAsExcel('실적_업로드_양식.xlsx', '실적', [EXCEL_TEMPLATE_HEADERS]);
+  }, []);
+
+  const handleDownloadProductFees = useCallback(() => {
+    const rows: (string | number)[][] = [
+      ['품목코드', '품목명', '수수료율(%)'],
+      ...mockProductFees.map((p) => [p.productCode, p.productName, p.feeRate]),
+    ];
+    downloadRowsAsExcel('품목.xlsx', '품목', rows);
+  }, []);
+
+  const handleDownloadHospitalCodes = useCallback(() => {
+    const rows: (string | number)[][] = [
+      ['거래처코드', '거래처명'],
+      ...corporationHospitals.map((h) => [h.id, h.name]),
+    ];
+    downloadRowsAsExcel('거래처.xlsx', '거래처', rows);
+  }, [corporationHospitals]);
+
+  const handleDownloadDummyExcel = useCallback(() => {
+    const hospitalList = corporationHospitals.map((h) => ({ name: h.name, businessNumber: h.businessNumber }));
+    const productNames = mockProductFees.map((p) => p.productName);
+    if (hospitalList.length === 0 || productNames.length === 0) return;
+
+    const rows: (string | number)[][] = [EXCEL_TEMPLATE_HEADERS];
+    for (let i = 0; i < 15; i++) {
+      const hospital = hospitalList[i % hospitalList.length];
+      const product = productNames[i % productNames.length];
+      const productCode =
+        i === 3 || i === 7 || i === 12
+          ? INVALID_PRODUCT_CODES[i % INVALID_PRODUCT_CODES.length]
+          : VALID_PRODUCT_CODES[i % VALID_PRODUCT_CODES.length];
+      const quantity = 5 + (i % 20);
+      const amount = quantity * (40000 + (i % 10) * 3000);
+      rows.push([hospital.name, hospital.businessNumber || '', product, productCode, quantity, amount]);
+    }
+    downloadRowsAsExcel('실적_더미데이터.xlsx', '실적', rows);
+  }, [corporationHospitals]);
+
   if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   return (
@@ -372,22 +355,16 @@ export function SalesUploadPage() {
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. (일반 실적은 병의원·월 구분 없이 등록됩니다.)</p>
 
       <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
-        <Button variant="secondary" onClick={downloadExcelTemplate}>
+        <Button variant="secondary" onClick={handleDownloadExcelTemplate}>
           엑셀 양식 다운로드
         </Button>
-        <Button variant="secondary" onClick={downloadProductFees}>
+        <Button variant="secondary" onClick={handleDownloadProductFees}>
           품목 다운로드
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => downloadHospitalCodes(corporationHospitals)}
-        >
+        <Button variant="secondary" onClick={handleDownloadHospitalCodes}>
           거래처 다운로드
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => downloadDummyExcel(corporationHospitals, mockProductFees.map((p) => p.productName))}
-        >
+        <Button variant="secondary" onClick={handleDownloadDummyExcel}>
           더미데이터 다운로드
         </Button>
       </Row>
