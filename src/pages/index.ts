@@ -5,7 +5,6 @@ export { SalesUploadPage } from './SalesUploadPage';
 export { PrescriptionUploadPage } from './PrescriptionUploadPage';
 export { DealerManagePage } from './DealerManagePage';
 export { DealerViewPage } from './DealerViewPage';
-export { AccountManagePage } from './AccountManagePage';
 export { HospitalManagePage } from './HospitalManagePage';
 export { FeeManagePage } from './FeeManagePage';
 export { AggregatePage } from './AggregatePage';

@@ -338,8 +338,8 @@ export function HomePage() {
           <>
             <div css={cardStyles}>
               <h2>기준정보 관리</h2>
-              <p>거래처, 병의원, 수수료를 관리합니다.</p>
-              <Link to="/accounts">거래처관리 페이지로 →</Link>
+              <p>병의원, 수수료를 관리합니다.</p>
+              <Link to="/hospitals">기준정보 관리 페이지로 →</Link>
             </div>
             <div css={cardStyles}>
               <h2>정산확인</h2>

@@ -114,7 +114,6 @@ const pharmaNavItems: NavItem[] = [
   {
     label: '기준정보 관리',
     children: [
-      { to: '/accounts', label: '거래처관리' },
       { to: '/hospitals', label: '병의원 관리' },
       { to: '/fees', label: '수수료관리' },
     ],

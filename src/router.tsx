@@ -36,7 +36,6 @@ export const router = createBrowserRouter([
           { path: 'upload/sales', element: <P.SalesUploadPage /> },
           { path: 'upload/prescription', element: <P.PrescriptionUploadPage /> },
           { path: 'aggregate', element: <P.AggregatePage /> },
-          { path: 'accounts', element: <P.AccountManagePage /> },
           { path: 'fees', element: <P.FeeManagePage /> },
           { path: 'settlement', element: <P.SettlementByCorpPage /> },
           { path: 'filter-approval', element: <P.FilterApprovalPage /> },
