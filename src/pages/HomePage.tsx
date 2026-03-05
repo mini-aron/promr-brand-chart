@@ -385,7 +385,7 @@ export function HomePage() {
                     borderRadius: theme.radius.md,
                   }}
                   labelStyle={{ color: theme.colors.text }}
-                  formatter={(value: number) => [formatAmount(value), '매출액']}
+                  formatter={(value: number | undefined) => [formatAmount(value ?? 0), '매출액']}
                 />
                 <Line 
                   type="monotone" 

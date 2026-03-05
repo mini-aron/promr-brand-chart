@@ -5,6 +5,8 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { FilterInput } from '@/components/Common/Input';
+import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
   width: '100%',
@@ -140,6 +142,14 @@ const modalActions = css({
   marginTop: theme.spacing(3),
 });
 
+const filterRowStyles = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(2),
+  marginBottom: theme.spacing(3),
+  '& > *': { minWidth: 140 },
+});
+
 const tableWrap = css({
   overflow: 'auto',
   border: `1px solid ${theme.colors.border}`,
@@ -197,6 +207,10 @@ export function FilterRequestPage() {
   const [successText, setSuccessText] = useState<string | null>(null);
   const [showNewHospitalModal, setShowNewHospitalModal] = useState(false);
 
+  const [filterHospitalName, setFilterHospitalName] = useState('');
+  const [filterPharmaId, setFilterPharmaId] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+
   const [newHospitalName, setNewHospitalName] = useState('');
   const [newBusinessNumber, setNewBusinessNumber] = useState('');
   const [newAddress, setNewAddress] = useState('');
@@ -237,6 +251,23 @@ export function FilterRequestPage() {
         .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt)),
     [filterRequests, currentCorporationId]
   );
+
+  const filteredMyRequests = useMemo(() => {
+    const hospitalQ = filterHospitalName.trim().toLowerCase();
+    return myRequests.filter((r) => {
+      if (hospitalQ) {
+        const name = (getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '').toLowerCase();
+        if (!name.includes(hospitalQ)) return false;
+      }
+      if (filterPharmaId != null && filterPharmaId !== '') {
+        if (r.pharmaId !== filterPharmaId) return false;
+      }
+      if (filterStatus != null && filterStatus !== '') {
+        if (r.status !== filterStatus) return false;
+      }
+      return true;
+    });
+  }, [myRequests, filterHospitalName, filterPharmaId, filterStatus, getHospital]);
 
   const handleSubmitNew = useCallback(() => {
     const name = newHospitalName.trim();
@@ -287,6 +318,46 @@ export function FilterRequestPage() {
       <div css={twoColLayout}>
         <section css={cardStyles}>
           <h2 css={sectionTitle}>내 필터링 요청 현황</h2>
+          <div css={filterRowStyles}>
+            <FilterInput
+              type="search"
+              placeholder="병의원명"
+              value={filterHospitalName}
+              onChange={(e) => setFilterHospitalName(e.target.value)}
+              aria-label="병의원명 필터"
+              css={css({ maxWidth: 200 })}
+            />
+            <div css={css({ width: 180 })}>
+              <SingleSelect
+                id="filter-pharma"
+                options={[
+                  { label: '전체', value: '' },
+                  ...pharmas.map((p) => ({ label: p.name, value: p.id })),
+                ]}
+                selected={filterPharmaId ?? ''}
+                onChange={(v) => setFilterPharmaId(v === '' ? null : String(v))}
+                placeholder="제약사"
+                size="large"
+                aria-label="제약사 필터"
+              />
+            </div>
+            <div css={css({ width: 130 })}>
+              <SingleSelect
+                id="filter-status"
+                options={[
+                  { label: '전체', value: '' },
+                  { label: '대기', value: 'pending' },
+                  { label: '승인', value: 'approved' },
+                  { label: '승인불가', value: 'rejected' },
+                ]}
+                selected={filterStatus ?? ''}
+                onChange={(v) => setFilterStatus(v === '' ? null : String(v))}
+                placeholder="승인상태"
+                size="large"
+                aria-label="승인상태 필터"
+              />
+            </div>
+          </div>
           <div css={tableWrap}>
             <table>
               <thead>
@@ -298,14 +369,14 @@ export function FilterRequestPage() {
                 </tr>
               </thead>
               <tbody>
-                {myRequests.length === 0 ? (
+                {filteredMyRequests.length === 0 ? (
                   <tr>
                     <td colSpan={4} css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
-                      요청한 필터링 내역이 없습니다.
+                      {myRequests.length === 0 ? '요청한 필터링 내역이 없습니다.' : '조건에 맞는 요청이 없습니다.'}
                     </td>
                   </tr>
                 ) : (
-                  myRequests.map((r) => (
+                  filteredMyRequests.map((r) => (
                     <tr key={r.id}>
                       <td>{getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-'}</td>
                       <td>{r.pharmaId ? getPharma(r.pharmaId)?.name ?? r.pharmaId : '-'}</td>
