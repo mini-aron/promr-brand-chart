@@ -393,7 +393,7 @@ export function FilterRequestPage() {
         </section>
 
         <section css={cardStyles}>
-          <h2 css={sectionTitle}>병의원 검색 후 요청</h2>
+          <h2 css={sectionTitle}>거래선 추가</h2>
           <div css={fieldStyles}>
             <label htmlFor="hospital-search">병의원 검색</label>
             <input
@@ -425,10 +425,17 @@ export function FilterRequestPage() {
                   data-selected={selectedHospitalId === h.id}
                   onClick={() => setSelectedHospitalId(h.id)}
                 >
-                  {h.name}
-                  {h.accountCode && (
-                    <span css={css({ marginLeft: 8, fontSize: 13, color: theme.colors.textMuted })}>
-                      {h.accountCode}
+                  <span css={css({ display: 'block' })}>
+                    {h.name}
+                    {h.accountCode && (
+                      <span css={css({ marginLeft: 8, fontSize: 13, color: theme.colors.textMuted })}>
+                        {h.accountCode}
+                      </span>
+                    )}
+                  </span>
+                  {h.address && (
+                    <span css={css({ display: 'block', marginTop: 4, fontSize: 12, color: theme.colors.textMuted })}>
+                      {h.address}
                     </span>
                   )}
                 </button>
