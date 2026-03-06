@@ -1,8 +1,10 @@
 export { HomePage } from './HomePage';
 export { LoginPage } from './LoginPage';
 export { PromotionPage } from './PromotionPage';
+export { SalesRegisterPage } from './SalesRegisterPage';
 export { SalesUploadPage } from './SalesUploadPage';
 export { PrescriptionUploadPage } from './PrescriptionUploadPage';
+export { UploadNoticePage } from './UploadNoticePage';
 export { DealerManagePage } from './DealerManagePage';
 export { DealerViewPage } from './DealerViewPage';
 export { HospitalManagePage } from './HospitalManagePage';

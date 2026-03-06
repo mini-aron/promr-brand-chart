@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -222,6 +222,11 @@ export function PrescriptionUploadPage() {
 
   return (
     <div css={pageStyles}>
+      <p>
+        <Link to="/upload" css={css({ color: theme.colors.primary, fontWeight: 600 })}>
+          ← 실적 등록으로 돌아가기
+        </Link>
+      </p>
       <h1>처방사진 업로드</h1>
       <p>대상(월 · 병의원)을 선택한 뒤, 해당 실적에 대한 처방 사진을 업로드합니다.</p>
 

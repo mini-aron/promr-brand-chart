@@ -32,7 +32,8 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <P.HomePage /> },
-          { path: 'upload', element: <Navigate to="/upload/sales" replace /> },
+          { path: 'upload', element: <P.SalesRegisterPage /> },
+          { path: 'upload/notice', element: <P.UploadNoticePage /> },
           { path: 'upload/sales', element: <P.SalesUploadPage /> },
           { path: 'upload/prescription', element: <P.PrescriptionUploadPage /> },
           { path: 'aggregate', element: <P.AggregatePage /> },

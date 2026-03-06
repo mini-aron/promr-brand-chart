@@ -31,6 +31,7 @@ type AppActions = {
   addSalesRows: (rows: SalesRow[]) => void;
   addPrescriptionUpload: (upload: PrescriptionUpload) => void;
   addHospital: (hospital: Hospital) => void;
+  updateHospital: (id: string, patch: Partial<Pick<Hospital, 'accountCode'>>) => void;
   updateFilterRequestStatus: (id: string, status: 'approved' | 'rejected') => void;
   addFilterRequest: (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string) => void;
   addFilterRequestNewHospital: (
@@ -145,6 +146,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addSalesRows: (rows) => setSalesRows((prev) => [...prev, ...rows]),
       addPrescriptionUpload: (upload) => setPrescriptionUploads((prev) => [...prev, upload]),
       addHospital: (hospital) => setHospitals((prev) => [...prev, hospital]),
+      updateHospital: (id, patch) =>
+        setHospitals((prev) =>
+          prev.map((h) => (h.id === id ? { ...h, ...patch } : h))
+        ),
       updateFilterRequestStatus,
       addFilterRequest,
       addFilterRequestNewHospital,

@@ -35,6 +35,8 @@ export interface ProductFee {
   productCode: string;
   productName: string;
   feeRate: number; // 수수료율(%)
+  /** EDI 코드 */
+  ediCode?: string;
 }
 
 /** 실적(엑셀) 행 데이터 */
@@ -107,6 +109,8 @@ export interface Dealer {
   reportCertUrl?: string;
   /** 계약서 파일 URL */
   contractUrl?: string;
+  /** 재위탁계약서 파일 URL */
+  subcontractContractUrl?: string;
   /** 사업자 등록증 파일 URL */
   businessLicenseUrl?: string;
   createdAt: string;

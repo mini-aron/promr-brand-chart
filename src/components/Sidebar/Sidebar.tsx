@@ -98,13 +98,7 @@ function isNavSection(item: NavItem): item is NavSection {
 }
 
 const corporationNavItems: NavItem[] = [
-  {
-    label: '실적 등록',
-    children: [
-      { to: '/upload/sales', label: '실적 업로드' },
-      { to: '/upload/prescription', label: '처방사진 업로드' },
-    ],
-  },
+  { to: '/upload', label: '실적 등록' },
   { to: '/dealer-manage', label: '계약관리' },
   { to: '/aggregate', label: '법인 실적 조회' },
   { to: '/filter-request', label: '필터링 요청' },
@@ -134,7 +128,7 @@ function isSectionActive(section: NavSection, pathname: string): boolean {
 
 export function Sidebar() {
   const location = useLocation();
-  const { userRole, setUserRole, pharmas, currentPharmaId, setCurrentPharmaId } = useApp();
+  const { userRole, setUserRole } = useApp();
   const { logout } = useAuthContext();
   const { themeMode, toggleTheme } = useThemeMode();
 
@@ -157,7 +151,8 @@ export function Sidebar() {
     setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) =>
+    location.pathname === path || (path === '/upload' && location.pathname.startsWith('/upload'));
 
   return (
     <aside css={asideStyles}>
@@ -165,15 +160,6 @@ export function Sidebar() {
         <span className="logo-pro">PRO</span>
         <span className="logo-pf">PF</span>
       </Link>
-      {userRole === 'corporation' && pharmas.length > 0 && (
-        <SingleSelect
-          options={pharmas.map((p) => ({ label: p.name, value: p.id }))}
-          selected={currentPharmaId}
-          onChange={(v) => setCurrentPharmaId(String(v))}
-          placeholder="제약사 선택"
-          aria-label="제약사"
-        />
-      )}
       <nav>
         <Column gap={theme.spacing(1)} css={navLinks}>
           <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>

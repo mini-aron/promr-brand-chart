@@ -132,6 +132,10 @@ const contentHeader = css({
   flexShrink: 0,
   padding: theme.spacing(3),
   borderBottom: `1px solid ${theme.colors.border}`,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: theme.spacing(2),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
   '& p': { margin: `${theme.spacing(1)}px 0 0`, fontSize: 13, color: theme.colors.textMuted },
 });
@@ -325,15 +329,22 @@ export function DealerViewPage() {
         <div css={mainArea}>
           <div css={contentWrap}>
             <div css={contentHeader}>
-              <h2>
-                {selectedCorp?.name ?? '법인 선택'}
-                {selectedCorp?.isPromr && <span css={promrBadge}>프로엠알</span>}
-              </h2>
-              <p>
-                {dealersForCorp.length > 0
-                  ? `총 ${dealersForCorp.length}명의 딜러가 등록되어 있습니다.`
-                  : '등록된 딜러가 없습니다.'}
-              </p>
+              <div>
+                <h2>
+                  {selectedCorp?.name ?? '법인 선택'}
+                  {selectedCorp?.isPromr && <span css={promrBadge}>프로엠알</span>}
+                </h2>
+                <p>
+                  {dealersForCorp.length > 0
+                    ? `총 ${dealersForCorp.length}명의 딜러가 등록되어 있습니다.`
+                    : '등록된 딜러가 없습니다.'}
+                </p>
+              </div>
+              {selectedCorp && dealersForCorp.length > 0 && (
+                <Button variant="secondary" css={css({ flexShrink: 0 })} disabled>
+                  법인별 전체 다운로드
+                </Button>
+              )}
             </div>
 
             {dealersForCorp.length > 0 ? (
@@ -346,6 +357,7 @@ export function DealerViewPage() {
                       <th>이메일</th>
                       <th>신고필증</th>
                       <th>계약서</th>
+                      <th>재위탁계약서</th>
                       <th>사업자 등록증</th>
                       <th>등록일</th>
                     </tr>
@@ -387,6 +399,25 @@ export function DealerViewPage() {
                               </button>
                               <span css={css({ color: theme.colors.textMuted })}>|</span>
                               <a href={d.contractUrl} download css={linkStyles}>
+                                다운로드
+                              </a>
+                            </div>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td>
+                          {d.subcontractContractUrl ? (
+                            <div css={fileActionGroup}>
+                              <button
+                                type="button"
+                                css={linkButton}
+                                onClick={() => handlePreview(d.subcontractContractUrl!, '재위탁계약서 미리보기')}
+                              >
+                                미리보기
+                              </button>
+                              <span css={css({ color: theme.colors.textMuted })}>|</span>
+                              <a href={d.subcontractContractUrl} download css={linkStyles}>
                                 다운로드
                               </a>
                             </div>

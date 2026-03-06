@@ -51,8 +51,14 @@ const tableWrap = css({
     borderBottom: `1px solid ${theme.colors.border}`,
     borderRight: `1px solid ${theme.colors.border}`,
   },
+  '& th:first-child, & td:first-child': { width: 200, minWidth: 200, maxWidth: 200 },
+  '& td:first-child': { padding: 0, verticalAlign: 'middle' },
   '& th:last-child, & td:last-child': { borderRight: 'none' },
   '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
+});
+
+const rowModified = css({
+  backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 22%, transparent)`,
 });
 
 const feeInputStyles = css({
@@ -72,6 +78,23 @@ const feeInputStyles = css({
     boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
   },
   '&::placeholder': { color: theme.colors.textMuted },
+});
+
+const productCodeInputStyles = css({
+  width: '100%',
+  minHeight: 48,
+  padding: theme.spacing(1.5),
+  fontSize: 14,
+  borderRadius: 0,
+  border: 'none',
+  backgroundColor: 'transparent',
+  color: theme.colors.text,
+  boxSizing: 'border-box',
+  display: 'block',
+  '&:focus': {
+    outline: 'none',
+    boxShadow: 'inset 0 0 0 2px ' + theme.colors.primary,
+  },
 });
 
 const feeInputCell = css({
@@ -156,6 +179,14 @@ export function FeeManagePage() {
   const [monthlyFees, setMonthlyFees] = useState<Record<string, ProductFee[]>>(() => ({
     [initialMonth]: [...mockProductFees],
   }));
+  const [initialMonthlyFees, setInitialMonthlyFees] = useState<Record<string, ProductFee[]>>({});
+
+  useEffect(() => {
+    setInitialMonthlyFees((prev) => ({
+      ...prev,
+      [selectedMonth]: (monthlyFees[selectedMonth] ?? [...mockProductFees]).map((p) => ({ ...p })),
+    }));
+  }, [selectedMonth]);
 
   const currentFees = useMemo(() => {
     if (monthlyFees[selectedMonth]) return monthlyFees[selectedMonth];
@@ -175,10 +206,52 @@ export function FeeManagePage() {
     [selectedMonth]
   );
 
+  const updateProductCode = useCallback(
+    (index: number, newCode: string) => {
+      setMonthlyFees((prev) => {
+        const list = prev[selectedMonth] ?? [...mockProductFees];
+        if (index < 0 || index >= list.length) return prev;
+        const next = list.map((p, i) =>
+          i === index ? { ...p, productCode: newCode } : p
+        );
+        return { ...prev, [selectedMonth]: next };
+      });
+    },
+    [selectedMonth]
+  );
+
   const [productSearch, setProductSearch] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<ProductFee | null>(null);
   const [newFeeRate, setNewFeeRate] = useState<number>(0);
   const [addError, setAddError] = useState<string | null>(null);
+
+  const initialFees = initialMonthlyFees[selectedMonth];
+  const isRowModified = useCallback(
+    (index: number) => {
+      if (!initialFees || index >= currentFees.length) return false;
+      const current = currentFees[index];
+      const initial = initialFees[index];
+      if (!initial) return true;
+      return (
+        current.productCode !== initial.productCode ||
+        current.feeRate !== initial.feeRate ||
+        (current.ediCode ?? '') !== (initial.ediCode ?? '')
+      );
+    },
+    [currentFees, initialFees]
+  );
+
+  const modifiedCount = useMemo(
+    () => currentFees.filter((_, index) => isRowModified(index)).length,
+    [currentFees, isRowModified]
+  );
+
+  const handleSave = useCallback(() => {
+    setInitialMonthlyFees((prev) => ({
+      ...prev,
+      [selectedMonth]: currentFees.map((p) => ({ ...p })),
+    }));
+  }, [selectedMonth, currentFees]);
 
   const addableProducts = useMemo(() => {
     const currentCodes = new Set((monthlyFees[selectedMonth] ?? [...mockProductFees]).map((p) => p.productCode));
@@ -233,16 +306,23 @@ export function FeeManagePage() {
       <p>월별·품목별 수수료율(%)을 설정합니다.</p>
 
       <div css={cardStyles}>
-        <div css={monthSelectStyles}>
-          <label htmlFor="fee-month">적용 월</label>
-          <SingleSelect
-            id="fee-month"
-            options={MONTH_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
-            selected={selectedMonth}
-            onChange={(v) => setSelectedMonth(String(v))}
-            placeholder="월 선택"
-            aria-label="적용 월"
-          />
+        <div css={css({ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(2), marginBottom: theme.spacing(4), flexWrap: 'wrap' })}>
+          <div css={[monthSelectStyles, css({ marginBottom: 0 })]}>
+            <label htmlFor="fee-month">적용 월</label>
+            <SingleSelect
+              id="fee-month"
+              options={MONTH_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
+              selected={selectedMonth}
+              onChange={(v) => setSelectedMonth(String(v))}
+              placeholder="월 선택"
+              aria-label="적용 월"
+            />
+          </div>
+          {modifiedCount > 0 && (
+            <Button variant="primary" onClick={handleSave}>
+              저장 ({modifiedCount}건)
+            </Button>
+          )}
         </div>
 
         <div css={tableWrap}>
@@ -251,14 +331,24 @@ export function FeeManagePage() {
               <tr>
                 <th>품목코드</th>
                 <th>품목명</th>
+                <th>EDI코드</th>
                 <th>수수료율 (%)</th>
               </tr>
             </thead>
             <tbody>
-              {currentFees.map((p) => (
-                <tr key={p.productCode}>
-                  <td>{p.productCode}</td>
+              {currentFees.map((p, index) => (
+                <tr key={`${selectedMonth}-${index}`} css={isRowModified(index) ? rowModified : undefined}>
+                  <td>
+                    <input
+                      type="text"
+                      css={productCodeInputStyles}
+                      value={p.productCode}
+                      onChange={(e) => updateProductCode(index, e.target.value)}
+                      aria-label={`${p.productName} 품목코드`}
+                    />
+                  </td>
                   <td>{p.productName}</td>
+                  <td>{p.ediCode ?? '-'}</td>
                   <td css={feeInputCell}>
                     <input
                       css={feeInputStyles}

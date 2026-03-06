@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
@@ -167,7 +167,7 @@ const downloadRowWrap = css({
 });
 
 export function SalesUploadPage() {
-  const { userRole, currentCorporationId, currentPharmaId, hospitals, addSalesRows } = useApp();
+  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, addSalesRows } = useApp();
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
   const [isDrag, setIsDrag] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; rows: SalesRow[] }[]>([]);
@@ -352,11 +352,19 @@ export function SalesUploadPage() {
   }, [corporationHospitals]);
 
   if (userRole === 'pharma') return <Navigate to="/" replace />;
+  if (userRole === 'corporation' && pharmas.length > 0 && !currentPharmaId) {
+    return <Navigate to="/upload" replace />;
+  }
 
   return (
     <div css={pageStyles}>
+      <p>
+        <Link to="/upload" css={css({ color: theme.colors.primary, fontWeight: 600 })}>
+          ← 실적 등록으로 돌아가기
+        </Link>
+      </p>
       <h1>실적 업로드</h1>
-      <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다. 제출 대상 제약사는 좌측 사이드바에서 선택하세요.</p>
+      <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다.</p>
 
       <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
         <Button variant="secondary" onClick={handleDownloadExcelTemplate}>

@@ -204,6 +204,7 @@ export function DealerManagePage() {
   const [newEmail, setNewEmail] = useState('');
   const [newReportCertFile, setNewReportCertFile] = useState<File | null>(null);
   const [newContractFile, setNewContractFile] = useState<File | null>(null);
+  const [newSubcontractContractFile, setNewSubcontractContractFile] = useState<File | null>(null);
   const [newBusinessLicenseFile, setNewBusinessLicenseFile] = useState<File | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -236,6 +237,7 @@ export function DealerManagePage() {
     
     let reportCertUrl: string | undefined;
     let contractUrl: string | undefined;
+    let subcontractContractUrl: string | undefined;
     let businessLicenseUrl: string | undefined;
 
     if (newReportCertFile) {
@@ -243,6 +245,9 @@ export function DealerManagePage() {
     }
     if (newContractFile) {
       contractUrl = URL.createObjectURL(newContractFile);
+    }
+    if (newSubcontractContractFile) {
+      subcontractContractUrl = URL.createObjectURL(newSubcontractContractFile);
     }
     if (newBusinessLicenseFile) {
       businessLicenseUrl = URL.createObjectURL(newBusinessLicenseFile);
@@ -256,12 +261,13 @@ export function DealerManagePage() {
       email,
       reportCertUrl,
       contractUrl,
+      subcontractContractUrl,
       businessLicenseUrl,
       createdAt: new Date().toISOString().slice(0, 19),
     };
     addDealer(dealer);
     closeAddModal();
-  }, [newSalespersonName, newPhone, newEmail, newReportCertFile, newContractFile, newBusinessLicenseFile, currentCorporationId, addDealer]);
+  }, [newSalespersonName, newPhone, newEmail, newReportCertFile, newContractFile, newSubcontractContractFile, newBusinessLicenseFile, currentCorporationId, addDealer]);
 
   const closeAddModal = useCallback(() => {
     setShowAddModal(false);
@@ -271,10 +277,11 @@ export function DealerManagePage() {
     setNewEmail('');
     setNewReportCertFile(null);
     setNewContractFile(null);
+    setNewSubcontractContractFile(null);
     setNewBusinessLicenseFile(null);
   }, []);
 
-  const handleUpload = useCallback((dealerId: string, fileType: 'reportCert' | 'contract' | 'businessLicense') => {
+  const handleUpload = useCallback((dealerId: string, fileType: 'reportCert' | 'contract' | 'subcontractContract' | 'businessLicense') => {
     alert(`${dealerId}의 ${fileType} 파일 업로드 기능은 추후 구현됩니다.`);
   }, []);
 
@@ -382,6 +389,20 @@ export function DealerManagePage() {
               </div>
 
               <div css={fileInputWrapper}>
+                <label htmlFor="new-subcontract-contract" css={fileInputLabel}>재위탁계약서</label>
+                <input
+                  id="new-subcontract-contract"
+                  type="file"
+                  accept="image/*,.pdf"
+                  css={fileInput}
+                  onChange={(e) => setNewSubcontractContractFile(e.target.files?.[0] || null)}
+                />
+                {newSubcontractContractFile && (
+                  <div css={fileNameDisplay}>선택된 파일: {newSubcontractContractFile.name}</div>
+                )}
+              </div>
+
+              <div css={fileInputWrapper}>
                 <label htmlFor="new-business-license" css={fileInputLabel}>사업자 등록증</label>
                 <input
                   id="new-business-license"
@@ -454,6 +475,7 @@ export function DealerManagePage() {
               <th>이메일</th>
               <th>신고필증</th>
               <th>계약서</th>
+              <th>재위탁계약서</th>
               <th>사업자 등록증</th>
               <th style={{ width: 80 }}>관리</th>
             </tr>
@@ -504,6 +526,28 @@ export function DealerManagePage() {
                     </div>
                   ) : (
                     <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'contract')}>
+                      업로드
+                    </Button>
+                  )}
+                </td>
+                <td>
+                  {d.subcontractContractUrl ? (
+                    <div css={fileActionGroup}>
+                      <Button
+                        variant="ghost"
+                        size="small"
+                        css={linkButton}
+                        onClick={() => handlePreview(d.subcontractContractUrl!, '재위탁계약서 미리보기')}
+                      >
+                        미리보기
+                      </Button>
+                      <span css={css({ color: theme.colors.textMuted })}>|</span>
+                      <a href={d.subcontractContractUrl} download css={linkStyles}>
+                        다운로드
+                      </a>
+                    </div>
+                  ) : (
+                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'subcontractContract')}>
                       업로드
                     </Button>
                   )}

@@ -52,6 +52,7 @@ const tableWrap = css({
     borderBottom: `1px solid ${theme.colors.border}`,
     borderRight: `1px solid ${theme.colors.border}`,
   },
+  '& th:first-child, & td:first-child': { width: 110, maxWidth: 110 },
   '& th:last-child, & td:last-child': { borderRight: 'none' },
   '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
   '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
@@ -146,14 +147,47 @@ const errorBox = css({
   lineHeight: 1.6,
 });
 
+const accountCodeInput = css({
+  width: '100%',
+  maxWidth: 98,
+  padding: `${theme.spacing(0.5)}px ${theme.spacing(1)}px`,
+  fontSize: 12,
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius.sm,
+  backgroundColor: theme.colors.surface,
+  boxSizing: 'border-box',
+  '&:focus': { outline: 'none', borderColor: theme.colors.primary },
+});
+
+const rowModified = css({
+  backgroundColor: 'rgba(59, 130, 246, 0.15)',
+  backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 22%, transparent)`,
+  '&:hover': {
+    backgroundColor: 'rgba(59, 130, 246, 0.22)',
+    backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 32%, transparent)`,
+  },
+});
+
+const saveBar = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  padding: theme.spacing(2),
+  backgroundColor: `${theme.colors.primary}10`,
+  borderRadius: theme.radius.md,
+  border: `1px solid ${theme.colors.primary}30`,
+});
+
 export function HospitalManagePage() {
-  const { userRole, hospitals, corporations, addHospital } = useApp();
+  const { userRole, hospitals, corporations, addHospital, updateHospital } = useApp();
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [businessNumberInput, setBusinessNumberInput] = useState('');
   const [searchedHospital, setSearchedHospital] = useState<Hospital | null>(null);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [accountCodeOverrides, setAccountCodeOverrides] = useState<Record<string, string>>({});
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -166,6 +200,43 @@ export function HospitalManagePage() {
         (corporations.find((c) => c.id === h.corporationId)?.name ?? '').toLowerCase().includes(q)
     );
   }, [hospitals, corporations, search]);
+
+  const getDisplayAccountCode = useCallback(
+    (h: Hospital) => accountCodeOverrides[h.id] ?? h.accountCode ?? '',
+    [accountCodeOverrides]
+  );
+
+  const isRowModified = useCallback(
+    (h: Hospital) => {
+      const current = (accountCodeOverrides[h.id] ?? h.accountCode ?? '').trim();
+      const original = (h.accountCode ?? '').trim();
+      return current !== original;
+    },
+    [accountCodeOverrides]
+  );
+
+  const modifiedIds = useMemo(
+    () => filtered.filter((h) => isRowModified(h)).map((h) => h.id),
+    [filtered, isRowModified]
+  );
+
+  const setAccountCodeFor = useCallback((hospitalId: string, value: string) => {
+    setAccountCodeOverrides((prev) => ({ ...prev, [hospitalId]: value }));
+  }, []);
+
+  const saveAllAccountCodes = useCallback(() => {
+    modifiedIds.forEach((id) => {
+      const h = hospitals.find((x) => x.id === id);
+      if (!h) return;
+      const value = (accountCodeOverrides[h.id] ?? h.accountCode ?? '').trim();
+      updateHospital(id, { accountCode: value || undefined });
+    });
+    setAccountCodeOverrides((prev) => {
+      const next = { ...prev };
+      modifiedIds.forEach((id) => delete next[id]);
+      return next;
+    });
+  }, [modifiedIds, hospitals, accountCodeOverrides, updateHospital]);
 
   const getCorpName = (corpId: string) => corporations.find((c) => c.id === corpId)?.name ?? '-';
 
@@ -324,6 +395,17 @@ export function HospitalManagePage() {
         </div>
       )}
 
+      {modifiedIds.length > 0 && (
+        <div css={saveBar}>
+          <span css={css({ fontSize: 14, color: theme.colors.text, fontWeight: 500 })}>
+            거래처코드 변경 {modifiedIds.length}건
+          </span>
+          <Button variant="primary" onClick={saveAllAccountCodes}>
+            저장
+          </Button>
+        </div>
+      )}
+
       <div css={tableWrap}>
         <table>
           <thead>
@@ -337,8 +419,17 @@ export function HospitalManagePage() {
           </thead>
           <tbody>
             {filtered.map((h) => (
-              <tr key={h.id}>
-                <td>{h.accountCode ?? '-'}</td>
+              <tr key={h.id} css={isRowModified(h) ? rowModified : undefined}>
+                <td>
+                  <input
+                    type="text"
+                    value={getDisplayAccountCode(h)}
+                    onChange={(e) => setAccountCodeFor(h.id, e.target.value)}
+                    placeholder="-"
+                    css={accountCodeInput}
+                    aria-label={`${h.name} 거래처코드`}
+                  />
+                </td>
                 <td>{h.name}</td>
                 <td>{getCorpName(h.corporationId)}</td>
                 <td>{h.businessNumber ?? '-'}</td>
@@ -353,6 +444,7 @@ export function HospitalManagePage() {
           조건에 맞는 병의원이 없습니다.
         </p>
       )}
+
     </div>
   );
 }
