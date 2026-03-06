@@ -14,50 +14,41 @@ export type Option = {
 
 export type SelectSize = 'default' | 'large';
 
-type DropdownPosition = {
-  top?: number;
-  bottom?: number;
-  left: number;
-  width: number;
-};
+type DropdownPosition = { top?: number; bottom?: number; left: number; width: number };
 
 const DROPDOWN_MAX_HEIGHT = 200;
 const GAP = 2;
 
-const styles = {
-  wrap: css({
-    position: 'relative',
-    width: '100%',
-    fontFamily: theme.fontFamily,
-  }),
-  trigger: css({
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.sm,
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    cursor: 'pointer',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    color: theme.colors.text,
-    minHeight: 32,
-    fontSize: 13,
-    background: theme.colors.surface,
-    '&:hover': {
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.background,
-    },
-  }),
-  triggerLarge: css({
-    minHeight: 48,
-    padding: `0 ${theme.spacing(3)}px`,
-    fontSize: 15,
-  }),
-  list: (fixed?: DropdownPosition, hasSearch?: boolean) => css({
-    position: 'fixed',
-    ...(fixed?.top !== undefined && { top: fixed.top }),
-    ...(fixed?.bottom !== undefined && { bottom: fixed.bottom }),
-    left: fixed?.left,
-    width: fixed?.width,
+const wrap = css({
+  position: 'relative',
+  width: '100%',
+  fontFamily: theme.fontFamily,
+});
+
+const trigger = css({
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius.sm,
+  padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+  cursor: 'pointer',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  color: theme.colors.text,
+  minHeight: 32,
+  fontSize: 13,
+  background: theme.colors.surface,
+  '&:hover': { borderColor: theme.colors.primary, backgroundColor: theme.colors.background },
+});
+
+const triggerLarge = css({ minHeight: 48, padding: `0 ${theme.spacing(3)}px`, fontSize: 15 });
+
+const listStyle = (pos: DropdownPosition, hasSearch: boolean) =>
+  css({
+    position: 'fixed' as const,
+    ...(pos.top !== undefined && { top: pos.top }),
+    ...(pos.bottom !== undefined && { bottom: pos.bottom }),
+    left: pos.left,
+    width: pos.width,
     border: `1px solid ${theme.colors.border}`,
     borderRadius: theme.radius.sm,
     background: theme.colors.surface,
@@ -69,55 +60,44 @@ const styles = {
     overflowY: 'auto',
     scrollbarWidth: 'thin',
     '&::-webkit-scrollbar': { width: 6 },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: theme.colors.border,
-      borderRadius: 3,
-    },
-  }),
-  searchInput: css({
-    position: 'sticky',
-    top: 0,
-    left: 0,
-    right: 0,
-    width: 'calc(100% + 12px)',
-    margin: '0 -6px',
-    padding: '6px 8px',
-    border: 'none',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    background: theme.colors.surface,
-    fontSize: 13,
-    outline: 'none',
-    color: theme.colors.text,
-    boxSizing: 'border-box',
-    borderTopLeftRadius: theme.radius.sm,
-    borderTopRightRadius: theme.radius.sm,
-    '&:focus': {
-      borderBottomColor: theme.colors.primary,
-    },
-  }),
-  item: (isSelected: boolean, isFocused: boolean) => css({
+    '&::-webkit-scrollbar-thumb': { backgroundColor: theme.colors.border, borderRadius: 3 },
+  });
+
+const searchInput = css({
+  position: 'sticky',
+  top: 0,
+  left: 0,
+  right: 0,
+  width: 'calc(100% + 12px)',
+  margin: '0 -6px',
+  padding: '6px 8px',
+  border: 'none',
+  borderBottom: `1px solid ${theme.colors.border}`,
+  background: theme.colors.surface,
+  fontSize: 13,
+  outline: 'none',
+  color: theme.colors.text,
+  boxSizing: 'border-box',
+  borderTopLeftRadius: theme.radius.sm,
+  borderTopRightRadius: theme.radius.sm,
+  '&:focus': { borderBottomColor: theme.colors.primary },
+});
+
+const item = (isSelected: boolean, isFocused: boolean) =>
+  css({
     padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     cursor: 'pointer',
-    backgroundColor: (isSelected || isFocused) ? `${theme.colors.primary}14` : 'transparent',
+    backgroundColor: isSelected || isFocused ? `${theme.colors.primary}14` : 'transparent',
     color: isSelected ? theme.colors.primary : theme.colors.text,
     fontSize: 13,
     borderRadius: 4,
     margin: '2px 0',
-    '&:hover': {
-      backgroundColor: `${theme.colors.primary}26`,
-    },
+    '&:hover': { backgroundColor: `${theme.colors.primary}26` },
     ...(isFocused && { outline: `2px solid ${theme.colors.primary}`, outlineOffset: -2 }),
-  }),
-  optionLabel: css({
-    fontSize: 13,
-    fontWeight: 500,
-  }),
-  optionDescription: css({
-    fontSize: 11,
-    color: theme.colors.textMuted,
-    marginTop: 2,
-  }),
-};
+  });
+
+const optionLabel = css({ fontSize: 13, fontWeight: 500 });
+const optionDescription = css({ fontSize: 11, color: theme.colors.textMuted, marginTop: 2 });
 
 type BaseProps = {
   options: Option[];
@@ -140,78 +120,143 @@ export type MultipleSelectProps = BaseProps & {
   onRemove?: (removed: string | number) => void;
 };
 
-function useDropdownPosition(isOpen: boolean, triggerRef: React.RefObject<HTMLDivElement>) {
+function useDropdownPosition(isOpen: boolean, triggerRef: React.RefObject<HTMLDivElement | null>) {
   const [position, setPosition] = useState<DropdownPosition | null>(null);
-
   useLayoutEffect(() => {
     if (!isOpen || !triggerRef.current) {
       setPosition(null);
       return;
     }
-
     const measure = () => {
       if (!triggerRef.current) return null;
       const rect = triggerRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom - GAP;
       const openUp = spaceBelow < DROPDOWN_MAX_HEIGHT && rect.top > spaceBelow;
-      
       return {
         left: rect.left,
         width: rect.width,
         ...(openUp ? { bottom: window.innerHeight - rect.top + GAP } : { top: rect.bottom + GAP }),
       };
     };
-
-    const updatePosition = () => {
+    const update = () => {
       const pos = measure();
       if (pos) setPosition(pos);
     };
-
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    return () => window.removeEventListener('resize', updatePosition);
-  }, [isOpen]);
-
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [isOpen, triggerRef]);
   return position;
 }
 
-function useClickOutside(
-  refs: React.RefObject<HTMLElement>[],
-  onClose: () => void
-) {
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (refs.some(ref => ref.current?.contains(e.target as Node))) return;
-      onClose();
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [refs, onClose]);
-}
-
-function useScrollToHighlighted(
+function useSelectDropdown(
   isOpen: boolean,
-  highlightedIndex: number,
-  listRef: React.RefObject<HTMLUListElement>
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
+  options: Option[],
+  enableSearch: boolean,
+  selectedValue: string | number | null,
+  onEnter: (opt: Option) => void
 ) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredOptions = enableSearch
+    ? options.filter((o) => o.label.toLowerCase().includes(searchTerm.toLowerCase()))
+    : options;
+
+  const closeDropdown = useCallback(() => {
+    setIsOpen(false);
+    setSearchTerm('');
+  }, [setIsOpen]);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if ([dropdownRef, listRef].some((r) => r.current?.contains(e.target as Node))) return;
+      closeDropdown();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [closeDropdown]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: Event) => {
+      if (listRef.current?.contains(e.target as Node)) return;
+      closeDropdown();
+    };
+    window.addEventListener('scroll', handler, true);
+    return () => window.removeEventListener('scroll', handler, true);
+  }, [isOpen, closeDropdown]);
+
+  useEffect(() => {
+    if (isOpen && enableSearch) requestAnimationFrame(() => searchInputRef.current?.focus());
+  }, [isOpen, enableSearch]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const idx = filteredOptions.findIndex((o) => o.value === selectedValue);
+    setHighlightedIndex(idx >= 0 ? idx : 0);
+  }, [isOpen, filteredOptions, selectedValue]);
+
   useLayoutEffect(() => {
-    if (!isOpen || highlightedIndex === -1 || !listRef.current) return;
-    
-    const listEl = listRef.current;
-    const optionEl = listEl.querySelector(`[data-option-index="${highlightedIndex}"]`) as HTMLElement;
-    if (!optionEl) return;
-
-    const listTop = listEl.scrollTop;
-    const listHeight = listEl.clientHeight;
-    const optionTop = optionEl.offsetTop;
-    const optionHeight = optionEl.offsetHeight;
-
-    if (optionTop < listTop) {
-      listEl.scrollTop = optionTop;
-    } else if (optionTop + optionHeight > listTop + listHeight) {
-      listEl.scrollTop = optionTop + optionHeight - listHeight;
-    }
+    if (!isOpen || highlightedIndex < 0 || !listRef.current) return;
+    const list = listRef.current;
+    const el = list.querySelector(`[data-option-index="${highlightedIndex}"]`) as HTMLElement;
+    if (!el) return;
+    const listTop = list.scrollTop;
+    const listH = list.clientHeight;
+    const optTop = el.offsetTop;
+    const optH = el.offsetHeight;
+    if (optTop < listTop) list.scrollTop = optTop;
+    else if (optTop + optH > listTop + listH) list.scrollTop = optTop + optH - listH;
   }, [isOpen, highlightedIndex]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      const n = filteredOptions.length;
+      if (n === 0) return;
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setHighlightedIndex((p) => Math.min(p + 1, n - 1));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setHighlightedIndex((p) => Math.max(p - 1, 0));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          const opt = filteredOptions[highlightedIndex];
+          if (opt) onEnter(opt);
+          break;
+        case 'Escape':
+          e.preventDefault();
+          closeDropdown();
+          break;
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, highlightedIndex, filteredOptions, onEnter, closeDropdown]);
+
+  const position = useDropdownPosition(isOpen, dropdownRef);
+
+  return {
+    position,
+    filteredOptions,
+    searchTerm,
+    setSearchTerm,
+    highlightedIndex,
+    setHighlightedIndex,
+    closeDropdown,
+    dropdownRef,
+    listRef,
+    searchInputRef,
+  };
 }
 
 export function SingleSelect({
@@ -226,150 +271,91 @@ export function SingleSelect({
   'aria-label': ariaLabel,
 }: SingleSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  
-  const position = useDropdownPosition(isOpen, dropdownRef);
+  const onEnter = useCallback(
+    (opt: Option) => {
+      onChange(opt.value);
+      setIsOpen(false);
+    },
+    [onChange]
+  );
+  const {
+    position,
+    filteredOptions,
+    searchTerm,
+    setSearchTerm,
+    highlightedIndex,
+    setHighlightedIndex,
+    closeDropdown,
+    dropdownRef,
+    listRef,
+    searchInputRef,
+  } = useSelectDropdown(isOpen, setIsOpen, options, enableSearch, selected, onEnter);
 
-  const filteredOptions = enableSearch
-    ? options.filter(opt => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
-    : options;
-
-  const selectedLabel = options.find(opt => opt.value === selected)?.label ?? placeholder;
-
-  const closeDropdown = useCallback(() => {
-    setIsOpen(false);
-    setSearchTerm('');
-  }, []);
-
-  useClickOutside([dropdownRef, listRef], closeDropdown);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const closeOnScroll = (e: Event) => {
-      if (listRef.current?.contains(e.target as Node)) return;
+  const selectOption = useCallback(
+    (value: string | number) => {
+      onChange(value);
       closeDropdown();
-    };
-    window.addEventListener('scroll', closeOnScroll, true);
-    return () => window.removeEventListener('scroll', closeOnScroll, true);
-  }, [isOpen, closeDropdown]);
+    },
+    [onChange, closeDropdown]
+  );
 
-  useEffect(() => {
-    if (isOpen && enableSearch && position) {
-      requestAnimationFrame(() => searchInputRef.current?.focus());
-    }
-  }, [isOpen, enableSearch, position]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const idx = filteredOptions.findIndex(opt => opt.value === selected);
-    setHighlightedIndex(Math.max(0, idx));
-  }, [isOpen]);
-
-  useScrollToHighlighted(isOpen, highlightedIndex, listRef);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const optionCount = filteredOptions.length;
-      if (optionCount === 0) return;
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.min(prev + 1, optionCount - 1));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.max(prev - 1, 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (filteredOptions[highlightedIndex]) {
-            onChange(filteredOptions[highlightedIndex].value);
-            closeDropdown();
-          } else if (allowCustomOption && searchTerm) {
-            onChange(searchTerm);
-            closeDropdown();
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          closeDropdown();
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, highlightedIndex, filteredOptions, onChange, searchTerm, allowCustomOption, closeDropdown]);
-
-  const handleSelectOption = (value: string | number) => {
-    onChange(value);
-    closeDropdown();
-  };
+  const displayLabel = options.find((o) => o.value === selected)?.label ?? placeholder;
 
   return (
-    <div ref={dropdownRef} css={styles.wrap} id={id}>
+    <div ref={dropdownRef} css={wrap} id={id}>
       <div
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel}
-        css={[styles.trigger, size === 'large' && styles.triggerLarge]}
-        onClick={() => setIsOpen(prev => !prev)}
+        css={[trigger, size === 'large' && triggerLarge]}
+        onClick={() => setIsOpen((p) => !p)}
       >
-        <span>{selectedLabel}</span>
+        <span>{displayLabel}</span>
         {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
       </div>
-      {isOpen && position && createPortal(
-        <ul ref={listRef} css={styles.list(position, enableSearch)} role="listbox">
-          {enableSearch && (
-            <input
-              ref={searchInputRef}
-              type="text"
-              css={styles.searchInput}
-              placeholder="검색..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onClick={e => e.stopPropagation()}
-            />
-          )}
-          {enableSearch && allowCustomOption && searchTerm && (
-            <li
-              role="option"
-              data-option-index={-1}
-              css={styles.item(false, highlightedIndex === -1)}
-              onClick={() => handleSelectOption(searchTerm)}
-              onMouseEnter={() => setHighlightedIndex(-1)}
-            >
-              <span css={styles.optionLabel}>"{searchTerm}"로 검색</span>
-            </li>
-          )}
-          {filteredOptions.map((option, index) => (
-            <li
-              key={option.id ?? option.value}
-              role="option"
-              aria-selected={option.value === selected}
-              data-option-index={index}
-              css={styles.item(option.value === selected, index === highlightedIndex)}
-              onClick={() => handleSelectOption(option.value)}
-              onMouseEnter={() => setHighlightedIndex(index)}
-            >
-              <span css={styles.optionLabel}>{option.label}</span>
-              {option.description && (
-                <span css={styles.optionDescription}>{option.description}</span>
-              )}
-            </li>
-          ))}
-        </ul>,
-        document.body
-      )}
+      {isOpen && position &&
+        createPortal(
+          <ul ref={listRef} css={listStyle(position, enableSearch)} role="listbox">
+            {enableSearch && (
+              <input
+                ref={searchInputRef}
+                type="text"
+                css={searchInput}
+                placeholder="검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            {enableSearch && allowCustomOption && searchTerm && (
+              <li
+                role="option"
+                data-option-index={-1}
+                css={item(false, highlightedIndex === -1)}
+                onClick={() => selectOption(searchTerm)}
+                onMouseEnter={() => setHighlightedIndex(-1)}
+              >
+                <span css={optionLabel}>"{searchTerm}"로 검색</span>
+              </li>
+            )}
+            {filteredOptions.map((opt, i) => (
+              <li
+                key={opt.id ?? opt.value}
+                role="option"
+                aria-selected={opt.value === selected}
+                data-option-index={i}
+                css={item(opt.value === selected, i === highlightedIndex)}
+                onClick={() => selectOption(opt.value)}
+                onMouseEnter={() => setHighlightedIndex(i)}
+              >
+                <span css={optionLabel}>{opt.label}</span>
+                {opt.description && <span css={optionDescription}>{opt.description}</span>}
+              </li>
+            ))}
+          </ul>,
+          document.body
+        )}
     </div>
   );
 }
@@ -386,156 +372,103 @@ export function MultipleSelect({
   'aria-label': ariaLabel,
 }: MultipleSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  
-  const position = useDropdownPosition(isOpen, dropdownRef);
+  const handleSelect = useCallback(
+    (value: string | number) => {
+      const next = selectedItems.includes(value)
+        ? selectedItems.filter((x) => x !== value)
+        : [...selectedItems, value];
+      onChange(next);
+      if (selectedItems.includes(value) && onRemove) onRemove(value);
+    },
+    [selectedItems, onChange, onRemove]
+  );
+  const onEnter = useCallback(
+    (opt: Option) => handleSelect(opt.value),
+    [handleSelect]
+  );
+  const {
+    position,
+    filteredOptions,
+    searchTerm,
+    setSearchTerm,
+    highlightedIndex,
+    setHighlightedIndex,
+    dropdownRef,
+    listRef,
+    searchInputRef,
+  } = useSelectDropdown(isOpen, setIsOpen, options, enableSearch, null, onEnter);
 
-  const filteredOptions = enableSearch
-    ? options.filter(opt => opt.label.toLowerCase().includes(searchTerm.toLowerCase()))
-    : options;
-
-  const selectedLabels = options
-    .filter(opt => selectedItems.includes(opt.value))
-    .map(opt => opt.label)
-    .join(', ');
-
-  const closeDropdown = useCallback(() => {
-    setIsOpen(false);
-    setSearchTerm('');
-  }, []);
-
-  useClickOutside([dropdownRef, listRef], closeDropdown);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const closeOnScroll = (e: Event) => {
-      if (listRef.current?.contains(e.target as Node)) return;
-      closeDropdown();
-    };
-    window.addEventListener('scroll', closeOnScroll, true);
-    return () => window.removeEventListener('scroll', closeOnScroll, true);
-  }, [isOpen, closeDropdown]);
-
-  useEffect(() => {
-    if (isOpen && enableSearch && position) {
-      requestAnimationFrame(() => searchInputRef.current?.focus());
-    }
-  }, [isOpen, enableSearch, position]);
-
-  useScrollToHighlighted(isOpen, highlightedIndex, listRef);
-
-  const handleSelect = useCallback((value: string | number) => {
-    const isSelected = selectedItems.includes(value);
-    const updated = isSelected
-      ? selectedItems.filter(item => item !== value)
-      : [...selectedItems, value];
-    onChange(updated);
-    if (isSelected && onRemove) onRemove(value);
-  }, [selectedItems, onChange, onRemove]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const optionCount = filteredOptions.length;
-      if (optionCount === 0) return;
-
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.min(prev + 1, optionCount - 1));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.max(prev - 1, 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (filteredOptions[highlightedIndex]) {
-            handleSelect(filteredOptions[highlightedIndex].value);
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          closeDropdown();
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, highlightedIndex, filteredOptions, handleSelect, closeDropdown]);
+  const displayLabel =
+    selectedItems.length > 0
+      ? options.filter((o) => selectedItems.includes(o.value)).map((o) => o.label).join(', ')
+      : placeholder;
 
   return (
-    <div ref={dropdownRef} css={styles.wrap} id={id}>
+    <div ref={dropdownRef} css={wrap} id={id}>
       <div
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel}
-        css={[styles.trigger, size === 'large' && styles.triggerLarge]}
-        onClick={() => setIsOpen(prev => !prev)}
+        css={[trigger, size === 'large' && triggerLarge]}
+        onClick={() => setIsOpen((p) => !p)}
       >
-        <span>{selectedItems.length > 0 ? selectedLabels : placeholder}</span>
+        <span>{displayLabel}</span>
         {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
       </div>
-      {isOpen && position && createPortal(
-        <ul ref={listRef} css={styles.list(position, enableSearch)} role="listbox">
-          {enableSearch && (
-            <input
-              ref={searchInputRef}
-              type="text"
-              css={styles.searchInput}
-              placeholder="검색..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              onClick={e => e.stopPropagation()}
-            />
-          )}
-          {filteredOptions.map((option, index) => {
-            const isSelected = selectedItems.includes(option.value);
-            return (
-              <li
-                key={option.id ?? option.value}
-                role="option"
-                aria-selected={isSelected}
-                data-option-index={index}
-                css={styles.item(isSelected, index === highlightedIndex)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                <label
-                  css={css({
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    cursor: 'pointer',
-                    width: '100%',
-                    gap: theme.spacing(1),
-                  })}
+      {isOpen && position &&
+        createPortal(
+          <ul ref={listRef} css={listStyle(position, enableSearch)} role="listbox">
+            {enableSearch && (
+              <input
+                ref={searchInputRef}
+                type="text"
+                css={searchInput}
+                placeholder="검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            {filteredOptions.map((opt, i) => {
+              const isSelected = selectedItems.includes(opt.value);
+              return (
+                <li
+                  key={opt.id ?? opt.value}
+                  role="option"
+                  aria-selected={isSelected}
+                  data-option-index={i}
+                  css={item(isSelected, i === highlightedIndex)}
+                  onMouseEnter={() => setHighlightedIndex(i)}
                 >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleSelect(option.value)}
-                    css={css({ cursor: 'pointer', marginTop: 2 })}
-                  />
-                  <div>
-                    <span css={styles.optionLabel}>{option.label}</span>
-                    {option.description && (
-                      <span css={styles.optionDescription}>{option.description}</span>
-                    )}
-                  </div>
-                </label>
-              </li>
-            );
-          })}
-        </ul>,
-        document.body
-      )}
+                  <label
+                    css={css({
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      cursor: 'pointer',
+                      width: '100%',
+                      gap: theme.spacing(1),
+                    })}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelect(opt.value)}
+                      css={css({ cursor: 'pointer', marginTop: 2 })}
+                    />
+                    <div>
+                      <span css={optionLabel}>{opt.label}</span>
+                      {opt.description && (
+                        <span css={optionDescription}>{opt.description}</span>
+                      )}
+                    </div>
+                  </label>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body
+        )}
     </div>
   );
 }

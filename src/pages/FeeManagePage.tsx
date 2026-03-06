@@ -51,7 +51,7 @@ const tableWrap = css({
     borderBottom: `1px solid ${theme.colors.border}`,
     borderRight: `1px solid ${theme.colors.border}`,
   },
-  '& th:first-child, & td:first-child': { width: 200, minWidth: 200, maxWidth: 200 },
+  '& th:first-child, & td:first-child': { width: 220, minWidth: 220, maxWidth: 220 },
   '& td:first-child': { padding: 0, verticalAlign: 'middle' },
   '& th:last-child, & td:last-child': { borderRight: 'none' },
   '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
@@ -338,7 +338,7 @@ export function FeeManagePage() {
             <tbody>
               {currentFees.map((p, index) => (
                 <tr key={`${selectedMonth}-${index}`} css={isRowModified(index) ? rowModified : undefined}>
-                  <td>
+                  <td css={css({ padding: theme.spacing(1.5) })}>
                     <input
                       type="text"
                       css={productCodeInputStyles}

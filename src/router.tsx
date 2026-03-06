@@ -44,6 +44,8 @@ export const router = createBrowserRouter([
           { path: 'dealer-manage', element: <P.DealerManagePage /> },
           { path: 'dealer-view', element: <P.DealerViewPage /> },
           { path: 'hospitals', element: <P.HospitalManagePage /> },
+          { path: 'event-manage', element: <P.EventManagePage /> },
+          { path: 'deadline-manage', element: <P.DeadlineManagePage /> },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },

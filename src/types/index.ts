@@ -30,6 +30,27 @@ export interface Hospital {
   address?: string;
 }
 
+/** 수수료 이벤트 (기준정보 이벤트관리용) */
+export interface FeeEvent {
+  id: string;
+  /** 품목코드 */
+  productCode: string;
+  /** 법인 ID */
+  corporationId: string;
+  /** 적용 시작일 (YYYY-MM-DD) */
+  startDate?: string;
+  /** 적용 종료일 (YYYY-MM-DD) */
+  endDate?: string;
+  /** 적용수수료 사용 여부 (true: 적용수수료 사용, false: 추가수수료 사용) */
+  useAppliedFee: boolean;
+  /** 적용수수료 (useAppliedFee true일 때) */
+  appliedFee?: number;
+  /** 추가수수료 (useAppliedFee false일 때) */
+  additionalFee?: number;
+  /** 비고 */
+  remark?: string;
+}
+
 /** 품목 (다운로드용) */
 export interface ProductFee {
   productCode: string;
