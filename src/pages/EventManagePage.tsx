@@ -209,7 +209,7 @@ export function EventManagePage() {
     () => Object.fromEntries(mockProductFees.map((p) => [p.productCode, p.productName])),
     []
   );
-  const corporationNameById = useMemo(
+  const corporationNameById = useMemo<Record<string, string>>(
     () => ({ all: '전체', ...Object.fromEntries(mockCorporations.map((c) => [c.id, c.name])) }),
     []
   );

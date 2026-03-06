@@ -160,10 +160,8 @@ const accountCodeInput = css({
 });
 
 const rowModified = css({
-  backgroundColor: 'rgba(59, 130, 246, 0.15)',
   backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 22%, transparent)`,
   '&:hover': {
-    backgroundColor: 'rgba(59, 130, 246, 0.22)',
     backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 32%, transparent)`,
   },
 });
