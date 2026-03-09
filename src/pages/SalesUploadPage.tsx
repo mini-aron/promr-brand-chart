@@ -12,6 +12,7 @@ import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
 import { downloadRowsAsExcel } from '@/utils/salesUploadExcelDownload';
+import { tableWrap } from '@/style';
 
 const EXCEL_TEMPLATE_HEADERS = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
 const VALID_PRODUCT_CODES = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
@@ -34,21 +35,8 @@ const dropzoneStyles = (isDrag: boolean) =>
     '&:hover': { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}08` },
   });
 
-const tableWrapStyles = css({
+const salesTableWrap = css(tableWrap, {
   marginTop: theme.spacing(4),
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse' },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
   '& .col-num': { textAlign: 'right' },
   '& tfoot tr': {
     fontWeight: 700,
@@ -166,9 +154,26 @@ const downloadRowWrap = css({
   },
 });
 
+/** 적용 월 옵션 (최근 12개월) */
+function getMonthOptions(): { label: string; value: string }[] {
+  const list: { label: string; value: string }[] = [];
+  const d = new Date();
+  for (let i = 0; i < 12; i++) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    list.push({ label: `${y}년 ${Number(m)}월`, value: `${y}-${m}` });
+    d.setMonth(d.getMonth() - 1);
+  }
+  return list;
+}
+
 export function SalesUploadPage() {
-  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, addSalesRows } = useApp();
+  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, salesRows, addSalesRows } = useApp();
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
+  const [settlementMonth, setSettlementMonth] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
   const [isDrag, setIsDrag] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<{ fileName: string; rows: SalesRow[] }[]>([]);
   const [editedOverrides, setEditedOverrides] = useState<Record<string, { quantity?: number; productName?: string; hospitalId?: string }>>({});
@@ -297,14 +302,48 @@ export function SalesUploadPage() {
     [handleFiles]
   );
 
+  const prevMonth = useMemo(() => {
+    const [y, m] = settlementMonth.split('-').map(Number);
+    const d = new Date(y, m - 2, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }, [settlementMonth]);
+
+  const handleLoadPreviousMonth = useCallback(() => {
+    const prevRows = salesRows.filter(
+      (r) =>
+        r.corporationId === currentCorporationId &&
+        r.pharmaId === currentPharmaId &&
+        r.settlementMonth === prevMonth
+    );
+    if (prevRows.length === 0) {
+      setMessage({ type: 'error', text: `전월(${prevMonth})에 등록된 실적이 없습니다.` });
+      return;
+    }
+    setMessage(null);
+    const now = Date.now();
+    const rowsWithNewId = prevRows.map((r, i) => ({
+      ...r,
+      id: `s-${now}-load-${i}`,
+    }));
+    setUploadedFiles([{ fileName: `전월(${prevMonth}) 불러옴`, rows: rowsWithNewId }]);
+    setEditedOverrides({});
+    setTimeout(() => previewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }, [salesRows, currentCorporationId, currentPharmaId, prevMonth]);
+
   const doRegister = useCallback(() => {
     if (!effectiveRows.length || !currentPharmaId) return;
-    addSalesRows(effectiveRows.map((r) => ({ ...r, pharmaId: currentPharmaId })));
+    addSalesRows(
+      effectiveRows.map((r) => ({
+        ...r,
+        pharmaId: currentPharmaId,
+        settlementMonth,
+      }))
+    );
     setMessage({ type: 'success', text: `${effectiveRows.length}건의 실적이 업로드되었습니다.` });
     setUploadedFiles([]);
     setEditedOverrides({});
     setShowConfirmModal(false);
-  }, [effectiveRows, currentPharmaId, addSalesRows]);
+  }, [effectiveRows, currentPharmaId, settlementMonth, addSalesRows]);
 
   const openConfirmModal = useCallback(() => {
     if (preview?.length) setShowConfirmModal(true);
@@ -365,6 +404,23 @@ export function SalesUploadPage() {
       </p>
       <h1>실적 업로드</h1>
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다.</p>
+
+      <Row wrap="wrap" gap={theme.spacing(3)} alignItems="flex-end" css={css({ marginBottom: theme.spacing(4) })}>
+        <div css={css({ '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 } })}>
+          <label htmlFor="settlement-month">적용 월</label>
+          <SingleSelect
+            id="settlement-month"
+            options={getMonthOptions()}
+            selected={settlementMonth}
+            onChange={(v) => setSettlementMonth(String(v))}
+            placeholder="월 선택"
+            aria-label="적용 월"
+          />
+        </div>
+        <Button variant="secondary" onClick={handleLoadPreviousMonth}>
+          전월 불러오기
+        </Button>
+      </Row>
 
       <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
         <Button variant="secondary" onClick={handleDownloadExcelTemplate}>
@@ -460,7 +516,7 @@ export function SalesUploadPage() {
               {invalidProductCodeCount > 0 && ` ${invalidProductCodeCount}건의 제품코드가 품목 마스터에 없습니다. 제품코드 셀을 확인하세요.`}
             </div>
           )}
-          <div css={tableWrapStyles}>
+          <div css={salesTableWrap}>
             <table>
               <thead>
                 <tr>

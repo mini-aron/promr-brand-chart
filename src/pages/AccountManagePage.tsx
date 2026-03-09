@@ -9,6 +9,7 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
+import { tableWrap } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -33,23 +34,8 @@ const searchRow = css({
   },
 });
 
-const tableWrap = css({
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 700 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
+const accountTableWrap = css(tableWrap, {
+  '& table': { minWidth: 700 },
 });
 
 const addFormSection = css({
@@ -372,7 +358,7 @@ export function AccountManagePage() {
         </Flex>
       )}
 
-      <div css={tableWrap}>
+      <div css={accountTableWrap}>
         <table>
           <thead>
             <tr>

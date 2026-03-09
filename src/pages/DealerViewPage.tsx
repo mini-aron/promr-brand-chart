@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
+import { tableWrapSticky } from '@/style';
 import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
@@ -138,32 +139,6 @@ const contentHeader = css({
   gap: theme.spacing(2),
   '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
   '& p': { margin: `${theme.spacing(1)}px 0 0`, fontSize: 13, color: theme.colors.textMuted },
-});
-
-const tableWrap = css({
-  flex: 1,
-  minHeight: 0,
-  overflow: 'auto',
-  '& table': {
-    width: '100%',
-    borderCollapse: 'collapse',
-    fontSize: 12,
-  },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-  },
-  '& th': {
-    position: 'sticky',
-    top: 0,
-    backgroundColor: theme.colors.background,
-    fontWeight: 600,
-    zIndex: 1,
-  },
-  '& tbody tr:hover': {
-    backgroundColor: `${theme.colors.primary}06`,
-  },
 });
 
 const linkStyles = css({
@@ -348,7 +323,7 @@ export function DealerViewPage() {
             </div>
 
             {dealersForCorp.length > 0 ? (
-              <div css={tableWrap}>
+              <div css={tableWrapSticky}>
                 <table>
                   <thead>
                     <tr>

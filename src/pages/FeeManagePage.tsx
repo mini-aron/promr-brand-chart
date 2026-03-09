@@ -8,6 +8,7 @@ import type { ProductFee } from '@/types';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
+import { tableWrapPlain, tableRowModified } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -42,23 +43,10 @@ const monthSelectStyles = css({
   },
 });
 
-const tableWrap = css({
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 400 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
+const feeTableWrap = css(tableWrapPlain, {
+  '& table': { minWidth: 400 },
   '& th:first-child, & td:first-child': { width: 220, minWidth: 220, maxWidth: 220 },
   '& td:first-child': { padding: 0, verticalAlign: 'middle' },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
-});
-
-const rowModified = css({
-  backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 22%, transparent)`,
 });
 
 const feeInputStyles = css({
@@ -325,7 +313,7 @@ export function FeeManagePage() {
           )}
         </div>
 
-        <div css={tableWrap}>
+        <div css={feeTableWrap}>
           <table>
             <thead>
               <tr>
@@ -337,7 +325,7 @@ export function FeeManagePage() {
             </thead>
             <tbody>
               {currentFees.map((p, index) => (
-                <tr key={`${selectedMonth}-${index}`} css={isRowModified(index) ? rowModified : undefined}>
+                <tr key={`${selectedMonth}-${index}`} css={isRowModified(index) ? tableRowModified : undefined}>
                   <td css={css({ padding: theme.spacing(1.5) })}>
                     <input
                       type="text"

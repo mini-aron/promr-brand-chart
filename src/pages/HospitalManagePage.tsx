@@ -7,6 +7,7 @@ import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { tableWrap, tableRowModified } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -38,24 +39,9 @@ const searchRow = css({
   },
 });
 
-const tableWrap = css({
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 700 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
+const hospitalTableWrap = css(tableWrap, {
+  '& table': { minWidth: 700 },
   '& th:first-child, & td:first-child': { width: 110, maxWidth: 110 },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
 });
 
 const modalOverlay = css({
@@ -157,13 +143,6 @@ const accountCodeInput = css({
   backgroundColor: theme.colors.surface,
   boxSizing: 'border-box',
   '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-});
-
-const rowModified = css({
-  backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 22%, transparent)`,
-  '&:hover': {
-    backgroundColor: `color-mix(in srgb, ${theme.colors.primary} 32%, transparent)`,
-  },
 });
 
 const saveBar = css({
@@ -404,7 +383,7 @@ export function HospitalManagePage() {
         </div>
       )}
 
-      <div css={tableWrap}>
+      <div css={hospitalTableWrap}>
         <table>
           <thead>
             <tr>
@@ -417,7 +396,7 @@ export function HospitalManagePage() {
           </thead>
           <tbody>
             {filtered.map((h) => (
-              <tr key={h.id} css={isRowModified(h) ? rowModified : undefined}>
+              <tr key={h.id} css={isRowModified(h) ? tableRowModified : undefined}>
                 <td>
                   <input
                     type="text"

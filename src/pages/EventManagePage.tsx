@@ -9,6 +9,7 @@ import type { FeeEvent } from '@/types';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
+import { tableWrapPlain } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -38,18 +39,10 @@ const listTitle = css({
   color: theme.colors.text,
 });
 
-const tableWrap = css({
-  fontSize: 12,
+const eventTableWrap = css(tableWrapPlain, {
   overflowX: 'auto',
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 520 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
+  '& table': { minWidth: 520 },
   '& th:last-child, & td:last-child': { borderRight: 'none', width: 48, textAlign: 'center' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
 });
 
 const formTitle = css({
@@ -242,7 +235,7 @@ export function EventManagePage() {
           {events.length === 0 ? (
             <p css={emptyList}>등록된 이벤트가 없습니다.</p>
           ) : (
-            <div css={tableWrap}>
+            <div css={eventTableWrap}>
               <table>
                 <thead>
                   <tr>

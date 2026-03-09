@@ -6,6 +6,7 @@ import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
+import { tableWrap } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -59,28 +60,13 @@ const filterRow = css({
   },
 });
 
-const tableWrap = css({
-  overflow: 'auto',
+const aggregateTableWrap = css(tableWrap, {
   maxHeight: 'calc(100vh - 280px)',
   minHeight: 320,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 1000 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-    whiteSpace: 'nowrap',
-  },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
+  '& table': { minWidth: 1000 },
+  '& th, & td': { whiteSpace: 'nowrap' },
   '& thead tr:first-of-type th': { borderBottom: `1px solid ${theme.colors.border}` },
   '& .col-amount, & .col-inout': { textAlign: 'right' },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
   '& tfoot tr': {
     position: 'sticky',
     bottom: 0,
@@ -247,7 +233,7 @@ export function AggregatePage() {
         </div>
       </div>
 
-      <div css={tableWrap}>
+      <div css={aggregateTableWrap}>
         <table>
           <thead>
             <tr>

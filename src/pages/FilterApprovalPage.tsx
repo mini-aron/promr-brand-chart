@@ -5,6 +5,7 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import { tableWrap } from '@/style';
 import { SingleSelect } from '@/components/Common/Select';
 
 const pageStyles = css({
@@ -105,23 +106,16 @@ const pendingBadge = css({
   borderRadius: theme.radius.sm,
 });
 
-const listWrap = css({
+const listWrap = css(tableWrap, {
   flex: 1,
   minHeight: 0,
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
   fontSize: 14,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 560 },
+  '& table': { minWidth: 560 },
   '& th, & td': {
     padding: theme.spacing(2),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
+    borderRight: 'none',
   },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600, fontSize: 13 },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
+  '& th': { fontSize: 13 },
 });
 
 const statusBadge = (status: string) =>

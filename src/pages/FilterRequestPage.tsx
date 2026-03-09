@@ -7,6 +7,7 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { FilterInput } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
+import { tableWrap } from '@/style';
 
 const pageStyles = css({
   width: '100%',
@@ -150,19 +151,12 @@ const filterRowStyles = css({
   '& > *': { minWidth: 140 },
 });
 
-const tableWrap = css({
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
+const filterRequestTableWrap = css(tableWrap, {
   fontSize: 14,
-  '& table': { width: '100%', borderCollapse: 'collapse' },
   '& th, & td': {
     padding: theme.spacing(2),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
+    borderRight: 'none',
   },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
 });
 
 const statusBadge = (status: string) =>
@@ -358,7 +352,7 @@ export function FilterRequestPage() {
               />
             </div>
           </div>
-          <div css={tableWrap}>
+          <div css={filterRequestTableWrap}>
             <table>
               <thead>
                 <tr>

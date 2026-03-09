@@ -8,6 +8,7 @@ import type { Dealer } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
+import { tableWrap } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -18,23 +19,8 @@ const headerRowWrap = css({
   marginBottom: theme.spacing(4),
 });
 
-const tableWrap = css({
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
-  fontSize: 12,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 900 },
-  '& th, & td': {
-    padding: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-  },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
+const dealerTableWrap = css(tableWrap, {
+  '& table': { minWidth: 900 },
 });
 
 const modalOverlay = css({
@@ -466,7 +452,7 @@ export function DealerManagePage() {
         </Flex>
       )}
 
-      <div css={tableWrap}>
+      <div css={dealerTableWrap}>
         <table>
           <thead>
             <tr>

@@ -10,6 +10,7 @@ import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
 import { FilterInput } from '@/components/Common/Input';
 import type { Corporation, Hospital } from '@/types';
 import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
+import { tableWrapCompact } from '@/style';
 
 // --- Styles ---
 
@@ -55,30 +56,14 @@ const mainArea = css({
   overflow: 'hidden',
 });
 
-const tableWrap = css({
-  flex: 1,
-  minHeight: 0,
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.surface,
-  boxShadow: theme.shadow.sm,
-  fontSize: 11,
-  '& table': { width: '100%', borderCollapse: 'collapse', minWidth: 720, tableLayout: 'fixed' },
+const settlementTableWrap = css(tableWrapCompact, {
+  '& table': { minWidth: 720 },
   '& th, & td': {
-    padding: theme.spacing(1),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    borderRight: `1px solid ${theme.colors.border}`,
-    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  '& th:last-child, & td:last-child': { borderRight: 'none' },
-  '& th': { backgroundColor: theme.colors.background, fontWeight: 600 },
   '& .col-no': { width: 40, minWidth: 40, maxWidth: 40, textAlign: 'center' },
   '& .col-amount, & .col-inout': { textAlign: 'right' },
-  '& tbody tr:hover': { backgroundColor: `${theme.colors.primary}06` },
   '& tfoot tr': {
     position: 'sticky',
     bottom: 0,
@@ -94,6 +79,7 @@ const tableWrap = css({
     fontSize: 12,
     fontWeight: 700,
   },
+  '& tfoot .col-amount, & tfoot .col-inout': { textAlign: 'right' },
 });
 
 const corpListSidebar = css({
@@ -240,7 +226,7 @@ interface SettlementTableProps {
 
 function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방월 }: SettlementTableProps) {
   return (
-    <div css={tableWrap}>
+    <div css={settlementTableWrap}>
       <table>
         <thead>
           <tr>
