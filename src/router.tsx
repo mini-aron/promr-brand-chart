@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { Layout } from '@/components/Layout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { RoleProtectedRoute } from '@/components/RoleProtectedRoute';
 import * as P from '@/pages';
 
 const rootElement = (
@@ -32,19 +33,103 @@ export const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <P.HomePage /> },
-          { path: 'upload', element: <P.SalesRegisterPage /> },
-          { path: 'upload/notice', element: <P.UploadNoticePage /> },
-          { path: 'upload/sales', element: <P.SalesUploadPage /> },
-          { path: 'upload/prescription', element: <P.PrescriptionUploadPage /> },
+          {
+            path: 'upload',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.SalesRegisterPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'upload/notice',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.UploadNoticePage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'upload/sales',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.SalesUploadPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'upload/prescription',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.PrescriptionUploadPage />
+              </RoleProtectedRoute>
+            ),
+          },
           { path: 'aggregate', element: <P.AggregatePage /> },
-          { path: 'fees', element: <P.FeeManagePage /> },
-          { path: 'settlement', element: <P.SettlementByCorpPage /> },
-          { path: 'filter-approval', element: <P.FilterApprovalPage /> },
-          { path: 'filter-request', element: <P.FilterRequestPage /> },
-          { path: 'dealer-manage', element: <P.DealerManagePage /> },
-          { path: 'dealer-view', element: <P.DealerViewPage /> },
-          { path: 'hospitals', element: <P.HospitalManagePage /> },
-          { path: 'deadline-manage', element: <P.DeadlineManagePage /> },
+          {
+            path: 'fees',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.FeeManagePage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'settlement',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.SettlementByCorpPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'filter-approval',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.FilterApprovalPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'filter-request',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.FilterRequestPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'dealer-manage',
+            element: (
+              <RoleProtectedRoute allowedRoles={['corporation']}>
+                <P.DealerManagePage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'dealer-view',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.DealerViewPage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'hospitals',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.HospitalManagePage />
+              </RoleProtectedRoute>
+            ),
+          },
+          {
+            path: 'deadline-manage',
+            element: (
+              <RoleProtectedRoute allowedRoles={['pharma']}>
+                <P.DeadlineManagePage />
+              </RoleProtectedRoute>
+            ),
+          },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },

@@ -11,7 +11,7 @@ import {
   tableWrapPlain,
   tableWrapCompact,
   tableWrapSticky,
-} from '@/style';
+} from '@/style/TableStyles';
 
 type TableVariant = 'default' | 'plain' | 'compact' | 'sticky';
 

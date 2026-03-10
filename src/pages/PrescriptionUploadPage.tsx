@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -9,8 +9,8 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const selectCardStyles = css({
@@ -143,7 +143,7 @@ function getMonthOptions(count: number): { value: string; label: string }[] {
 const MONTH_OPTIONS = getMonthOptions(24);
 
 export function PrescriptionUploadPage() {
-  const { userRole, currentCorporationId, hospitals, salesRows, addPrescriptionUpload } = useApp();
+  const { currentCorporationId, hospitals, salesRows, addPrescriptionUpload } = useApp();
   const [settlementMonth, setSettlementMonth] = useState<string>(() => {
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`;
@@ -218,7 +218,6 @@ export function PrescriptionUploadPage() {
     clearPreviews();
   }, [files.length, targetSalesRows, currentCorporationId, hospitalId, settlementMonth, previewUrls, addPrescriptionUpload, clearPreviews]);
 
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

@@ -10,8 +10,8 @@ import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const filterCard = css({

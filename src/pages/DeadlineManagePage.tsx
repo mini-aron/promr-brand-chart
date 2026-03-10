@@ -1,14 +1,12 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
-import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const cardStyles = css({
@@ -59,7 +57,6 @@ function getThisMonthLabel(): string {
 }
 
 export function DeadlineManagePage() {
-  const { userRole } = useApp();
   const thisMonthLabel = useMemo(getThisMonthLabel, []);
   const [deadlineDay, setDeadlineDay] = useState(5);
 
@@ -71,7 +68,6 @@ export function DeadlineManagePage() {
     // TODO: API 연동
   }, []);
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

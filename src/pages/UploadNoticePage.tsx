@@ -1,19 +1,14 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { Navigate, Link } from 'react-router-dom';
-import { useApp } from '@/context/AppContext';
+import { Link } from 'react-router-dom';
 import { theme } from '@/theme';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 export function UploadNoticePage() {
-  const { userRole } = useApp();
-
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
-
   return (
     <div css={pageStyles}>
       <h1>공지사항</h1>

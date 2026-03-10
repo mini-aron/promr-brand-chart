@@ -1,8 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
-import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { ProductFee } from '@/types';
 import { theme } from '@/theme';
@@ -10,11 +8,11 @@ import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
-import { tableRowModified } from '@/style';
+import { tableRowModified } from '@/style/TableStyles';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const cardStyles = css({
@@ -24,25 +22,6 @@ const cardStyles = css({
   padding: theme.spacing(4),
   marginBottom: theme.spacing(4),
   boxShadow: theme.shadow.sm,
-});
-
-const monthSelectStyles = css({
-  marginBottom: theme.spacing(4),
-  '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 15 },
-  '& select': {
-    minHeight: 48,
-    padding: `0 ${theme.spacing(3)}px`,
-    paddingRight: 40,
-    fontSize: 15,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    minWidth: 200,
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
 });
 
 const feeTableWrap = css({
@@ -103,48 +82,8 @@ const addFormRow = css({
   marginTop: theme.spacing(4),
   paddingTop: theme.spacing(4),
   borderTop: `1px solid ${theme.colors.border}`,
-  '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 },
-  '& .fee-input-wrap input': { width: 88, minHeight: 36, textAlign: 'right' },
-  '& select': {
-    minHeight: 40,
-    padding: `0 ${theme.spacing(2)}px`,
-    paddingRight: 36,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    minWidth: 220,
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 10px center',
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
-  '& button': {
-    padding: `${theme.buttonPadding.y}px ${theme.spacing(3)}px`,
-    fontSize: 14,
-    fontWeight: 600,
-    borderRadius: theme.radius.md,
-    border: 'none',
-    backgroundColor: theme.colors.primary,
-    color: theme.colors.buttonText,
-    cursor: 'pointer',
-    '&:hover': { backgroundColor: theme.colors.primaryHover },
-  },
 });
 
-const productSearchBlock = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(1),
-  '& input[type="search"]': {
-    maxWidth: 320,
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
-});
 
 function getMonthOptions(count: number): { value: string; label: string }[] {
   const list: { value: string; label: string }[] = [];
@@ -160,7 +99,6 @@ function getMonthOptions(count: number): { value: string; label: string }[] {
 const MONTH_OPTIONS = getMonthOptions(24);
 
 export function FeeManagePage() {
-  const { userRole } = useApp();
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`;
@@ -342,16 +280,13 @@ export function FeeManagePage() {
     [currentFees, isRowModified]
   );
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
-
   return (
     <div css={pageStyles}>
       <h1>수수료관리</h1>
       <p>월별·품목별 수수료율(%)을 설정합니다.</p>
-
       <div css={cardStyles}>
         <div css={css({ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(2), marginBottom: theme.spacing(4), flexWrap: 'wrap' })}>
-          <div css={[monthSelectStyles, css({ marginBottom: 0 })]}>
+          <div css={css({ minWidth: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 15 } })}>
             <label htmlFor="fee-month">적용 월</label>
             <SingleSelect
               id="fee-month"
@@ -377,9 +312,8 @@ export function FeeManagePage() {
           tableCss={feeTableWrap}
           getRowCss={getRowCss}
         />
-
         <div css={addFormRow}>
-          <div css={productSearchBlock}>
+          <div>
             <label htmlFor="product-search">품목명 검색</label>
             <input
               id="product-search"

@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
@@ -19,8 +18,8 @@ const pageStyles = css({
     flexShrink: 0,
     marginBottom: theme.spacing(1),
   },
-  '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600, color: theme.colors.text },
-  '& .page-header p': { margin: 0, fontSize: 13, color: theme.colors.textMuted },
+  '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600 },
+  '& .page-header p': { margin: 0, fontSize: 13 },
 });
 
 const layoutWrap = css({
@@ -203,7 +202,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export function FilterApprovalPage() {
-  const { userRole, corporations, hospitals, currentPharmaId, filterRequests, updateFilterRequestStatus, addFilterRequest } = useApp();
+  const { corporations, hospitals, currentPharmaId, filterRequests, updateFilterRequestStatus, addFilterRequest } = useApp();
   const [selectedCorpId, setSelectedCorpId] = useState<string | null>(null);
   const [corpSearch, setCorpSearch] = useState('');
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
@@ -303,7 +302,6 @@ export function FilterApprovalPage() {
     setSelectedHospitalId('');
   }, [selectedCorpId, selectedHospitalId, currentPharmaId, addFilterRequest]);
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

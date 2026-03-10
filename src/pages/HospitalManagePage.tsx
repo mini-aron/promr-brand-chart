@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -9,11 +8,11 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
-import { tableRowModified } from '@/style';
+import { tableRowModified } from '@/style/TableStyles';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const headerRow = css({
@@ -71,7 +70,7 @@ const modalHeader = css({
   alignItems: 'center',
   justifyContent: 'space-between',
   marginBottom: theme.spacing(4),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
+  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
 });
 
 const formSection = css({
@@ -159,7 +158,7 @@ const saveBar = css({
 });
 
 export function HospitalManagePage() {
-  const { userRole, hospitals, corporations, addHospital, updateHospital } = useApp();
+  const { hospitals, corporations, addHospital, updateHospital } = useApp();
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [businessNumberInput, setBusinessNumberInput] = useState('');
@@ -308,7 +307,6 @@ export function HospitalManagePage() {
     setIsSearching(false);
   }, []);
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

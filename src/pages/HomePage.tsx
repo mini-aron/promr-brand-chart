@@ -8,8 +8,8 @@ import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const statsSection = css({
@@ -80,7 +80,7 @@ const cardStyles = css({
   },
   '& a:hover': { textDecoration: 'underline' },
   '& h2': { fontSize: 18, marginBottom: theme.spacing(2) },
-  '& p': { fontSize: 14, margin: 0, color: theme.colors.textMuted },
+  '& p': { fontSize: 14, margin: 0 },
 });
 
 const sectionTitle = css({

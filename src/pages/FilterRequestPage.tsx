@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
@@ -14,8 +13,8 @@ import type { FilterRequest } from '@/types';
 const pageStyles = css({
   width: '100%',
   minWidth: 0,
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const twoColLayout = css({
@@ -195,7 +194,7 @@ function formatDateTime(iso: string): string {
 }
 
 export function FilterRequestPage() {
-  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, filterRequests, addFilterRequest, addFilterRequestNewHospital } =
+  const { currentCorporationId, currentPharmaId, pharmas, hospitals, filterRequests, addFilterRequest, addFilterRequestNewHospital } =
     useApp();
   const [hospitalSearch, setHospitalSearch] = useState('');
   const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
@@ -331,7 +330,6 @@ export function FilterRequestPage() {
     newAddress.trim() &&
     newRepresentativeName.trim();
 
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

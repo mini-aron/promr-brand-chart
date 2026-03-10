@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -12,8 +11,8 @@ import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const headerRowWrap = css({
@@ -45,7 +44,7 @@ const modalBox = css({
 
 const modalHeaderWrap = css({
   marginBottom: theme.spacing(4),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
+  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
 });
 
 const formSection = css({
@@ -184,7 +183,7 @@ const confirmModalBox = css({
 });
 
 export function DealerManagePage() {
-  const { userRole, dealers, currentCorporationId, addDealer, deleteDealer } = useApp();
+  const { dealers, currentCorporationId, addDealer, deleteDealer } = useApp();
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSalespersonName, setNewSalespersonName] = useState('');
   const [newPhone, setNewPhone] = useState('');
@@ -358,7 +357,6 @@ export function DealerManagePage() {
     ];
   }, [columnHelper, handlePreview, handleUpload, handleDeleteClick]);
 
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

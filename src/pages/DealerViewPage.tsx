@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -19,8 +18,8 @@ const pageStyles = css({
     flexShrink: 0,
     marginBottom: theme.spacing(1),
   },
-  '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600, color: theme.colors.text },
-  '& .page-header p': { margin: 0, fontSize: 13, color: theme.colors.textMuted },
+  '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600 },
+  '& .page-header p': { margin: 0, fontSize: 13 },
 });
 
 const layoutWrap = css({
@@ -139,8 +138,8 @@ const contentHeader = css({
   justifyContent: 'space-between',
   alignItems: 'flex-start',
   gap: theme.spacing(2),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
-  '& p': { margin: `${theme.spacing(1)}px 0 0`, fontSize: 13, color: theme.colors.textMuted },
+  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
+  '& p': { margin: `${theme.spacing(1)}px 0 0`, fontSize: 13 },
 });
 
 const linkStyles = css({
@@ -193,7 +192,7 @@ const modalHeader = css({
   alignItems: 'center',
   justifyContent: 'space-between',
   marginBottom: theme.spacing(4),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
+  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
 });
 
 const previewContent = css({
@@ -218,7 +217,7 @@ const emptyState = css({
 });
 
 export function DealerViewPage() {
-  const { userRole, corporations, dealers } = useApp();
+  const { corporations, dealers } = useApp();
   const [selectedCorpId, setSelectedCorpId] = useState<string | null>(corporations[0]?.id ?? null);
   const [corpSearch, setCorpSearch] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -309,7 +308,6 @@ export function DealerViewPage() {
     ];
   }, [columnHelper, handlePreview]);
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

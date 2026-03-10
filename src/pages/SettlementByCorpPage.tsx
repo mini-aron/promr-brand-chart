@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -32,12 +31,10 @@ const pageStyles = css({
     margin: 0,
     fontSize: '1.25rem',
     fontWeight: 600,
-    color: theme.colors.text,
   },
   '& .page-header p': {
     margin: 0,
     fontSize: 13,
-    color: theme.colors.textMuted,
   },
 });
 
@@ -326,7 +323,7 @@ function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방
 // --- Page ---
 
 export function SettlementByCorpPage() {
-  const { userRole, corporations, hospitals, salesRows } = useApp();
+  const { corporations, hospitals, salesRows } = useApp();
   const settlement = useSettlementByCorp({ corporations, hospitals, salesRows });
   const { 정산월, 처방월 } = getSettlementMonths();
 
@@ -346,7 +343,6 @@ export function SettlementByCorpPage() {
     getHospital,
   } = settlement;
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

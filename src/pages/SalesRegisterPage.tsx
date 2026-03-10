@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { Navigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { HiPhotograph, HiDocumentText } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
@@ -53,8 +53,8 @@ const dashboardCard = css({
   border: `1px solid ${theme.colors.border}`,
   boxShadow: theme.shadow.sm,
   minHeight: 200,
-  '& h2': { fontSize: 20, marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { fontSize: 15, margin: 0, color: theme.colors.textMuted, marginBottom: theme.spacing(3) },
+  '& h2': { fontSize: 20, marginBottom: theme.spacing(2) },
+  '& p': { fontSize: 15, margin: 0, marginBottom: theme.spacing(3) },
   '& a': {
     color: theme.colors.primary,
     fontWeight: 600,
@@ -127,8 +127,6 @@ const NOTICE_PREVIEW: { title: string; date: string }[] = [
 
 export function SalesRegisterPage() {
   const { userRole, currentPharmaId, setCurrentPharmaId, pharmas } = useApp();
-
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   const showMenu = userRole === 'corporation' && pharmas.length > 0 && currentPharmaId;
 

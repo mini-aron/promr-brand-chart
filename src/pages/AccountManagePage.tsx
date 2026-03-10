@@ -1,6 +1,5 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
@@ -13,8 +12,8 @@ import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const searchRow = css({
@@ -118,7 +117,7 @@ const modalBox = css({
 
 const modalHeaderWrap = css({
   marginBottom: theme.spacing(4),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600, color: theme.colors.text },
+  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
 });
 
 const modalActionsWrap = css({
@@ -128,7 +127,7 @@ const modalActionsWrap = css({
 });
 
 export function AccountManagePage() {
-  const { userRole, hospitals, corporations, addHospital } = useApp();
+  const { hospitals, corporations, addHospital } = useApp();
   const [search, setSearch] = useState('');
   const [newAccountCode, setNewAccountCode] = useState('');
   const [newName, setNewName] = useState('');
@@ -234,7 +233,6 @@ export function AccountManagePage() {
     setHospitalSearch('');
   }, [corporations]);
 
-  if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
     <div css={pageStyles}>

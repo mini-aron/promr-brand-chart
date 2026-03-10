@@ -12,15 +12,15 @@ import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
 import { downloadRowsAsExcel } from '@/utils/salesUploadExcelDownload';
-import { tableWrap } from '@/style';
+import { tableWrap } from '@/style/TableStyles';
 
 const EXCEL_TEMPLATE_HEADERS = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
 const VALID_PRODUCT_CODES = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
 const INVALID_PRODUCT_CODES = ['P999', 'INVALID', 'X001', 'BAD123'];
 
 const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
-  '& p': { color: theme.colors.textMuted, marginBottom: theme.spacing(4) },
+  '& h1': { marginBottom: theme.spacing(2) },
+  '& p': { marginBottom: theme.spacing(4) },
 });
 
 const dropzoneStyles = (isDrag: boolean) =>
@@ -390,7 +390,6 @@ export function SalesUploadPage() {
     downloadRowsAsExcel('실적_더미데이터.xlsx', '실적', rows);
   }, [corporationHospitals]);
 
-  if (userRole === 'pharma') return <Navigate to="/" replace />;
   if (userRole === 'corporation' && pharmas.length > 0 && !currentPharmaId) {
     return <Navigate to="/upload" replace />;
   }

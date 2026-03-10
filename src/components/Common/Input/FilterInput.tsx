@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import type { SerializedStyles } from '@emotion/react';
 import type { InputHTMLAttributes } from 'react';
-import { filterFieldInput } from '@/style';
+import { filterFieldInput } from '@/style/FilterFieldStyles';
 
 export type FilterInputProps = InputHTMLAttributes<HTMLInputElement> & {
   /** 추가 스타일 (width 제한 등) */
