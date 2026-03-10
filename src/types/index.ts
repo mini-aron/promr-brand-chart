@@ -41,6 +41,9 @@ export interface ProductFee {
   ediCode?: string;
 }
 
+/** 수수료 테이블 조회 기준 타입 */
+export type FeeCriteriaType = 'product' | 'hospital';
+
 /** 수수료 이벤트 종류 */
 export type FeeEventType = 'item' | 'corporation' | 'corporation_hospital';
 

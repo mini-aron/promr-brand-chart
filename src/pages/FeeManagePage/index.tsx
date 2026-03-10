@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
-import { ChevronDown, ChevronRight, Download, Plus, Upload } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { mockProductFees, mockFeeEvents, mockCorporations, mockHospitals } from '@/store/mockData';
 import type { ProductFee, FeeEvent, FeeEventType } from '@/types';
 import { theme } from '@/theme';
@@ -9,7 +9,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
 import { Checkbox } from '@/components/Common/Checkbox';
 import { FilterInput } from '@/components/Common/Input';
-import { tableRowModified, tableWrapPlain } from '@/style/TableStyles';
+import { ProductFeeTable } from './FeeTable';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -45,51 +45,6 @@ const rightPanel = css({
   top: theme.spacing(4),
 });
 
-const feeTableWrap = css([
-  tableWrapPlain,
-  css({
-    overflow: 'visible',
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.md,
-    '& table': { minWidth: 400 },
-    '& th, & td': { padding: theme.spacing(0.75), fontSize: 13 },
-    '& th:nth-of-type(2), & td:nth-of-type(2)': { width: 220, minWidth: 220, maxWidth: 220 },
-    '& td:nth-of-type(2)': { padding: 0, verticalAlign: 'middle' },
-    '& th:nth-of-type(5), & td:nth-of-type(5)': {
-      textAlign: 'right',
-      fontVariantNumeric: 'tabular-nums',
-    },
-    '& th:nth-of-type(6), & td:nth-of-type(6)': {
-      textAlign: 'right',
-      fontVariantNumeric: 'tabular-nums',
-      paddingRight: theme.spacing(2),
-    },
-  }),
-]);
-
-const expandCell = css({
-  width: 36,
-  minWidth: 36,
-  height: 28,
-  minHeight: 28,
-  padding: theme.spacing(0.5),
-  verticalAlign: 'middle',
-  cursor: 'pointer',
-  textAlign: 'center',
-  lineHeight: 1,
-  '&:hover': { backgroundColor: `${theme.colors.primary}08` },
-});
-
-const expandCellCount = css({
-  display: 'inline-block',
-  minWidth: '1.5em',
-  fontSize: 10,
-  fontVariantNumeric: 'tabular-nums',
-  textAlign: 'center',
-  color: theme.colors.textMuted,
-  marginTop: 1,
-});
-
 const feeInputStyles = css({
   width: 72,
   minHeight: 28,
@@ -107,99 +62,6 @@ const feeInputStyles = css({
     boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
   },
   '&::placeholder': { color: theme.colors.textMuted },
-});
-
-const productCodeInputStyles = css({
-  width: '100%',
-  minHeight: 28,
-  padding: theme.spacing(0.75),
-  fontSize: 13,
-  borderRadius: 0,
-  border: 'none',
-  backgroundColor: 'transparent',
-  color: theme.colors.text,
-  boxSizing: 'border-box',
-  display: 'block',
-  '&:focus': {
-    outline: 'none',
-    boxShadow: 'inset 0 0 0 2px ' + theme.colors.primary,
-  },
-});
-
-const feeInputCell = css({
-  '& .fee-suffix': {
-    marginLeft: 4,
-    fontSize: 13,
-    color: theme.colors.textMuted,
-  },
-});
-
-const eventSubRow = (isExpanded: boolean) =>
-  css({
-    backgroundColor: theme.colors.background,
-    '& td': {
-      padding: 0,
-      borderBottom: isExpanded ? `1px solid ${theme.colors.border}` : 'none',
-      borderTop: 'none',
-      verticalAlign: 'top',
-      ...(isExpanded && { overflow: 'visible' }),
-      ...(!isExpanded && { lineHeight: 0, fontSize: 0 }),
-    },
-  });
-
-const eventExpandWrap = (isExpanded: boolean) =>
-  css({
-    overflow: isExpanded ? 'visible' : 'hidden',
-    maxHeight: isExpanded ? 1500 : 0,
-    opacity: isExpanded ? 1 : 0,
-    transition: 'max-height 0.35s ease-out, opacity 0.25s ease-out',
-    ...(isExpanded && { padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }),
-    ...(!isExpanded && { margin: 0, padding: 0, minHeight: 0 }),
-  });
-
-const eventTableWrap = css({
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: 12,
-  '& th, & td': {
-    padding: theme.spacing(1),
-    paddingLeft: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    verticalAlign: 'middle',
-  },
-  '& th:nth-of-type(2), & td:nth-of-type(2), & th:nth-of-type(4), & td:nth-of-type(4), & th:nth-of-type(5), & td:nth-of-type(5)': {
-    textAlign: 'center',
-  },
-  '& th:last-child, & td:last-child': { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
-  '& th': {
-    backgroundColor: theme.colors.background,
-    fontWeight: 600,
-    color: theme.colors.textMuted,
-    fontSize: 11,
-  },
-  '& tbody tr:last-child td': { borderBottom: 'none' },
-});
-
-const eventFeeRateBadgeBase = css({ fontSize: 12, fontWeight: 600 });
-
-const finalFeeResultWrap = css({
-  padding: theme.spacing(1.5),
-  paddingRight: theme.spacing(2),
-  marginTop: theme.spacing(1),
-  borderTop: `1px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  fontSize: 13,
-  '& .final-fee-header': {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    marginBottom: theme.spacing(1),
-    flexWrap: 'wrap',
-  },
-  '& .final-fee-title': { fontWeight: 600 },
-  '& .final-fee-rate': { fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: 14 },
 });
 
 const formField = css({
@@ -286,6 +148,9 @@ export function FeeManagePage() {
   const [feeEvents, setFeeEvents] = useState<FeeEvent[]>(() => [...mockFeeEvents]);
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(() => new Set());
   const [tableProductSearch, setTableProductSearch] = useState('');
+  const [tableCorporationId, setTableCorporationId] = useState('');
+  const [tableHospitalId, setTableHospitalId] = useState('');
+  const [tableCriteria, setTableCriteria] = useState<'product' | 'corporation' | 'hospital'>('product');
 
   const toggleProductEvents = useCallback((productCode: string) => {
     setExpandedProducts((prev) => {
@@ -451,27 +316,6 @@ export function FeeManagePage() {
     return map;
   }, [currentFees, feeEvents]);
 
-  const todayStr = useMemo(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }, []);
-
-  const isEventApplicable = useCallback((e: FeeEvent) => {
-    return todayStr >= e.startDate && todayStr <= e.endDate;
-  }, [todayStr]);
-
-  const formatEventFeeRate = useCallback((e: FeeEvent) => {
-    if (e.isFixedFee) return `[고정]${e.fixedFeeRate ?? 0}%`;
-    const rate = e.additionalFeeRate ?? 0;
-    return rate >= 0 ? `+${rate}%` : `${rate}%`;
-  }, []);
-
-  const getEventFeeRateColor = useCallback((e: FeeEvent) => {
-    if (e.isFixedFee) return theme.colors.text;
-    const rate = e.additionalFeeRate ?? 0;
-    return rate < 0 ? theme.colors.error : theme.colors.primary;
-  }, []);
-
   const corpOptions = useMemo(
     () => mockCorporations.map((c) => ({ label: c.name, value: c.id })),
     []
@@ -539,6 +383,7 @@ export function FeeManagePage() {
     };
     setFeeEvents((prev) => [...prev, newEvent]);
     setExpandedProducts((prev) => new Set(prev).add(eventProductCode));
+    setEventFormError(null);
     setEventName('');
     setEventPriority(1);
     setEventStartDate('');
@@ -568,50 +413,21 @@ export function FeeManagePage() {
     setFeeEvents((prev) => prev.filter((e) => e.id !== eventId));
   }, []);
 
-  const getEventScopeText = useCallback((e: FeeEvent) => {
-    if (e.type === 'item') return '전체';
-    const corp = mockCorporations.find((c) => c.id === e.corporationId)?.name ?? '';
-    if (e.type === 'corporation') return corp || '-';
-    const hosp = mockHospitals.find((h) => h.id === e.hospitalId)?.name ?? '';
-    return corp && hosp ? `${corp}/${hosp}` : corp || hosp || '-';
+  const resetEventForm = useCallback(() => {
+    setEventProductCode('');
+    setEventType('item');
+    setEventName('');
+    setEventStartDate('');
+    setEventEndDate('');
+    setEventIsFixedFee(true);
+    setEventFixedFeeRate(1);
+    setEventAdditionalFeeRate(1);
+    setEventNote('');
+    setEventCorporationId('');
+    setEventHospitalId('');
+    setEventPriority(1);
+    setEventFormError(null);
   }, []);
-
-  const computeFinalFeeForScope = useCallback(
-    (baseRate: number, events: FeeEvent[], scope: { type: 'item' } | { type: 'corporation'; corporationId: string } | { type: 'corporation_hospital'; corporationId: string; hospitalId: string }): number => {
-      const matches = events.filter((e) => {
-        if (e.type === 'item') return true;
-        if (e.type === 'corporation') return scope.type !== 'item' && e.corporationId === scope.corporationId;
-        if (e.type === 'corporation_hospital')
-          return scope.type === 'corporation_hospital' && e.corporationId === scope.corporationId && e.hospitalId === scope.hospitalId;
-        return false;
-      });
-      const sorted = [...matches].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-      let result = baseRate;
-      for (const e of sorted) {
-        if (e.isFixedFee) return e.fixedFeeRate ?? 0;
-        result += e.additionalFeeRate ?? 0;
-      }
-      return Math.max(0, Math.min(100, result));
-    },
-    []
-  );
-
-  const getRowCss = useCallback(
-    (p: ProductFee) => {
-      const idx = currentFees.findIndex((x) => x.productCode === p.productCode);
-      const modified = isRowModified(idx);
-      const selectedForEvent = rightPanelMode === 'event' && eventProductCode === p.productCode;
-      const selectedStyles = css({
-        outline: `2px solid ${theme.colors.primary}`,
-        boxShadow: `0 0 12px 2px ${theme.colors.primary}30`,
-      });
-      if (modified && selectedForEvent) return css([tableRowModified, selectedStyles]);
-      if (modified) return tableRowModified;
-      if (selectedForEvent) return selectedStyles;
-      return undefined;
-    },
-    [currentFees, isRowModified, rightPanelMode, eventProductCode]
-  );
 
   const handleRowClickForEvent = useCallback(
     (productCode: string, e: React.MouseEvent) => {
@@ -621,6 +437,11 @@ export function FeeManagePage() {
     },
     [rightPanelMode]
   );
+
+  const handleSwitchToEventMode = useCallback((productCode: string) => {
+    setRightPanelMode('event');
+    setEventProductCode(productCode);
+  }, []);
 
   return (
     <div css={pageStyles}>
@@ -653,183 +474,104 @@ export function FeeManagePage() {
                 css={css({ minHeight: 36, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
               />
             </div>
+            <div
+              css={css({
+                width: 1,
+                alignSelf: 'stretch',
+                backgroundColor: theme.colors.border,
+                margin: `0 ${theme.spacing(1)}px`,
+              })}
+              aria-hidden
+            />
+            <div css={css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) })}>
+              <span css={css({ fontSize: 11, color: theme.colors.textMuted, fontWeight: 600 })}>
+                최종수수료 기준
+              </span>
+              <div css={css({ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(2), flexWrap: 'wrap' })}>
+              <div css={css({ minWidth: 180, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
+                <label htmlFor="table-corporation">법인</label>
+              <SingleSelect
+                id="table-corporation"
+                options={[
+                  { label: '전체', value: '' },
+                  ...mockCorporations.map((c) => ({ label: c.name, value: c.id })),
+                ]}
+                selected={tableCorporationId}
+                onChange={(v) => {
+                  setTableCorporationId(String(v));
+                  setTableHospitalId('');
+                }}
+                placeholder="법인 선택"
+                enableSearch
+                aria-label="법인"
+              />
+              </div>
+              <div css={css({ minWidth: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
+                <label htmlFor="table-hospital">병원</label>
+              <SingleSelect
+                id="table-hospital"
+                options={[
+                  { label: '전체', value: '' },
+                  ...mockHospitals
+                    .filter((h) => !tableCorporationId || h.corporationId === tableCorporationId)
+                    .map((h) => ({ label: h.name, value: h.id })),
+                ]}
+                selected={tableHospitalId}
+                onChange={(v) => setTableHospitalId(String(v))}
+                placeholder="병원 선택"
+                enableSearch
+                aria-label="병원"
+              />
+              </div>
+              </div>
+            </div>
             {modifiedCount > 0 && (
               <Button variant="primary" onClick={handleSave}>
                 저장 ({modifiedCount}건)
               </Button>
             )}
+            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: 'auto' })}>
+              <Button
+                variant={tableCriteria === 'product' ? 'primary' : 'secondary'}
+                size="small"
+                onClick={() => setTableCriteria('product')}
+              >
+                품목별
+              </Button>
+              <Button
+                variant={tableCriteria === 'corporation' ? 'primary' : 'secondary'}
+                size="small"
+                onClick={() => setTableCriteria('corporation')}
+              >
+                법인별 수수료
+              </Button>
+              <Button
+                variant={tableCriteria === 'hospital' ? 'primary' : 'secondary'}
+                size="small"
+                onClick={() => setTableCriteria('hospital')}
+              >
+                병원별 수수료
+              </Button>
+            </div>
           </div>
 
-          <div css={feeTableWrap}>
-            <table>
-              <colgroup>
-                <col style={{ width: 36, minWidth: 36 }} />
-                <col style={{ width: 220, minWidth: 220 }} />
-                <col />
-                <col />
-                <col style={{ width: 100 }} />
-                <col style={{ width: 100 }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'center', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600, width: 36 })} />
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'left', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600 })}>품목코드</th>
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'left', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600 })}>품목명</th>
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'left', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600 })}>EDI코드</th>
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'right', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600 })}>기본 수수료 (%)</th>
-                  <th css={css({ padding: theme.spacing(0.75), textAlign: 'right', borderBottom: `1px solid ${theme.colors.border}`, backgroundColor: theme.colors.background, fontWeight: 600 })}>최종수수료 (%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredFees.map((p) => {
-                  const originalIdx = currentFees.findIndex((x) => x.productCode === p.productCode);
-                  const productEvents = eventsByProduct.get(p.productCode) ?? [];
-                  const hasEvents = productEvents.length > 0;
-                  const isExpanded = expandedProducts.has(p.productCode);
-                  return (
-                  <React.Fragment key={p.productCode}>
-                    <tr
-                      css={getRowCss(p)}
-                      onClick={(e) => handleRowClickForEvent(p.productCode, e)}
-                      role={rightPanelMode === 'event' ? 'button' : undefined}
-                      style={rightPanelMode === 'event' ? { cursor: 'pointer' } : undefined}
-                    >
-                      <td
-                        css={[expandCell, css({ borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` })]}
-                        onClick={() => hasEvents && toggleProductEvents(p.productCode)}
-                        role={hasEvents ? 'button' : undefined}
-                        aria-label={hasEvents ? (isExpanded ? '이벤트 접기' : `이벤트 펼치기 (${productEvents.length}건)`) : undefined}
-                      >
-                        {hasEvents ? (
-                          <>
-                            {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                            <span css={expandCellCount}>{productEvents.length}</span>
-                          </>
-                        ) : null}
-                      </td>
-                      <td css={css({ padding: 0, verticalAlign: 'middle', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` })}>
-                        <input
-                          type="text"
-                          css={productCodeInputStyles}
-                          value={p.productCode}
-                          onChange={(e) => updateProductCode(originalIdx, e.target.value)}
-                          aria-label={`${p.productName} 품목코드`}
-                        />
-                      </td>
-                      <td css={css({ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` })}>{p.productName}</td>
-                      <td css={css({ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` })}>{p.ediCode ?? '-'}</td>
-                      <td css={css({ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` })}>
-                        <span css={feeInputCell}>
-                          <input
-                            css={feeInputStyles}
-                            type="number"
-                            min={0}
-                            max={100}
-                            step={0.1}
-                            value={p.feeRate}
-                            onChange={(e) => updateFeeRate(p.productCode, Number(e.target.value) || 0)}
-                            aria-label={`${p.productName} 기본 수수료`}
-                          />
-                          <span className="fee-suffix">%</span>
-                        </span>
-                      </td>
-                      <td css={css({ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}` })}>
-                        <span css={feeInputCell}>
-                          {p.finalFeeRate != null ? `${p.finalFeeRate}%` : '-'}
-                        </span>
-                      </td>
-                    </tr>
-                    {hasEvents && (
-                      <tr css={eventSubRow(isExpanded)}>
-                        <td colSpan={6}>
-                          <div css={eventExpandWrap(isExpanded)}>
-                            {isExpanded && productEvents.length > 0 && (
-                              <>
-                                <div css={css({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing(1), paddingLeft: theme.spacing(1.5), paddingRight: theme.spacing(1.5) })}>
-                                  <p css={css({ margin: 0, fontSize: 11, color: theme.colors.textMuted })}>
-                                    아래로 갈수록 우선순위 높음. 가장 아래(최우선)가 고정이면 해당 고정수수료 적용.
-                                  </p>
-                                  <Button
-                                    variant="ghost"
-                                    size="small"
-                                    onClick={() => {
-                                      setRightPanelMode('event');
-                                      setEventProductCode(p.productCode);
-                                    }}
-                                    css={css({ padding: theme.spacing(0.5), minHeight: 0, backgroundColor: theme.colors.border, borderRadius: theme.radius.sm, '&:hover': { backgroundColor: `${theme.colors.primary}30` } })}
-                                    aria-label="이벤트 추가"
-                                  >
-                                    <Plus size={18} />
-                                  </Button>
-                                </div>
-                                <table css={eventTableWrap}>
-                                  <thead>
-                                    <tr>
-                                      <th>제목</th>
-                                      <th>적용범위</th>
-                                      <th>비고</th>
-                                      <th>시작날짜</th>
-                                      <th>끝 날짜</th>
-                                      <th>수수료</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {productEvents.map((e) => (
-                                      <tr key={e.id}>
-                                        <td>
-                                          <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' })}>
-                                            <Button variant="ghost" size="small" onClick={() => handleDeleteEvent(e.id)}>
-                                              삭제
-                                            </Button>
-                                            <strong>{e.name}</strong>
-                                            <span css={css({ fontSize: 11, color: isEventApplicable(e) ? theme.colors.success : theme.colors.textMuted })}>
-                                              {isEventApplicable(e) ? '적용 가능' : '적용 불가'}
-                                            </span>
-                                          </div>
-                                        </td>
-                                        <td>{getEventScopeText(e)}</td>
-                                        <td css={css({ color: theme.colors.textMuted })}>{e.note ?? '-'}</td>
-                                        <td>{e.startDate}</td>
-                                        <td>{e.endDate}</td>
-                                        <td>
-                                          <span
-                                            css={[
-                                              eventFeeRateBadgeBase,
-                                              {
-                                                color: isEventApplicable(e) ? getEventFeeRateColor(e) : theme.colors.textMuted,
-                                                opacity: isEventApplicable(e) ? 1 : 0.6,
-                                              },
-                                            ]}
-                                          >
-                                            {formatEventFeeRate(e)}
-                                          </span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </>
-                            )}
-                            {isExpanded && (
-                              <div css={finalFeeResultWrap}>
-                                <div className="final-fee-header">
-                                  <span className="final-fee-title">위 이벤트 수수료 적용 결과</span>
-                                  <span className="final-fee-rate" css={[eventFeeRateBadgeBase, { color: theme.colors.text }]}>
-                                    {computeFinalFeeForScope(p.feeRate, productEvents, { type: 'item' })}%
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <ProductFeeTable
+            filteredFees={filteredFees}
+            currentFees={currentFees}
+            eventsByProduct={eventsByProduct}
+            expandedProducts={expandedProducts}
+            rightPanelMode={rightPanelMode}
+            eventProductCode={eventProductCode}
+            isRowModified={isRowModified}
+            feeScope={tableCorporationId ? { corporationId: tableCorporationId, hospitalId: tableHospitalId || undefined } : { type: 'item' }}
+            tableCriteria={tableCriteria}
+            onToggleExpand={toggleProductEvents}
+            onUpdateFeeRate={updateFeeRate}
+            onUpdateProductCode={updateProductCode}
+            onRowClickForEvent={handleRowClickForEvent}
+            onDeleteEvent={handleDeleteEvent}
+            onSwitchToEventMode={handleSwitchToEventMode}
+          />
         </div>
 
         <aside css={rightPanel}>
@@ -1095,9 +837,14 @@ export function FeeManagePage() {
               placeholder="설명"
             />
           </div>
-          <Button variant="primary" onClick={handleAddEvent} css={css({ width: '100%' })}>
-            이벤트 추가
-          </Button>
+          <div css={css({ display: 'flex', gap: theme.spacing(2), marginTop: theme.spacing(1) })}>
+            <Button variant="primary" onClick={handleAddEvent} css={css({ flex: 1 })}>
+              이벤트 추가
+            </Button>
+            <Button variant="secondary" onClick={resetEventForm}>
+              초기화
+            </Button>
+          </div>
           {eventFormError && (
             <p css={css({ marginTop: theme.spacing(2), fontSize: 13, color: theme.colors.error })}>
               {eventFormError}
