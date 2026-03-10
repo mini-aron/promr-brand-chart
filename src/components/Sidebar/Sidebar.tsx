@@ -110,7 +110,6 @@ const pharmaNavItems: NavItem[] = [
     children: [
       { to: '/hospitals', label: '병의원 관리' },
       { to: '/fees', label: '수수료관리' },
-      { to: '/event-manage', label: '이벤트관리' },
       { to: '/deadline-manage', label: '마감일 관리' },
     ],
   },

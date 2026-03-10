@@ -9,7 +9,6 @@ export { DealerManagePage } from './DealerManagePage';
 export { DealerViewPage } from './DealerViewPage';
 export { HospitalManagePage } from './HospitalManagePage';
 export { FeeManagePage } from './FeeManagePage';
-export { EventManagePage } from './EventManagePage';
 export { DeadlineManagePage } from './DeadlineManagePage';
 export { AggregatePage } from './AggregatePage';
 export { SettlementByCorpPage } from './SettlementByCorpPage';
