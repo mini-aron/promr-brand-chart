@@ -85,8 +85,17 @@ const item = (isSelected: boolean, isFocused: boolean) =>
     ...(isFocused && { outline: `2px solid ${theme.colors.primary}`, outlineOffset: -2 }),
   });
 
-const optionLabel = css({ fontWeight: 500 });
-const optionDescription = css({ fontSize: 11, color: theme.colors.textMuted, marginTop: 2 });
+const optionContent = css({ minWidth: 0, overflow: 'hidden' });
+const optionLabel = css({ fontWeight: 500, display: 'block' });
+const optionDescription = css({
+  fontSize: 11,
+  color: theme.colors.textMuted,
+  marginTop: 2,
+  display: 'block',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
 const checkboxLabel = css({
   display: 'flex',
   alignItems: 'flex-start',
@@ -313,10 +322,10 @@ function SelectCore({
           {filteredOptions.map((opt, i) => {
             const isSelected = value.includes(opt.value);
             const content = (
-              <>
+              <div css={optionContent}>
                 <span css={optionLabel}>{opt.label}</span>
                 {opt.description && <span css={optionDescription}>{opt.description}</span>}
-              </>
+              </div>
             );
             return (
               <li
@@ -330,12 +339,12 @@ function SelectCore({
               >
                 {multiple ? (
                   <label css={checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleSelect(opt)}
-                  />
-                    <div>{content}</div>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelect(opt)}
+                    />
+                    {content}
                   </label>
                 ) : (
                   content

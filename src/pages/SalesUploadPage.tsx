@@ -546,10 +546,15 @@ export function SalesUploadPage() {
                       </td>
                       <td {...(isInvalidHospital && { 'data-invalid': 'true' })}>
                         <SingleSelect
-                          options={corporationHospitals.map((h) => ({ label: h.name, value: h.id }))}
+                          options={corporationHospitals.map((h) => ({
+                            label: h.name,
+                            value: h.id,
+                            description: h.address || undefined,
+                          }))}
                           selected={hospitalId}
                           onChange={(v) => setRowEdit(r.id, 'hospitalId', String(v))}
                           placeholder="병의원"
+                          enableSearch
                           aria-label={`${r.id} 병의원`}
                         />
                       </td>

@@ -361,11 +361,16 @@ export function FilterApprovalPage() {
                           : '병의원 선택',
                         value: '',
                       },
-                      ...addableHospitals.map((h) => ({ label: h.name, value: h.id })),
+                      ...addableHospitals.map((h) => ({
+                        label: h.name,
+                        value: h.id,
+                        description: h.address || undefined,
+                      })),
                     ]}
                     selected={selectedHospitalId}
                     onChange={(v) => setSelectedHospitalId(String(v))}
                     placeholder={addableHospitals.length === 0 ? '추가 가능한 병의원 없음 (이미 요청됨)' : '병의원 선택'}
+                    enableSearch
                     aria-label="병의원 선택"
                   />
                 </div>

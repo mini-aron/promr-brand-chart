@@ -285,8 +285,9 @@ export function AccountManagePage() {
                 options={[
                   { label: '선택하세요 (사업자번호·주소 자동 입력)', value: '' },
                   ...hospitalsForSelect.map((h) => ({
-                    label: `${h.name} ${h.accountCode ? ` · ${h.accountCode}` : ''} ${h.businessNumber ? ` · ${h.businessNumber}` : ''}`.trim(),
+                    label: h.name,
                     value: h.id,
+                    description: h.address || undefined,
                   })),
                 ]}
                 selected={hospitalTemplateSelect}
@@ -300,6 +301,7 @@ export function AccountManagePage() {
                   }
                 }}
                 placeholder="선택하세요 (사업자번호·주소 자동 입력)"
+                enableSearch
                 aria-label="선택 시 거래처명·사업자번호·주소 자동 입력"
               />
             </div>

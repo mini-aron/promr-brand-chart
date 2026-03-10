@@ -136,7 +136,14 @@ export function AggregatePage() {
   }, [effectiveCorporationId, hospitals]);
 
   const hospitalOptions = useMemo(
-    () => [{ label: '전체', value: '' as string }, ...hospitalFilterList.map((h) => ({ label: h.name, value: h.id }))],
+    () => [
+      { label: '전체', value: '' as string },
+      ...hospitalFilterList.map((h) => ({
+        label: h.name,
+        value: h.id,
+        description: h.address || undefined,
+      })),
+    ],
     [hospitalFilterList]
   );
 
@@ -292,8 +299,8 @@ export function AggregatePage() {
               selected={hospitalId || null}
               onChange={(v) => setHospitalId(String(v))}
               placeholder="전체"
-              aria-label="병의원"
               enableSearch
+              aria-label="병의원"
             />
           </div>
           <div>
