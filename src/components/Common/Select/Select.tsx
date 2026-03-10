@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
 import { theme } from '@/theme';
 
@@ -15,6 +15,7 @@ export type SelectSize = 'default' | 'large';
 
 const DROPDOWN_MAX_HEIGHT = 200;
 const GAP = 2;
+const ICON_SIZE = 14;
 
 const wrap = css({ position: 'relative', width: '100%' });
 
@@ -92,6 +93,7 @@ const checkboxLabel = css({
   cursor: 'pointer',
   gap: theme.spacing(1),
   width: '100%',
+  '& input': { cursor: 'pointer', marginTop: 2 },
 });
 
 type BaseProps = {
@@ -150,58 +152,51 @@ function useSelectState(
   }, [setIsOpen]);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if ([dropdownRef, listRef].some((r) => r.current?.contains(e.target as Node))) return;
-      closeDropdown();
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [closeDropdown]);
-
-  useEffect(() => {
-    if (isOpen && enableSearch) requestAnimationFrame(() => searchInputRef.current?.focus());
-  }, [isOpen, enableSearch]);
-
-  useEffect(() => {
     if (!isOpen) return;
     const idx = filteredOptions.findIndex((o) => o.value === selectedValue);
     setHighlightedIndex(idx >= 0 ? idx : 0);
-  }, [isOpen, filteredOptions, selectedValue]);
+    requestAnimationFrame(() =>
+      (enableSearch ? searchInputRef.current : dropdownRef.current)?.focus()
+    );
+  }, [isOpen, filteredOptions, selectedValue, enableSearch]);
 
   useLayoutEffect(() => {
     if (!isOpen || highlightedIndex < 0 || !listRef.current) return;
-    const el = listRef.current.querySelector(`[data-option-index="${highlightedIndex}"]`) as HTMLElement;
-    el?.scrollIntoView({ block: 'nearest' });
+    listRef.current
+      .querySelector<HTMLElement>(`[data-option-index="${highlightedIndex}"]`)
+      ?.scrollIntoView({ block: 'nearest' });
   }, [isOpen, highlightedIndex]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      const n = filteredOptions.length;
+  const handleBlur = useCallback(
+    (e: React.FocusEvent) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && dropdownRef.current?.contains(next)) return;
+      closeDropdown();
+    },
+    [closeDropdown]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const { length: n } = filteredOptions;
       if (n === 0) return;
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex((p) => Math.min(p + 1, n - 1));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex((p) => Math.max(p - 1, 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
+      const keyHandlers: Record<string, () => void> = {
+        ArrowDown: () => setHighlightedIndex((p) => Math.min(p + 1, n - 1)),
+        ArrowUp: () => setHighlightedIndex((p) => Math.max(p - 1, 0)),
+        Enter: () => {
           const opt = filteredOptions[highlightedIndex];
           if (opt) onSelect(opt);
-          break;
-        case 'Escape':
-          e.preventDefault();
-          closeDropdown();
-          break;
+        },
+        Escape: () => closeDropdown(),
+      };
+      const handler = keyHandlers[e.key];
+      if (handler) {
+        e.preventDefault();
+        handler();
       }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [isOpen, highlightedIndex, filteredOptions, onSelect, closeDropdown]);
+    },
+    [highlightedIndex, filteredOptions, onSelect, closeDropdown]
+  );
 
   return {
     searchTerm,
@@ -210,6 +205,8 @@ function useSelectState(
     highlightedIndex,
     setHighlightedIndex,
     closeDropdown,
+    handleBlur,
+    handleKeyDown,
     dropdownRef,
     listRef,
     searchInputRef,
@@ -255,28 +252,26 @@ function SelectCore({
     highlightedIndex,
     setHighlightedIndex,
     closeDropdown,
+    handleBlur,
+    handleKeyDown,
     dropdownRef,
     listRef,
     searchInputRef,
   } = useSelectState(isOpen, setIsOpen, options, enableSearch, selectedValue, handleSelect);
-
-  const selectOption = useCallback(
-    (v: string | number) => {
-      if (multiple) handleSelect(options.find((o) => o.value === v)!);
-      else {
-        onChange([v]);
-        closeDropdown();
-      }
-    },
-    [multiple, handleSelect, options, onChange, closeDropdown]
-  );
 
   const displayLabel = value.length > 0
     ? options.filter((o) => value.includes(o.value)).map((o) => o.label).join(', ')
     : placeholder;
 
   return (
-    <div ref={dropdownRef} css={wrap} id={id}>
+    <div
+      ref={dropdownRef}
+      css={wrap}
+      id={id}
+      tabIndex={isOpen ? -1 : undefined}
+      onBlur={handleBlur}
+      onKeyDown={isOpen ? handleKeyDown : undefined}
+    >
       <div
         role="combobox"
         aria-expanded={isOpen}
@@ -286,7 +281,7 @@ function SelectCore({
         onClick={() => setIsOpen((p) => !p)}
       >
         <span>{displayLabel}</span>
-        {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
+        {isOpen ? <HiChevronUp size={ICON_SIZE} /> : <HiChevronDown size={ICON_SIZE} />}
       </div>
       {isOpen && (
         <ul ref={listRef} css={listStyle(enableSearch)} role="listbox">
@@ -306,7 +301,10 @@ function SelectCore({
               role="option"
               data-option-index={-1}
               css={item(false, highlightedIndex === -1)}
-              onClick={() => selectOption(searchTerm)}
+              onClick={() => {
+                onChange([searchTerm]);
+                closeDropdown();
+              }}
               onMouseEnter={() => setHighlightedIndex(-1)}
             >
               <span css={optionLabel}>"{searchTerm}"로 검색</span>
@@ -314,7 +312,13 @@ function SelectCore({
           )}
           {filteredOptions.map((opt, i) => {
             const isSelected = value.includes(opt.value);
-            return multiple ? (
+            const content = (
+              <>
+                <span css={optionLabel}>{opt.label}</span>
+                {opt.description && <span css={optionDescription}>{opt.description}</span>}
+              </>
+            );
+            return (
               <li
                 key={opt.id ?? opt.value}
                 role="option"
@@ -322,32 +326,20 @@ function SelectCore({
                 data-option-index={i}
                 css={item(isSelected, i === highlightedIndex)}
                 onMouseEnter={() => setHighlightedIndex(i)}
+                onClick={multiple ? undefined : () => { onChange([opt.value]); closeDropdown(); }}
               >
-                <label css={checkboxLabel}>
+                {multiple ? (
+                  <label css={checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => handleSelect(opt)}
-                    css={css({ cursor: 'pointer', marginTop: 2 })}
                   />
-                  <div>
-                    <span css={optionLabel}>{opt.label}</span>
-                    {opt.description && <span css={optionDescription}>{opt.description}</span>}
-                  </div>
-                </label>
-              </li>
-            ) : (
-              <li
-                key={opt.id ?? opt.value}
-                role="option"
-                aria-selected={isSelected}
-                data-option-index={i}
-                css={item(isSelected, i === highlightedIndex)}
-                onClick={() => selectOption(opt.value)}
-                onMouseEnter={() => setHighlightedIndex(i)}
-              >
-                <span css={optionLabel}>{opt.label}</span>
-                {opt.description && <span css={optionDescription}>{opt.description}</span>}
+                    <div>{content}</div>
+                  </label>
+                ) : (
+                  content
+                )}
               </li>
             );
           })}
