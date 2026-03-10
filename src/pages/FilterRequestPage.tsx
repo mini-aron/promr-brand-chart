@@ -7,7 +7,9 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { FilterInput } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
-import { tableWrap } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import type { FilterRequest } from '@/types';
 
 const pageStyles = css({
   width: '100%',
@@ -151,7 +153,7 @@ const filterRowStyles = css({
   '& > *': { minWidth: 140 },
 });
 
-const filterRequestTableWrap = css(tableWrap, {
+const filterRequestTableWrap = css({
   fontSize: 14,
   '& th, & td': {
     padding: theme.spacing(2),
@@ -263,6 +265,33 @@ export function FilterRequestPage() {
     });
   }, [myRequests, filterHospitalName, filterPharmaId, filterStatus, getHospital]);
 
+  const columnHelper = createColumnHelper<FilterRequest>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-',
+        { id: 'hospital', header: '병의원' }
+      ),
+      columnHelper.accessor(
+        (r) => (r.pharmaId ? getPharma(r.pharmaId)?.name ?? r.pharmaId : '-'),
+        { id: 'pharma', header: '제약사' }
+      ),
+      columnHelper.accessor('status', {
+        header: '승인상태',
+        cell: (info) => (
+          <span css={statusBadge(info.getValue())}>
+            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
+          </span>
+        ),
+      }),
+      columnHelper.accessor('requestedAt', {
+        header: '요청일시',
+        cell: (info) => formatDateTime(info.getValue()),
+      }),
+    ],
+    [columnHelper, getHospital, getPharma]
+  );
+
   const handleSubmitNew = useCallback(() => {
     const name = newHospitalName.trim();
     const biz = newBusinessNumber.trim();
@@ -352,38 +381,13 @@ export function FilterRequestPage() {
               />
             </div>
           </div>
-          <div css={filterRequestTableWrap}>
-            <table>
-              <thead>
-                <tr>
-                  <th>병의원</th>
-                  <th>제약사</th>
-                  <th>승인상태</th>
-                  <th>요청일시</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMyRequests.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
-                      {myRequests.length === 0 ? '요청한 필터링 내역이 없습니다.' : '조건에 맞는 요청이 없습니다.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredMyRequests.map((r) => (
-                    <tr key={r.id}>
-                      <td>{getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-'}</td>
-                      <td>{r.pharmaId ? getPharma(r.pharmaId)?.name ?? r.pharmaId : '-'}</td>
-                      <td>
-                        <span css={statusBadge(r.status)}>{STATUS_LABEL[r.status] ?? r.status}</span>
-                      </td>
-                      <td>{formatDateTime(r.requestedAt)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable<FilterRequest>
+            columns={columns}
+            data={filteredMyRequests}
+            getRowId={(r) => r.id}
+            tableCss={filterRequestTableWrap}
+            emptyMessage={myRequests.length === 0 ? '요청한 필터링 내역이 없습니다.' : '조건에 맞는 요청이 없습니다.'}
+          />
         </section>
 
         <section css={cardStyles}>

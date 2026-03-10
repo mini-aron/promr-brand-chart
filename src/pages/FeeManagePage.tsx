@@ -8,7 +8,9 @@ import type { ProductFee } from '@/types';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
-import { tableWrapPlain, tableRowModified } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import { tableRowModified } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -43,7 +45,7 @@ const monthSelectStyles = css({
   },
 });
 
-const feeTableWrap = css(tableWrapPlain, {
+const feeTableWrap = css({
   '& table': { minWidth: 400 },
   '& th:first-child, & td:first-child': { width: 220, minWidth: 220, maxWidth: 220 },
   '& td:first-child': { padding: 0, verticalAlign: 'middle' },
@@ -286,6 +288,60 @@ export function FeeManagePage() {
     setNewFeeRate(0);
   }, [selectedMonth, monthlyFees, selectedProduct, newFeeRate]);
 
+  const columnHelper = createColumnHelper<ProductFee>();
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'productCode',
+        header: '품목코드',
+        cell: (info) => {
+          const idx = currentFees.findIndex((p) => p.productCode === info.row.original.productCode);
+          return (
+            <input
+              type="text"
+              css={productCodeInputStyles}
+              value={info.row.original.productCode}
+              onChange={(e) => updateProductCode(idx, e.target.value)}
+              aria-label={`${info.row.original.productName} 품목코드`}
+            />
+          );
+        },
+      }),
+      columnHelper.accessor('productName', { header: '품목명' }),
+      columnHelper.accessor('ediCode', { header: 'EDI코드', cell: (info) => info.getValue() ?? '-' }),
+      columnHelper.display({
+        id: 'feeRate',
+        header: '수수료율 (%)',
+        cell: (info) => (
+          <span css={feeInputCell}>
+            <input
+              css={feeInputStyles}
+              type="number"
+              min={0}
+              max={100}
+              step={0.1}
+              value={info.row.original.feeRate}
+              onChange={(e) =>
+                updateFeeRate(info.row.original.productCode, Number(e.target.value) || 0)
+              }
+              aria-label={`${info.row.original.productName} 수수료율`}
+            />
+            <span className="fee-suffix">%</span>
+          </span>
+        ),
+      }),
+    ],
+    [columnHelper, currentFees, updateProductCode, updateFeeRate]
+  );
+
+  const getRowCss = useCallback(
+    (p: ProductFee) => {
+      const idx = currentFees.findIndex((x) => x.productCode === p.productCode);
+      return isRowModified(idx) ? tableRowModified : undefined;
+    },
+    [currentFees, isRowModified]
+  );
+
   if (userRole === 'corporation') return <Navigate to="/" replace />;
 
   return (
@@ -313,50 +369,14 @@ export function FeeManagePage() {
           )}
         </div>
 
-        <div css={feeTableWrap}>
-          <table>
-            <thead>
-              <tr>
-                <th>품목코드</th>
-                <th>품목명</th>
-                <th>EDI코드</th>
-                <th>수수료율 (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentFees.map((p, index) => (
-                <tr key={`${selectedMonth}-${index}`} css={isRowModified(index) ? tableRowModified : undefined}>
-                  <td css={css({ padding: theme.spacing(1.5) })}>
-                    <input
-                      type="text"
-                      css={productCodeInputStyles}
-                      value={p.productCode}
-                      onChange={(e) => updateProductCode(index, e.target.value)}
-                      aria-label={`${p.productName} 품목코드`}
-                    />
-                  </td>
-                  <td>{p.productName}</td>
-                  <td>{p.ediCode ?? '-'}</td>
-                  <td css={feeInputCell}>
-                    <input
-                      css={feeInputStyles}
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      value={p.feeRate}
-                      onChange={(e) =>
-                        updateFeeRate(p.productCode, Number(e.target.value) || 0)
-                      }
-                      aria-label={`${p.productName} 수수료율`}
-                    />
-                    <span className="fee-suffix">%</span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable<ProductFee>
+          columns={columns}
+          data={currentFees}
+          getRowId={(p) => `${selectedMonth}-${p.productCode}`}
+          variant="plain"
+          tableCss={feeTableWrap}
+          getRowCss={getRowCss}
+        />
 
         <div css={addFormRow}>
           <div css={productSearchBlock}>

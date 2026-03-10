@@ -5,11 +5,12 @@ import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
+import { createColumnHelper } from '@tanstack/react-table';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
-import { tableWrap } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -34,7 +35,7 @@ const searchRow = css({
   },
 });
 
-const accountTableWrap = css(tableWrap, {
+const accountTableWrap = css({
   '& table': { minWidth: 700 },
 });
 
@@ -170,6 +171,21 @@ export function AccountManagePage() {
   }, [hospitals, corporations, search]);
 
   const getCorpName = (corpId: string) => corporations.find((c) => c.id === corpId)?.name ?? '-';
+
+  const columnHelper = createColumnHelper<Hospital>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('accountCode', { header: '거래처코드', cell: (info) => info.getValue() ?? '-' }),
+      columnHelper.accessor('name', { header: '거래처명' }),
+      columnHelper.accessor('corporationId', {
+        header: '소속법인',
+        cell: (info) => getCorpName(info.getValue()),
+      }),
+      columnHelper.accessor('businessNumber', { header: '사업자번호', cell: (info) => info.getValue() ?? '-' }),
+      columnHelper.accessor('address', { header: '주소', cell: (info) => info.getValue() ?? '-' }),
+    ],
+    [getCorpName]
+  );
 
   const handleAdd = useCallback(() => {
     const name = newName.trim();
@@ -358,30 +374,12 @@ export function AccountManagePage() {
         </Flex>
       )}
 
-      <div css={accountTableWrap}>
-        <table>
-          <thead>
-            <tr>
-              <th>거래처코드</th>
-              <th>거래처명</th>
-              <th>소속법인</th>
-              <th>사업자번호</th>
-              <th>주소</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((h) => (
-              <tr key={h.id}>
-                <td>{h.accountCode ?? '-'}</td>
-                <td>{h.name}</td>
-                <td>{getCorpName(h.corporationId)}</td>
-                <td>{h.businessNumber ?? '-'}</td>
-                <td>{h.address ?? '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<Hospital>
+        columns={columns}
+        data={filtered}
+        getRowId={(h) => h.id}
+        tableCss={accountTableWrap}
+      />
       {filtered.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
           조건에 맞는 거래처가 없습니다.

@@ -5,8 +5,10 @@ import { css } from '@emotion/react';
 import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
-import { tableWrap } from '@/style';
 import { SingleSelect } from '@/components/Common/Select';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import type { FilterRequest } from '@/types';
 
 const pageStyles = css({
   display: 'flex',
@@ -106,7 +108,7 @@ const pendingBadge = css({
   borderRadius: theme.radius.sm,
 });
 
-const listWrap = css(tableWrap, {
+const listWrap = css({
   flex: 1,
   minHeight: 0,
   fontSize: 14,
@@ -254,6 +256,47 @@ export function FilterApprovalPage() {
     [hospitals]
   );
 
+  const columnHelper = createColumnHelper<FilterRequest>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-',
+        { id: 'hospital', header: '병의원' }
+      ),
+      columnHelper.accessor('requestedAt', {
+        header: '요청 일시',
+        cell: (info) => formatDateTime(info.getValue()),
+      }),
+      columnHelper.accessor('status', {
+        header: '상태',
+        cell: (info) => (
+          <span css={statusBadge(info.getValue())}>
+            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
+          </span>
+        ),
+      }),
+      columnHelper.accessor('processedAt', {
+        header: '처리 일시',
+        cell: (info) => (info.getValue() ? formatDateTime(info.getValue()!) : '-'),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: '처리',
+        cell: (info) => (
+          <div css={btnGroup}>
+            <Button variant="primary" size="small" onClick={() => updateFilterRequestStatus(info.row.original.id, 'approved')}>
+              승인
+            </Button>
+            <Button variant="danger" size="small" onClick={() => updateFilterRequestStatus(info.row.original.id, 'rejected')}>
+              승인불가
+            </Button>
+          </div>
+        ),
+      }),
+    ],
+    [getHospital, updateFilterRequestStatus]
+  );
+
   const handleAddFilter = useCallback(() => {
     if (!selectedCorpId || !selectedHospitalId) return;
     addFilterRequest(selectedCorpId, currentPharmaId, selectedHospitalId);
@@ -330,40 +373,13 @@ export function FilterApprovalPage() {
                   요청 추가
                 </Button>
               </div>
-              <div css={listWrap}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>병의원</th>
-                      <th>요청 일시</th>
-                      <th>상태</th>
-                      <th>처리 일시</th>
-                      <th>처리</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {requestsForCorp.map((r) => (
-                      <tr key={r.id}>
-                        <td>{getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-'}</td>
-                        <td>{formatDateTime(r.requestedAt)}</td>
-                        <td>
-                          <span css={statusBadge(r.status)}>{STATUS_LABEL[r.status] ?? r.status}</span>
-                        </td>
-                        <td>{r.processedAt ? formatDateTime(r.processedAt) : '-'}</td>
-                        <td>
-                          <div css={btnGroup}>
-                            <Button variant="primary" size="small" onClick={() => updateFilterRequestStatus(r.id, 'approved')}>
-                              승인
-                            </Button>
-                            <Button variant="danger" size="small" onClick={() => updateFilterRequestStatus(r.id, 'rejected')}>
-                              승인불가
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div css={css({ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' })}>
+                <DataTable<FilterRequest>
+                  columns={columns}
+                  data={requestsForCorp}
+                  getRowId={(r) => r.id}
+                  tableCss={listWrap}
+                />
                 {requestsForCorp.length === 0 && (
                   <p css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
                     해당 법인의 병의원 거래 허용 요청이 없습니다.

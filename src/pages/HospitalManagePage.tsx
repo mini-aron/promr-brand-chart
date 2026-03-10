@@ -7,7 +7,9 @@ import { useApp } from '@/context/AppContext';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
-import { tableWrap, tableRowModified } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import { tableRowModified } from '@/style';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -39,7 +41,7 @@ const searchRow = css({
   },
 });
 
-const hospitalTableWrap = css(tableWrap, {
+const hospitalTableWrap = css({
   '& table': { minWidth: 700 },
   '& th:first-child, & td:first-child': { width: 110, maxWidth: 110 },
 });
@@ -217,6 +219,37 @@ export function HospitalManagePage() {
 
   const getCorpName = (corpId: string) => corporations.find((c) => c.id === corpId)?.name ?? '-';
 
+  const columnHelper = createColumnHelper<Hospital>();
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'accountCode',
+        header: '거래처코드',
+        cell: (info) => {
+          const h = info.row.original;
+          return (
+            <input
+              type="text"
+              value={getDisplayAccountCode(h)}
+              onChange={(e) => setAccountCodeFor(h.id, e.target.value)}
+              placeholder="-"
+              css={accountCodeInput}
+              aria-label={`${h.name} 거래처코드`}
+            />
+          );
+        },
+      }),
+      columnHelper.accessor('name', { header: '병의원명' }),
+      columnHelper.accessor('corporationId', {
+        header: '소속법인',
+        cell: (info) => getCorpName(info.getValue()),
+      }),
+      columnHelper.accessor('businessNumber', { header: '사업자번호', cell: (info) => info.getValue() ?? '-' }),
+      columnHelper.accessor('address', { header: '주소', cell: (info) => info.getValue() ?? '-' }),
+    ],
+    [columnHelper, getDisplayAccountCode, setAccountCodeFor, getCorpName]
+  );
+
   const formatBusinessNumber = useCallback((value: string) => {
     const numbers = value.replace(/[^\d]/g, '');
     if (numbers.length <= 3) return numbers;
@@ -383,39 +416,13 @@ export function HospitalManagePage() {
         </div>
       )}
 
-      <div css={hospitalTableWrap}>
-        <table>
-          <thead>
-            <tr>
-              <th>거래처코드</th>
-              <th>병의원명</th>
-              <th>소속법인</th>
-              <th>사업자번호</th>
-              <th>주소</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((h) => (
-              <tr key={h.id} css={isRowModified(h) ? tableRowModified : undefined}>
-                <td>
-                  <input
-                    type="text"
-                    value={getDisplayAccountCode(h)}
-                    onChange={(e) => setAccountCodeFor(h.id, e.target.value)}
-                    placeholder="-"
-                    css={accountCodeInput}
-                    aria-label={`${h.name} 거래처코드`}
-                  />
-                </td>
-                <td>{h.name}</td>
-                <td>{getCorpName(h.corporationId)}</td>
-                <td>{h.businessNumber ?? '-'}</td>
-                <td>{h.address ?? '-'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<Hospital>
+        columns={columns}
+        data={filtered}
+        getRowId={(h) => h.id}
+        tableCss={hospitalTableWrap}
+        getRowCss={(h) => (isRowModified(h) ? tableRowModified : undefined)}
+      />
       {filtered.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
           조건에 맞는 병의원이 없습니다.

@@ -8,7 +8,8 @@ import type { Dealer } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
-import { tableWrap } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -19,7 +20,7 @@ const headerRowWrap = css({
   marginBottom: theme.spacing(4),
 });
 
-const dealerTableWrap = css(tableWrap, {
+const dealerTableWrap = css({
   '& table': { minWidth: 900 },
 });
 
@@ -296,6 +297,67 @@ export function DealerManagePage() {
     setDeleteConfirmDealer(null);
   }, []);
 
+  const columnHelper = createColumnHelper<Dealer>();
+  const columns = useMemo(() => {
+    const renderFileCell = (
+      url: string | undefined,
+      dealerId: string,
+      fileType: 'reportCert' | 'contract' | 'subcontractContract' | 'businessLicense',
+      title: string
+    ) => {
+      if (url) {
+        return (
+          <div css={fileActionGroup}>
+            <Button variant="ghost" size="small" css={linkButton} onClick={() => handlePreview(url, title)}>
+              미리보기
+            </Button>
+            <span css={css({ color: theme.colors.textMuted })}>|</span>
+            <a href={url} download css={linkStyles}>다운로드</a>
+          </div>
+        );
+      }
+      return (
+        <Button variant="secondary" size="small" onClick={() => handleUpload(dealerId, fileType)}>
+          업로드
+        </Button>
+      );
+    };
+    return [
+      columnHelper.accessor('salespersonName', { header: '영업사원명' }),
+      columnHelper.accessor('phone', { header: '전화번호' }),
+      columnHelper.accessor('email', { header: '이메일' }),
+      columnHelper.display({
+        id: 'reportCert',
+        header: '신고필증',
+        cell: (info) => renderFileCell(info.row.original.reportCertUrl, info.row.original.id, 'reportCert', '신고필증 미리보기'),
+      }),
+      columnHelper.display({
+        id: 'contract',
+        header: '계약서',
+        cell: (info) => renderFileCell(info.row.original.contractUrl, info.row.original.id, 'contract', '계약서 미리보기'),
+      }),
+      columnHelper.display({
+        id: 'subcontractContract',
+        header: '재위탁계약서',
+        cell: (info) => renderFileCell(info.row.original.subcontractContractUrl, info.row.original.id, 'subcontractContract', '재위탁계약서 미리보기'),
+      }),
+      columnHelper.display({
+        id: 'businessLicense',
+        header: '사업자 등록증',
+        cell: (info) => renderFileCell(info.row.original.businessLicenseUrl, info.row.original.id, 'businessLicense', '사업자 등록증 미리보기'),
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: '관리',
+        cell: (info) => (
+          <Button variant="danger" size="small" onClick={() => handleDeleteClick(info.row.original)}>
+            삭제
+          </Button>
+        ),
+      }),
+    ];
+  }, [columnHelper, handlePreview, handleUpload, handleDeleteClick]);
+
   if (userRole === 'pharma') return <Navigate to="/" replace />;
 
   return (
@@ -452,124 +514,12 @@ export function DealerManagePage() {
         </Flex>
       )}
 
-      <div css={dealerTableWrap}>
-        <table>
-          <thead>
-            <tr>
-              <th>영업사원명</th>
-              <th>전화번호</th>
-              <th>이메일</th>
-              <th>신고필증</th>
-              <th>계약서</th>
-              <th>재위탁계약서</th>
-              <th>사업자 등록증</th>
-              <th style={{ width: 80 }}>관리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDealers.map((d) => (
-              <tr key={d.id}>
-                <td>{d.salespersonName}</td>
-                <td>{d.phone}</td>
-                <td>{d.email}</td>
-                <td>
-                  {d.reportCertUrl ? (
-                    <div css={fileActionGroup}>
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        css={linkButton}
-                        onClick={() => handlePreview(d.reportCertUrl!, '신고필증 미리보기')}
-                      >
-                        미리보기
-                      </Button>
-                      <span css={css({ color: theme.colors.textMuted })}>|</span>
-                      <a href={d.reportCertUrl} download css={linkStyles}>
-                        다운로드
-                      </a>
-                    </div>
-                  ) : (
-                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'reportCert')}>
-                      업로드
-                    </Button>
-                  )}
-                </td>
-                <td>
-                  {d.contractUrl ? (
-                    <div css={fileActionGroup}>
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        css={linkButton}
-                        onClick={() => handlePreview(d.contractUrl!, '계약서 미리보기')}
-                      >
-                        미리보기
-                      </Button>
-                      <span css={css({ color: theme.colors.textMuted })}>|</span>
-                      <a href={d.contractUrl} download css={linkStyles}>
-                        다운로드
-                      </a>
-                    </div>
-                  ) : (
-                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'contract')}>
-                      업로드
-                    </Button>
-                  )}
-                </td>
-                <td>
-                  {d.subcontractContractUrl ? (
-                    <div css={fileActionGroup}>
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        css={linkButton}
-                        onClick={() => handlePreview(d.subcontractContractUrl!, '재위탁계약서 미리보기')}
-                      >
-                        미리보기
-                      </Button>
-                      <span css={css({ color: theme.colors.textMuted })}>|</span>
-                      <a href={d.subcontractContractUrl} download css={linkStyles}>
-                        다운로드
-                      </a>
-                    </div>
-                  ) : (
-                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'subcontractContract')}>
-                      업로드
-                    </Button>
-                  )}
-                </td>
-                <td>
-                  {d.businessLicenseUrl ? (
-                    <div css={fileActionGroup}>
-                      <Button
-                        variant="ghost"
-                        size="small"
-                        css={linkButton}
-                        onClick={() => handlePreview(d.businessLicenseUrl!, '사업자 등록증 미리보기')}
-                      >
-                        미리보기
-                      </Button>
-                      <span css={css({ color: theme.colors.textMuted })}>|</span>
-                      <a href={d.businessLicenseUrl} download css={linkStyles}>
-                        다운로드
-                      </a>
-                    </div>
-                  ) : (
-                    <Button variant="secondary" size="small" onClick={() => handleUpload(d.id, 'businessLicense')}>
-                      업로드
-                    </Button>
-                  )}
-                </td>
-                <td>
-                  <Button variant="danger" size="small" onClick={() => handleDeleteClick(d)}>
-                    삭제
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable<Dealer>
+        columns={columns}
+        data={filteredDealers}
+        getRowId={(d) => d.id}
+        tableCss={dealerTableWrap}
+      />
       {filteredDealers.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
           등록된 딜러가 없습니다.

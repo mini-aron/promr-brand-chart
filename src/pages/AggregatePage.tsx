@@ -6,7 +6,8 @@ import { useApp } from '@/context/AppContext';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
-import { tableWrap } from '@/style';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2), color: theme.colors.text },
@@ -60,10 +61,19 @@ const filterRow = css({
   },
 });
 
-const aggregateTableWrap = css(tableWrap, {
+type AggregateRow = {
+  hospitalId: string;
+  amount: number;
+  inHouseItemCount: number;
+  inHouseAmount: number;
+  outHouseItemCount: number;
+  outHouseAmount: number;
+};
+
+const aggregateTableWrap = css({
   maxHeight: 'calc(100vh - 280px)',
   minHeight: 320,
-  '& table': { minWidth: 1000 },
+  '& table': { minWidth: 1000, tableLayout: 'fixed' },
   '& th, & td': { whiteSpace: 'nowrap' },
   '& thead tr:first-of-type th': { borderBottom: `1px solid ${theme.colors.border}` },
   '& .col-amount, & .col-inout': { textAlign: 'right' },
@@ -174,6 +184,79 @@ export function AggregatePage() {
   const 정산월 = '2026-02';
   const 처방월 = '2026-01';
 
+  const columnHelper = createColumnHelper<AggregateRow>();
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'no',
+        header: 'No.',
+        size: 40,
+        cell: (info) => info.row.index + 1,
+      }),
+      columnHelper.display({ id: 'status', header: '상태', size: 50, cell: () => '승인' }),
+      columnHelper.display({ id: 'settlementMonth', header: '정산월', size: 70, cell: () => 정산월 }),
+      columnHelper.display({ id: 'prescriptionMonth', header: '처방월', size: 70, cell: () => 처방월 }),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.accountCode ?? '-',
+        { id: 'accountCode', header: '거래처코드', size: 90 }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.name ?? r.hospitalId,
+        { id: 'hospitalName', header: '거래처명', size: 120 }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.businessNumber ?? '-',
+        { id: 'businessNumber', header: '사업자번호', size: 100 }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.address ?? '-',
+        { id: 'address', header: '주소', size: 120 }
+      ),
+      columnHelper.accessor('amount', {
+        id: 'amount',
+        header: '금액',
+        size: 90,
+        cell: (info) => formatAmount(info.getValue()),
+        meta: { className: 'col-amount' },
+      }),
+      columnHelper.group({
+        id: 'inHouse',
+        header: '원내',
+        columns: [
+          columnHelper.accessor('inHouseItemCount', {
+            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            size: 70,
+            meta: { className: 'col-inout' },
+          }),
+          columnHelper.accessor('inHouseAmount', {
+            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            size: 90,
+            cell: (info) => formatAmount(info.getValue()),
+            meta: { className: 'col-inout' },
+          }),
+        ],
+      }),
+      columnHelper.group({
+        id: 'outHouse',
+        header: '원외',
+        columns: [
+          columnHelper.accessor('outHouseItemCount', {
+            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            size: 70,
+            meta: { className: 'col-inout' },
+          }),
+          columnHelper.accessor('outHouseAmount', {
+            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            size: 90,
+            cell: (info) => formatAmount(info.getValue()),
+            meta: { className: 'col-inout' },
+          }),
+        ],
+      }),
+    ],
+    [columnHelper, getHospital, 정산월, 처방월]
+  );
+
   return (
     <div css={pageStyles}>
       <h1>법인 정산 확인</h1>
@@ -233,62 +316,21 @@ export function AggregatePage() {
         </div>
       </div>
 
-      <div css={aggregateTableWrap}>
-        <table>
-          <thead>
-            <tr>
-              <th rowSpan={2}>No.</th>
-              <th rowSpan={2}>상태</th>
-              <th rowSpan={2}>정산월</th>
-              <th rowSpan={2}>처방월</th>
-              <th rowSpan={2}>거래처코드</th>
-              <th rowSpan={2}>거래처명</th>
-              <th rowSpan={2}>사업자번호</th>
-              <th rowSpan={2}>주소</th>
-              <th rowSpan={2} className="col-amount">금액</th>
-              <th colSpan={2}>원내</th>
-              <th colSpan={2}>원외</th>
-            </tr>
-            <tr>
-              <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-              <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-              <th className="col-inout">품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-              <th className="col-inout">처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></th>
-            </tr>
-          </thead>
-          <tbody>
-            {settlementRows.map((row, idx) => {
-              const h = getHospital(row.hospitalId);
-              return (
-                <tr key={row.hospitalId}>
-                  <td>{idx + 1}</td>
-                  <td>승인</td>
-                  <td>{정산월}</td>
-                  <td>{처방월}</td>
-                  <td>{h?.accountCode ?? '-'}</td>
-                  <td>{h?.name ?? row.hospitalId}</td>
-                  <td>{h?.businessNumber ?? '-'}</td>
-                  <td>{h?.address ?? '-'}</td>
-                  <td className="col-amount">{formatAmount(row.amount)}</td>
-                  <td className="col-inout">{row.inHouseItemCount}</td>
-                  <td className="col-inout">{formatAmount(row.inHouseAmount)}</td>
-                  <td className="col-inout">{row.outHouseItemCount}</td>
-                  <td className="col-inout">{formatAmount(row.outHouseAmount)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td colSpan={9}>합계</td>
-              <td className="col-inout">{totals.totalInHouseItems}</td>
-              <td className="col-inout">{formatAmount(totals.totalInHouseAmount)}</td>
-              <td className="col-inout">{totals.totalOutHouseItems}</td>
-              <td className="col-inout">{formatAmount(totals.totalOutHouseAmount)}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+      <DataTable<AggregateRow>
+        columns={columns}
+        data={settlementRows}
+        getRowId={(r) => r.hospitalId}
+        tableCss={aggregateTableWrap}
+        renderFooter={() => (
+          <tr>
+            <td colSpan={9}>합계</td>
+            <td className="col-inout">{totals.totalInHouseItems}</td>
+            <td className="col-inout">{formatAmount(totals.totalInHouseAmount)}</td>
+            <td className="col-inout">{totals.totalOutHouseItems}</td>
+            <td className="col-inout">{formatAmount(totals.totalOutHouseAmount)}</td>
+          </tr>
+        )}
+      />
       {settlementRows.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
           조건에 맞는 정산 실적이 없습니다.

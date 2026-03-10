@@ -1,4 +1,5 @@
 /** @jsxImportSource @emotion/react */
+import { useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
@@ -8,9 +9,10 @@ import { Button } from '@/components/Common/Button';
 import { formatAmount } from '@/utils/formatNumber';
 import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
 import { FilterInput } from '@/components/Common/Input';
+import { DataTable } from '@/components/Common/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
 import type { Corporation, Hospital } from '@/types';
 import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
-import { tableWrapCompact } from '@/style';
 
 // --- Styles ---
 
@@ -56,8 +58,11 @@ const mainArea = css({
   overflow: 'hidden',
 });
 
-const settlementTableWrap = css(tableWrapCompact, {
+const settlementTableWrap = css({
   '& table': { minWidth: 720 },
+  flex: 1,
+  minHeight: 0,
+  overflow: 'auto',
   '& th, & td': {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -225,77 +230,96 @@ interface SettlementTableProps {
 }
 
 function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방월 }: SettlementTableProps) {
+  const columnHelper = createColumnHelper<SettlementDisplayRow>();
+  const columns = useMemo(() => {
+    const base = [
+      columnHelper.display({
+        id: 'no',
+        header: 'No.',
+        cell: (info) => info.row.index + 1,
+        meta: { className: 'col-no' },
+      }),
+      ...(isPromr
+        ? [columnHelper.accessor('salespersonLabel', { header: '영업사원명' })]
+        : []),
+      columnHelper.display({ id: 'status', header: '상태', cell: () => '승인' }),
+      columnHelper.display({ id: 'settlementMonth', header: '정산월', cell: () => 정산월 }),
+      columnHelper.display({ id: 'prescriptionMonth', header: '처방월', cell: () => 처방월 }),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.accountCode ?? '-',
+        { id: 'accountCode', header: '거래처코드' }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.name ?? r.hospitalId,
+        { id: 'hospitalName', header: '거래처명' }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.businessNumber ?? '-',
+        { id: 'businessNumber', header: '사업자번호' }
+      ),
+      columnHelper.accessor(
+        (r) => getHospital(r.hospitalId)?.address ?? '-',
+        { id: 'address', header: '주소' }
+      ),
+      columnHelper.accessor('amount', {
+        id: 'amount',
+        header: '금액',
+        cell: (info) => formatAmount(info.getValue()),
+        meta: { className: 'col-amount' },
+      }),
+      columnHelper.group({
+        id: 'inHouse',
+        header: '원내',
+        columns: [
+          columnHelper.accessor('inHouseItemCount', {
+            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            meta: { className: 'col-inout' },
+          }),
+          columnHelper.accessor('inHouseAmount', {
+            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            cell: (info) => formatAmount(info.getValue()),
+            meta: { className: 'col-inout' },
+          }),
+        ],
+      }),
+      columnHelper.group({
+        id: 'outHouse',
+        header: '원외',
+        columns: [
+          columnHelper.accessor('outHouseItemCount', {
+            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            meta: { className: 'col-inout' },
+          }),
+          columnHelper.accessor('outHouseAmount', {
+            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            cell: (info) => formatAmount(info.getValue()),
+            meta: { className: 'col-inout' },
+          }),
+        ],
+      }),
+    ];
+    return base;
+  }, [columnHelper, isPromr, getHospital, 정산월, 처방월]);
+
+  const footerColSpan = isPromr ? 10 : 9;
+
   return (
-    <div css={settlementTableWrap}>
-      <table>
-        <thead>
-          <tr>
-            <th rowSpan={2} className="col-no">
-              No.
-            </th>
-            <th rowSpan={2}>영업사원명</th>
-            <th rowSpan={2}>상태</th>
-            <th rowSpan={2}>정산월</th>
-            <th rowSpan={2}>처방월</th>
-            <th rowSpan={2}>거래처코드</th>
-            <th rowSpan={2}>거래처명</th>
-            <th rowSpan={2}>사업자번호</th>
-            <th rowSpan={2}>주소</th>
-            <th rowSpan={2} className="col-amount">
-              금액
-            </th>
-            <th colSpan={2}>원내</th>
-            <th colSpan={2}>원외</th>
-          </tr>
-          <tr>
-            <th className="col-inout">
-              품목수 <span css={sortIcon}><HiChevronDown size={12} /></span>
-            </th>
-            <th className="col-inout">
-              처방액 <span css={sortIcon}><HiChevronDown size={12} /></span>
-            </th>
-            <th className="col-inout">
-              품목수 <span css={sortIcon}><HiChevronDown size={12} /></span>
-            </th>
-            <th className="col-inout">
-              처방액 <span css={sortIcon}><HiChevronDown size={12} /></span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, idx) => {
-            const h = getHospital(row.hospitalId);
-            return (
-              <tr key={isPromr ? `${row.hospitalId}-${row.salespersonLabel}-${idx}` : row.hospitalId}>
-                <td className="col-no">{idx + 1}</td>
-                <td>{row.salespersonLabel}</td>
-                <td>승인</td>
-                <td>{정산월}</td>
-                <td>{처방월}</td>
-                <td>{h?.accountCode ?? '-'}</td>
-                <td>{h?.name ?? row.hospitalId}</td>
-                <td>{h?.businessNumber ?? '-'}</td>
-                <td>{h?.address ?? '-'}</td>
-                <td className="col-amount">{formatAmount(row.amount)}</td>
-                <td className="col-inout">{row.inHouseItemCount}</td>
-                <td className="col-inout">{formatAmount(row.inHouseAmount)}</td>
-                <td className="col-inout">{row.outHouseItemCount}</td>
-                <td className="col-inout">{formatAmount(row.outHouseAmount)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colSpan={10}>합계</td>
-            <td className="col-inout">{totals.totalInHouseItems}</td>
-            <td className="col-inout">{formatAmount(totals.totalInHouseAmount)}</td>
-            <td className="col-inout">{totals.totalOutHouseItems}</td>
-            <td className="col-inout">{formatAmount(totals.totalOutHouseAmount)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+    <DataTable<SettlementDisplayRow>
+      columns={columns}
+      data={rows}
+      getRowId={(r) => (isPromr ? `${r.hospitalId}-${r.salespersonLabel}` : r.hospitalId)}
+      variant="compact"
+      tableCss={settlementTableWrap}
+      renderFooter={() => (
+        <tr>
+          <td colSpan={footerColSpan}>합계</td>
+          <td className="col-inout">{totals.totalInHouseItems}</td>
+          <td className="col-inout">{formatAmount(totals.totalInHouseAmount)}</td>
+          <td className="col-inout">{totals.totalOutHouseItems}</td>
+          <td className="col-inout">{formatAmount(totals.totalOutHouseAmount)}</td>
+        </tr>
+      )}
+    />
   );
 }
 
