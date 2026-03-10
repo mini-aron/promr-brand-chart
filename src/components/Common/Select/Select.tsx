@@ -1,6 +1,6 @@
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
 import { theme } from '@/theme';
 
@@ -13,15 +13,10 @@ export type Option = {
 
 export type SelectSize = 'default' | 'large';
 
-
 const DROPDOWN_MAX_HEIGHT = 200;
 const GAP = 2;
 
-const wrap = css({
-  position: 'relative',
-  width: '100%',
-  fontFamily: theme.fontFamily,
-});
+const wrap = css({ position: 'relative', width: '100%' });
 
 const trigger = css({
   border: `1px solid ${theme.colors.border}`,
@@ -40,15 +35,12 @@ const trigger = css({
 
 const triggerLarge = css({ minHeight: 48, padding: `0 ${theme.spacing(3)}px`, fontSize: 15 });
 
-const listStyle = (openUp: boolean, hasSearch: boolean) =>
+const listStyle = (hasSearch: boolean) =>
   css({
-    position: 'absolute' as const,
+    position: 'absolute',
     left: 0,
     right: 0,
-    width: '100%',
-    ...(openUp
-      ? { bottom: `calc(100% + ${GAP}px)`, top: 'auto' }
-      : { top: `calc(100% + ${GAP}px)` }),
+    top: `calc(100% + ${GAP}px)`,
     border: `1px solid ${theme.colors.border}`,
     borderRadius: theme.radius.sm,
     background: theme.colors.surface,
@@ -58,19 +50,12 @@ const listStyle = (openUp: boolean, hasSearch: boolean) =>
     zIndex: 10000,
     maxHeight: DROPDOWN_MAX_HEIGHT,
     overflowY: 'auto',
-    scrollbarWidth: 'thin',
-    '&::-webkit-scrollbar': { width: 6 },
-    '&::-webkit-scrollbar-thumb': { backgroundColor: theme.colors.border, borderRadius: 3 },
-    ...(hasSearch && {
-      '& li:first-of-type': { marginTop: 0 },
-    }),
+    ...(hasSearch && { '& li:first-of-type': { marginTop: 0 } }),
   });
 
 const searchInput = css({
   position: 'sticky',
   top: 0,
-  left: 0,
-  right: 0,
   width: 'calc(100% + 12px)',
   margin: '0 -6px',
   padding: '6px 8px 4px 8px',
@@ -99,8 +84,15 @@ const item = (isSelected: boolean, isFocused: boolean) =>
     ...(isFocused && { outline: `2px solid ${theme.colors.primary}`, outlineOffset: -2 }),
   });
 
-const optionLabel = css({ fontSize: 13, fontWeight: 500 });
+const optionLabel = css({ fontWeight: 500 });
 const optionDescription = css({ fontSize: 11, color: theme.colors.textMuted, marginTop: 2 });
+const checkboxLabel = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  cursor: 'pointer',
+  gap: theme.spacing(1),
+  width: '100%',
+});
 
 type BaseProps = {
   options: Option[];
@@ -117,39 +109,26 @@ export type SingleSelectProps = BaseProps & {
   onChange: (value: string | number) => void;
 };
 
-export type MultipleSelectProps = BaseProps & {
+export type MultipleSelectProps = Omit<BaseProps, 'allowCustomOption'> & {
   selectedItems: (string | number)[];
   onChange: (selected: (string | number)[]) => void;
   onRemove?: (removed: string | number) => void;
 };
 
-function useDropdownOpenUp(isOpen: boolean, triggerRef: React.RefObject<HTMLDivElement | null>) {
-  const [openUp, setOpenUp] = useState(false);
-  useLayoutEffect(() => {
-    if (!isOpen || !triggerRef.current) {
-      setOpenUp(false);
-      return;
-    }
-    const update = () => {
-      if (!triggerRef.current) return;
-      const rect = triggerRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom - GAP;
-      setOpenUp(spaceBelow < DROPDOWN_MAX_HEIGHT && rect.top > spaceBelow);
-    };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, [isOpen, triggerRef]);
-  return openUp;
-}
+type SelectCoreProps = BaseProps & {
+  value: (string | number)[];
+  onChange: (value: (string | number)[]) => void;
+  multiple: boolean;
+  onRemove?: (removed: string | number) => void;
+};
 
-function useSelectDropdown(
+function useSelectState(
   isOpen: boolean,
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>,
   options: Option[],
   enableSearch: boolean,
   selectedValue: string | number | null,
-  onEnter: (opt: Option) => void
+  onSelect: (opt: Option) => void
 ) {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -157,9 +136,13 @@ function useSelectDropdown(
   const listRef = useRef<HTMLUListElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredOptions = enableSearch
-    ? options.filter((o) => o.label.toLowerCase().includes(searchTerm.toLowerCase()))
-    : options;
+  const filteredOptions = useMemo(
+    () =>
+      enableSearch
+        ? options.filter((o) => o.label.toLowerCase().includes(searchTerm.toLowerCase()))
+        : options,
+    [options, enableSearch, searchTerm]
+  );
 
   const closeDropdown = useCallback(() => {
     setIsOpen(false);
@@ -175,7 +158,6 @@ function useSelectDropdown(
     return () => document.removeEventListener('mousedown', handler);
   }, [closeDropdown]);
 
-
   useEffect(() => {
     if (isOpen && enableSearch) requestAnimationFrame(() => searchInputRef.current?.focus());
   }, [isOpen, enableSearch]);
@@ -188,15 +170,8 @@ function useSelectDropdown(
 
   useLayoutEffect(() => {
     if (!isOpen || highlightedIndex < 0 || !listRef.current) return;
-    const list = listRef.current;
-    const el = list.querySelector(`[data-option-index="${highlightedIndex}"]`) as HTMLElement;
-    if (!el) return;
-    const listTop = list.scrollTop;
-    const listH = list.clientHeight;
-    const optTop = el.offsetTop;
-    const optH = el.offsetHeight;
-    if (optTop < listTop) list.scrollTop = optTop;
-    else if (optTop + optH > listTop + listH) list.scrollTop = optTop + optH - listH;
+    const el = listRef.current.querySelector(`[data-option-index="${highlightedIndex}"]`) as HTMLElement;
+    el?.scrollIntoView({ block: 'nearest' });
   }, [isOpen, highlightedIndex]);
 
   useEffect(() => {
@@ -216,7 +191,7 @@ function useSelectDropdown(
         case 'Enter':
           e.preventDefault();
           const opt = filteredOptions[highlightedIndex];
-          if (opt) onEnter(opt);
+          if (opt) onSelect(opt);
           break;
         case 'Escape':
           e.preventDefault();
@@ -226,15 +201,12 @@ function useSelectDropdown(
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [isOpen, highlightedIndex, filteredOptions, onEnter, closeDropdown]);
-
-  const openUp = useDropdownOpenUp(isOpen, dropdownRef);
+  }, [isOpen, highlightedIndex, filteredOptions, onSelect, closeDropdown]);
 
   return {
-    openUp,
-    filteredOptions,
     searchTerm,
     setSearchTerm,
+    filteredOptions,
     highlightedIndex,
     setHighlightedIndex,
     closeDropdown,
@@ -244,47 +216,64 @@ function useSelectDropdown(
   };
 }
 
-export function SingleSelect({
+function SelectCore({
   options,
-  selected,
+  value,
   onChange,
+  onRemove,
+  multiple,
   placeholder = '옵션 선택',
   enableSearch = false,
   size = 'default',
   allowCustomOption = false,
   id,
   'aria-label': ariaLabel,
-}: SingleSelectProps) {
+}: SelectCoreProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const onEnter = useCallback(
+  const selectedValue = multiple ? null : value[0] ?? null;
+
+  const handleSelect = useCallback(
     (opt: Option) => {
-      onChange(opt.value);
-      setIsOpen(false);
+      if (multiple) {
+        const next = value.includes(opt.value)
+          ? value.filter((x) => x !== opt.value)
+          : [...value, opt.value];
+        onChange(next);
+        if (value.includes(opt.value) && onRemove) onRemove(opt.value);
+      } else {
+        onChange([opt.value]);
+        setIsOpen(false);
+      }
     },
-    [onChange]
+    [multiple, value, onChange, onRemove]
   );
+
   const {
-    openUp,
-    filteredOptions,
     searchTerm,
     setSearchTerm,
+    filteredOptions,
     highlightedIndex,
     setHighlightedIndex,
     closeDropdown,
     dropdownRef,
     listRef,
     searchInputRef,
-  } = useSelectDropdown(isOpen, setIsOpen, options, enableSearch, selected, onEnter);
+  } = useSelectState(isOpen, setIsOpen, options, enableSearch, selectedValue, handleSelect);
 
   const selectOption = useCallback(
-    (value: string | number) => {
-      onChange(value);
-      closeDropdown();
+    (v: string | number) => {
+      if (multiple) handleSelect(options.find((o) => o.value === v)!);
+      else {
+        onChange([v]);
+        closeDropdown();
+      }
     },
-    [onChange, closeDropdown]
+    [multiple, handleSelect, options, onChange, closeDropdown]
   );
 
-  const displayLabel = options.find((o) => o.value === selected)?.label ?? placeholder;
+  const displayLabel = value.length > 0
+    ? options.filter((o) => value.includes(o.value)).map((o) => o.label).join(', ')
+    : placeholder;
 
   return (
     <div ref={dropdownRef} css={wrap} id={id}>
@@ -300,7 +289,7 @@ export function SingleSelect({
         {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
       </div>
       {isOpen && (
-        <ul ref={listRef} css={listStyle(openUp, enableSearch)} role="listbox">
+        <ul ref={listRef} css={listStyle(enableSearch)} role="listbox">
           {enableSearch && (
             <input
               ref={searchInputRef}
@@ -323,98 +312,9 @@ export function SingleSelect({
               <span css={optionLabel}>"{searchTerm}"로 검색</span>
             </li>
           )}
-          {filteredOptions.map((opt, i) => (
-            <li
-              key={opt.id ?? opt.value}
-              role="option"
-              aria-selected={opt.value === selected}
-              data-option-index={i}
-              css={item(opt.value === selected, i === highlightedIndex)}
-              onClick={() => selectOption(opt.value)}
-              onMouseEnter={() => setHighlightedIndex(i)}
-            >
-              <span css={optionLabel}>{opt.label}</span>
-              {opt.description && <span css={optionDescription}>{opt.description}</span>}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-export function MultipleSelect({
-  options,
-  selectedItems,
-  onChange,
-  onRemove,
-  placeholder = '옵션 선택',
-  enableSearch = false,
-  size = 'default',
-  id,
-  'aria-label': ariaLabel,
-}: MultipleSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const handleSelect = useCallback(
-    (value: string | number) => {
-      const next = selectedItems.includes(value)
-        ? selectedItems.filter((x) => x !== value)
-        : [...selectedItems, value];
-      onChange(next);
-      if (selectedItems.includes(value) && onRemove) onRemove(value);
-    },
-    [selectedItems, onChange, onRemove]
-  );
-  const onEnter = useCallback(
-    (opt: Option) => handleSelect(opt.value),
-    [handleSelect]
-  );
-  const {
-    openUp,
-    filteredOptions,
-    searchTerm,
-    setSearchTerm,
-    highlightedIndex,
-    setHighlightedIndex,
-    dropdownRef,
-    listRef,
-    searchInputRef,
-  } = useSelectDropdown(isOpen, setIsOpen, options, enableSearch, null, onEnter);
-
-  const displayLabel =
-    selectedItems.length > 0
-      ? options.filter((o) => selectedItems.includes(o.value)).map((o) => o.label).join(', ')
-      : placeholder;
-
-  return (
-    <div ref={dropdownRef} css={wrap} id={id}>
-      <div
-        role="combobox"
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-        aria-label={ariaLabel}
-        css={[trigger, size === 'large' && triggerLarge]}
-        onClick={() => setIsOpen((p) => !p)}
-      >
-        <span>{displayLabel}</span>
-        {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
-      </div>
-      {isOpen && (
-        <ul ref={listRef} css={listStyle(openUp, enableSearch)} role="listbox">
-          {enableSearch && (
-            <input
-              ref={searchInputRef}
-              type="text"
-              css={searchInput}
-              placeholder="검색..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-            />
-          )}
           {filteredOptions.map((opt, i) => {
-            const isSelected = selectedItems.includes(opt.value);
-            return (
+            const isSelected = value.includes(opt.value);
+            return multiple ? (
               <li
                 key={opt.id ?? opt.value}
                 role="option"
@@ -423,33 +323,61 @@ export function MultipleSelect({
                 css={item(isSelected, i === highlightedIndex)}
                 onMouseEnter={() => setHighlightedIndex(i)}
               >
-                <label
-                  css={css({
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    cursor: 'pointer',
-                    width: '100%',
-                    gap: theme.spacing(1),
-                  })}
-                >
+                <label css={checkboxLabel}>
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => handleSelect(opt.value)}
+                    onChange={() => handleSelect(opt)}
                     css={css({ cursor: 'pointer', marginTop: 2 })}
                   />
                   <div>
                     <span css={optionLabel}>{opt.label}</span>
-                    {opt.description && (
-                      <span css={optionDescription}>{opt.description}</span>
-                    )}
+                    {opt.description && <span css={optionDescription}>{opt.description}</span>}
                   </div>
                 </label>
+              </li>
+            ) : (
+              <li
+                key={opt.id ?? opt.value}
+                role="option"
+                aria-selected={isSelected}
+                data-option-index={i}
+                css={item(isSelected, i === highlightedIndex)}
+                onClick={() => selectOption(opt.value)}
+                onMouseEnter={() => setHighlightedIndex(i)}
+              >
+                <span css={optionLabel}>{opt.label}</span>
+                {opt.description && <span css={optionDescription}>{opt.description}</span>}
               </li>
             );
           })}
         </ul>
       )}
     </div>
+  );
+}
+
+export function SingleSelect(props: SingleSelectProps) {
+  const { selected, onChange, ...rest } = props;
+  return (
+    <SelectCore
+      {...rest}
+      value={selected != null ? [selected] : []}
+      onChange={([v]) => onChange(v)}
+      multiple={false}
+    />
+  );
+}
+
+export function MultipleSelect(props: MultipleSelectProps) {
+  const { selectedItems, onChange, onRemove, ...rest } = props;
+  return (
+    <SelectCore
+      {...rest}
+      value={selectedItems}
+      onChange={onChange}
+      onRemove={onRemove}
+      multiple
+    />
   );
 }
