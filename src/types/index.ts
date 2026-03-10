@@ -34,9 +34,34 @@ export interface Hospital {
 export interface ProductFee {
   productCode: string;
   productName: string;
-  feeRate: number; // 수수료율(%)
+  feeRate: number; // 기본 수수료율(%)
+  /** 최종 수수료율(%) - 서버에서 이벤트 적용 후 계산 */
+  finalFeeRate?: number;
   /** EDI 코드 */
   ediCode?: string;
+}
+
+/** 수수료 이벤트 종류 */
+export type FeeEventType = 'item' | 'corporation' | 'corporation_hospital';
+
+/** 수수료 이벤트 */
+export interface FeeEvent {
+  id: string;
+  productCode: string;
+  type: FeeEventType;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isFixedFee: boolean;
+  /** 고정수수료 사용 시 1~100 */
+  fixedFeeRate?: number;
+  /** 추가수수료 사용 시 -100~100 (음수 가능) */
+  additionalFeeRate?: number;
+  note?: string;
+  corporationId?: string;
+  hospitalId?: string;
+  /** 우선순위 (낮을수록 우선) */
+  priority?: number;
 }
 
 /** 실적(엑셀) 행 데이터 */
