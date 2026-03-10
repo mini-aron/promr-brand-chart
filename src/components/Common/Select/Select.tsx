@@ -1,5 +1,4 @@
 /** @jsxImportSource @emotion/react */
-import { createPortal } from 'react-dom';
 import { css } from '@emotion/react';
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
@@ -14,7 +13,6 @@ export type Option = {
 
 export type SelectSize = 'default' | 'large';
 
-type DropdownPosition = { top?: number; bottom?: number; left: number; width: number };
 
 const DROPDOWN_MAX_HEIGHT = 200;
 const GAP = 2;
@@ -42,13 +40,15 @@ const trigger = css({
 
 const triggerLarge = css({ minHeight: 48, padding: `0 ${theme.spacing(3)}px`, fontSize: 15 });
 
-const listStyle = (pos: DropdownPosition, hasSearch: boolean) =>
+const listStyle = (openUp: boolean, hasSearch: boolean) =>
   css({
-    position: 'fixed' as const,
-    ...(pos.top !== undefined && { top: pos.top }),
-    ...(pos.bottom !== undefined && { bottom: pos.bottom }),
-    left: pos.left,
-    width: pos.width,
+    position: 'absolute' as const,
+    left: 0,
+    right: 0,
+    width: '100%',
+    ...(openUp
+      ? { bottom: `calc(100% + ${GAP}px)`, top: 'auto' }
+      : { top: `calc(100% + ${GAP}px)` }),
     border: `1px solid ${theme.colors.border}`,
     borderRadius: theme.radius.sm,
     background: theme.colors.surface,
@@ -61,6 +61,9 @@ const listStyle = (pos: DropdownPosition, hasSearch: boolean) =>
     scrollbarWidth: 'thin',
     '&::-webkit-scrollbar': { width: 6 },
     '&::-webkit-scrollbar-thumb': { backgroundColor: theme.colors.border, borderRadius: 3 },
+    ...(hasSearch && {
+      '& li:first-of-type': { marginTop: 0 },
+    }),
   });
 
 const searchInput = css({
@@ -70,7 +73,7 @@ const searchInput = css({
   right: 0,
   width: 'calc(100% + 12px)',
   margin: '0 -6px',
-  padding: '6px 8px',
+  padding: '6px 8px 4px 8px',
   border: 'none',
   borderBottom: `1px solid ${theme.colors.border}`,
   background: theme.colors.surface,
@@ -120,33 +123,24 @@ export type MultipleSelectProps = BaseProps & {
   onRemove?: (removed: string | number) => void;
 };
 
-function useDropdownPosition(isOpen: boolean, triggerRef: React.RefObject<HTMLDivElement | null>) {
-  const [position, setPosition] = useState<DropdownPosition | null>(null);
+function useDropdownOpenUp(isOpen: boolean, triggerRef: React.RefObject<HTMLDivElement | null>) {
+  const [openUp, setOpenUp] = useState(false);
   useLayoutEffect(() => {
     if (!isOpen || !triggerRef.current) {
-      setPosition(null);
+      setOpenUp(false);
       return;
     }
-    const measure = () => {
-      if (!triggerRef.current) return null;
+    const update = () => {
+      if (!triggerRef.current) return;
       const rect = triggerRef.current.getBoundingClientRect();
       const spaceBelow = window.innerHeight - rect.bottom - GAP;
-      const openUp = spaceBelow < DROPDOWN_MAX_HEIGHT && rect.top > spaceBelow;
-      return {
-        left: rect.left,
-        width: rect.width,
-        ...(openUp ? { bottom: window.innerHeight - rect.top + GAP } : { top: rect.bottom + GAP }),
-      };
-    };
-    const update = () => {
-      const pos = measure();
-      if (pos) setPosition(pos);
+      setOpenUp(spaceBelow < DROPDOWN_MAX_HEIGHT && rect.top > spaceBelow);
     };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, [isOpen, triggerRef]);
-  return position;
+  return openUp;
 }
 
 function useSelectDropdown(
@@ -181,15 +175,6 @@ function useSelectDropdown(
     return () => document.removeEventListener('mousedown', handler);
   }, [closeDropdown]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: Event) => {
-      if (listRef.current?.contains(e.target as Node)) return;
-      closeDropdown();
-    };
-    window.addEventListener('scroll', handler, true);
-    return () => window.removeEventListener('scroll', handler, true);
-  }, [isOpen, closeDropdown]);
 
   useEffect(() => {
     if (isOpen && enableSearch) requestAnimationFrame(() => searchInputRef.current?.focus());
@@ -243,10 +228,10 @@ function useSelectDropdown(
     return () => document.removeEventListener('keydown', handler);
   }, [isOpen, highlightedIndex, filteredOptions, onEnter, closeDropdown]);
 
-  const position = useDropdownPosition(isOpen, dropdownRef);
+  const openUp = useDropdownOpenUp(isOpen, dropdownRef);
 
   return {
-    position,
+    openUp,
     filteredOptions,
     searchTerm,
     setSearchTerm,
@@ -279,7 +264,7 @@ export function SingleSelect({
     [onChange]
   );
   const {
-    position,
+    openUp,
     filteredOptions,
     searchTerm,
     setSearchTerm,
@@ -314,48 +299,46 @@ export function SingleSelect({
         <span>{displayLabel}</span>
         {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
       </div>
-      {isOpen && position &&
-        createPortal(
-          <ul ref={listRef} css={listStyle(position, enableSearch)} role="listbox">
-            {enableSearch && (
-              <input
-                ref={searchInputRef}
-                type="text"
-                css={searchInput}
-                placeholder="검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-            {enableSearch && allowCustomOption && searchTerm && (
-              <li
-                role="option"
-                data-option-index={-1}
-                css={item(false, highlightedIndex === -1)}
-                onClick={() => selectOption(searchTerm)}
-                onMouseEnter={() => setHighlightedIndex(-1)}
-              >
-                <span css={optionLabel}>"{searchTerm}"로 검색</span>
-              </li>
-            )}
-            {filteredOptions.map((opt, i) => (
-              <li
-                key={opt.id ?? opt.value}
-                role="option"
-                aria-selected={opt.value === selected}
-                data-option-index={i}
-                css={item(opt.value === selected, i === highlightedIndex)}
-                onClick={() => selectOption(opt.value)}
-                onMouseEnter={() => setHighlightedIndex(i)}
-              >
-                <span css={optionLabel}>{opt.label}</span>
-                {opt.description && <span css={optionDescription}>{opt.description}</span>}
-              </li>
-            ))}
-          </ul>,
-          document.body
-        )}
+      {isOpen && (
+        <ul ref={listRef} css={listStyle(openUp, enableSearch)} role="listbox">
+          {enableSearch && (
+            <input
+              ref={searchInputRef}
+              type="text"
+              css={searchInput}
+              placeholder="검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          {enableSearch && allowCustomOption && searchTerm && (
+            <li
+              role="option"
+              data-option-index={-1}
+              css={item(false, highlightedIndex === -1)}
+              onClick={() => selectOption(searchTerm)}
+              onMouseEnter={() => setHighlightedIndex(-1)}
+            >
+              <span css={optionLabel}>"{searchTerm}"로 검색</span>
+            </li>
+          )}
+          {filteredOptions.map((opt, i) => (
+            <li
+              key={opt.id ?? opt.value}
+              role="option"
+              aria-selected={opt.value === selected}
+              data-option-index={i}
+              css={item(opt.value === selected, i === highlightedIndex)}
+              onClick={() => selectOption(opt.value)}
+              onMouseEnter={() => setHighlightedIndex(i)}
+            >
+              <span css={optionLabel}>{opt.label}</span>
+              {opt.description && <span css={optionDescription}>{opt.description}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -387,7 +370,7 @@ export function MultipleSelect({
     [handleSelect]
   );
   const {
-    position,
+    openUp,
     filteredOptions,
     searchTerm,
     setSearchTerm,
@@ -416,59 +399,57 @@ export function MultipleSelect({
         <span>{displayLabel}</span>
         {isOpen ? <HiChevronUp size={14} /> : <HiChevronDown size={14} />}
       </div>
-      {isOpen && position &&
-        createPortal(
-          <ul ref={listRef} css={listStyle(position, enableSearch)} role="listbox">
-            {enableSearch && (
-              <input
-                ref={searchInputRef}
-                type="text"
-                css={searchInput}
-                placeholder="검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-              />
-            )}
-            {filteredOptions.map((opt, i) => {
-              const isSelected = selectedItems.includes(opt.value);
-              return (
-                <li
-                  key={opt.id ?? opt.value}
-                  role="option"
-                  aria-selected={isSelected}
-                  data-option-index={i}
-                  css={item(isSelected, i === highlightedIndex)}
-                  onMouseEnter={() => setHighlightedIndex(i)}
+      {isOpen && (
+        <ul ref={listRef} css={listStyle(openUp, enableSearch)} role="listbox">
+          {enableSearch && (
+            <input
+              ref={searchInputRef}
+              type="text"
+              css={searchInput}
+              placeholder="검색..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
+          {filteredOptions.map((opt, i) => {
+            const isSelected = selectedItems.includes(opt.value);
+            return (
+              <li
+                key={opt.id ?? opt.value}
+                role="option"
+                aria-selected={isSelected}
+                data-option-index={i}
+                css={item(isSelected, i === highlightedIndex)}
+                onMouseEnter={() => setHighlightedIndex(i)}
+              >
+                <label
+                  css={css({
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    cursor: 'pointer',
+                    width: '100%',
+                    gap: theme.spacing(1),
+                  })}
                 >
-                  <label
-                    css={css({
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      cursor: 'pointer',
-                      width: '100%',
-                      gap: theme.spacing(1),
-                    })}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleSelect(opt.value)}
-                      css={css({ cursor: 'pointer', marginTop: 2 })}
-                    />
-                    <div>
-                      <span css={optionLabel}>{opt.label}</span>
-                      {opt.description && (
-                        <span css={optionDescription}>{opt.description}</span>
-                      )}
-                    </div>
-                  </label>
-                </li>
-              );
-            })}
-          </ul>,
-          document.body
-        )}
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleSelect(opt.value)}
+                    css={css({ cursor: 'pointer', marginTop: 2 })}
+                  />
+                  <div>
+                    <span css={optionLabel}>{opt.label}</span>
+                    {opt.description && (
+                      <span css={optionDescription}>{opt.description}</span>
+                    )}
+                  </div>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
