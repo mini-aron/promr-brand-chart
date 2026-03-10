@@ -8,6 +8,7 @@ import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
 import { Checkbox } from '@/components/Common/Checkbox';
+import { FilterInput } from '@/components/Common/Input';
 import { tableRowModified, tableWrapPlain } from '@/style/TableStyles';
 
 const pageStyles = css({
@@ -284,6 +285,7 @@ export function FeeManagePage() {
   const [initialMonthlyFees, setInitialMonthlyFees] = useState<Record<string, ProductFee[]>>({});
   const [feeEvents, setFeeEvents] = useState<FeeEvent[]>(() => [...mockFeeEvents]);
   const [expandedProducts, setExpandedProducts] = useState<Set<string>>(() => new Set());
+  const [tableProductSearch, setTableProductSearch] = useState('');
 
   const toggleProductEvents = useCallback((productCode: string) => {
     setExpandedProducts((prev) => {
@@ -305,6 +307,16 @@ export function FeeManagePage() {
     if (monthlyFees[selectedMonth]) return monthlyFees[selectedMonth];
     return [...mockProductFees];
   }, [selectedMonth, monthlyFees]);
+
+  const filteredFees = useMemo(() => {
+    const q = tableProductSearch.trim().toLowerCase();
+    if (!q) return currentFees;
+    return currentFees.filter(
+      (p) =>
+        p.productName.toLowerCase().includes(q) ||
+        p.productCode.toLowerCase().includes(q)
+    );
+  }, [currentFees, tableProductSearch]);
 
   const updateFeeRate = useCallback(
     (productCode: string, feeRate: number) => {
@@ -629,6 +641,18 @@ export function FeeManagePage() {
                 aria-label="적용 월"
               />
             </div>
+            <div css={css({ width: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
+              <label htmlFor="table-product-search">품목명 검색</label>
+              <FilterInput
+                id="table-product-search"
+                type="search"
+                placeholder="품목명·품목코드로 검색"
+                value={tableProductSearch}
+                onChange={(e) => setTableProductSearch(e.target.value)}
+                aria-label="품목명 검색"
+                css={css({ minHeight: 36, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
+              />
+            </div>
             {modifiedCount > 0 && (
               <Button variant="primary" onClick={handleSave}>
                 저장 ({modifiedCount}건)
@@ -657,7 +681,8 @@ export function FeeManagePage() {
                 </tr>
               </thead>
               <tbody>
-                {currentFees.map((p, idx) => {
+                {filteredFees.map((p) => {
+                  const originalIdx = currentFees.findIndex((x) => x.productCode === p.productCode);
                   const productEvents = eventsByProduct.get(p.productCode) ?? [];
                   const hasEvents = productEvents.length > 0;
                   const isExpanded = expandedProducts.has(p.productCode);
@@ -687,7 +712,7 @@ export function FeeManagePage() {
                           type="text"
                           css={productCodeInputStyles}
                           value={p.productCode}
-                          onChange={(e) => updateProductCode(idx, e.target.value)}
+                          onChange={(e) => updateProductCode(originalIdx, e.target.value)}
                           aria-label={`${p.productName} 품목코드`}
                         />
                       </td>
@@ -898,6 +923,7 @@ export function FeeManagePage() {
                     }}
                     aria-label="수수료 엑셀 파일 선택"
                   />
+                  <Upload size={24} className="upload-icon" aria-hidden />
                   <span className="upload-text">
                     {excelFileName ?? '클릭하여 엑셀 파일 선택'}
                   </span>
