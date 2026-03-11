@@ -90,7 +90,7 @@ export function FeeEventTable({
           return (
             <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' })}>
               <strong>{e.name}</strong>
-              <span css={{ fontSize: 11, color: applicable ? theme.colors.success : theme.colors.textMuted }}>
+              <span style={{ fontSize: 11, color: applicable ? theme.colors.success : theme.colors.textMuted }}>
                 {applicable ? '적용 가능' : '적용 불가'}
               </span>
             </div>
@@ -105,7 +105,7 @@ export function FeeEventTable({
       columnHelper.accessor('note', {
         header: '비고',
         cell: (info) => (
-          <span css={{ color: theme.colors.textMuted }}>{info.getValue() ?? '-'}</span>
+          <span style={{ color: theme.colors.textMuted }}>{info.getValue() ?? '-'}</span>
         ),
       }),
       columnHelper.display({
@@ -120,10 +120,10 @@ export function FeeEventTable({
             <span
               css={[
                 eventFeeRateBadgeBase,
-                {
+                css({
                   color: applicable ? getEventFeeRateColor(e) : theme.colors.textMuted,
                   opacity: applicable ? 1 : 0.6,
-                },
+                }),
               ]}
               style={!inScope ? { opacity: 0.5 } : undefined}
             >
@@ -183,11 +183,11 @@ export function FeeEventTable({
                 key={h.id}
                 css={[
                   cellBorder,
-                  { fontWeight: 600, fontSize: 11 },
-                  h.id === 'delete' && { width: 52, minWidth: 52 },
-                  ['생성자', '업데이트'].includes(String(h.column.columnDef.header)) && {
+                  css({ fontWeight: 600, fontSize: 11 }),
+                  h.id === 'delete' && css({ width: 52, minWidth: 52 }),
+                  ['생성자', '업데이트'].includes(String(h.column.columnDef.header)) && css({
                     textAlign: 'center' as const,
-                  },
+                  }),
                 ]}
               >
                 {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
@@ -201,7 +201,7 @@ export function FeeEventTable({
           const e = row.original;
           const applicable = isEventApplicable(e);
           return (
-            <tr key={row.id} css={!applicable ? { opacity: 0.5 } : undefined}>
+            <tr key={row.id} style={!applicable ? { opacity: 0.5 } : undefined}>
               {row.getVisibleCells().map((cell) => {
                 const isMeta = ['createdBy', 'updatedBy'].includes(cell.column.id);
                 const isLast = cell.column.id === 'updatedBy';
@@ -209,10 +209,10 @@ export function FeeEventTable({
                   <td
                     key={cell.id}
                     css={[
-                      cell.column.id === 'delete' && { padding: theme.spacing(0.5), width: 52 },
+                      cell.column.id === 'delete' && css({ padding: theme.spacing(0.5), width: 52 }),
                       cell.column.id !== 'delete' && cellBorder,
                       isMeta && metaCell,
-                      isLast && { borderRight: 'none' },
+                      isLast && css({ borderRight: 'none' }),
                     ]}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -228,7 +228,7 @@ export function FeeEventTable({
           <tr css={finalFeeResultRow}>
             <td />
             <td
-              css={{
+              style={{
                 padding: theme.spacing(0.5),
                 paddingLeft: theme.spacing(1.5),
                 verticalAlign: 'middle',
@@ -238,8 +238,8 @@ export function FeeEventTable({
             </td>
             <td />
             <td />
-            <td css={{ padding: theme.spacing(0.5), paddingRight: theme.spacing(2), verticalAlign: 'middle', textAlign: 'right' }}>
-              <span className="final-fee-rate" css={[eventFeeRateBadgeBase, { color: theme.colors.text }]}>
+            <td style={{ padding: theme.spacing(0.5), paddingRight: theme.spacing(2), verticalAlign: 'middle', textAlign: 'right' }}>
+              <span className="final-fee-rate" css={[eventFeeRateBadgeBase, css({ color: theme.colors.text })]}>
                 {computeFinalFeeForScope(baseFeeRate, events, scope)}%
               </span>
             </td>

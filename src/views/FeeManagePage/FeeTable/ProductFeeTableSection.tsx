@@ -284,7 +284,7 @@ export function ProductFeeTableSection({
                     key={h.id}
                     css={[
                       thBase,
-                      meta?.thCss,
+                      meta?.thCss && css(meta.thCss),
                       h.id === 'finalFee' && finalFeeDivider,
                     ]}
                   >
@@ -338,7 +338,7 @@ export function ProductFeeTableSection({
                       <td
                         key={cell.id}
                         css={[
-                          meta?.tdCss,
+                          meta?.tdCss && css(meta.tdCss),
                           !(cell.column.id === 'productCode') && cellBorder,
                           isMeta && metaCell,
                         ]}
@@ -364,7 +364,7 @@ export function ProductFeeTableSection({
                                 paddingRight: theme.spacing(1.5),
                               })}
                             >
-                              <p css={{ margin: 0, fontSize: 11, color: theme.colors.textMuted }}>
+                              <p style={{ margin: 0, fontSize: 11, color: theme.colors.textMuted }}>
                                 아래로 갈수록 우선순위 높음. 가장 아래(최우선)가 고정이면 해당 고정수수료 적용.
                               </p>
                               <Button

@@ -1,107 +1,12 @@
 'use client';
-/** @jsxImportSource @emotion/react */
 import { useMemo } from 'react';
-import { css } from '@emotion/react';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiArrowDown, HiArrowUp } from 'react-icons/hi';
 import { useApp } from '@/context/AppContext';
+import { clsx } from 'clsx';
 import { theme } from '@/theme';
-
-const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const statsSection = css({
-  marginBottom: theme.spacing(6),
-});
-
-const statsGrid = css({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-  gap: theme.spacing(3),
-  marginBottom: theme.spacing(4),
-});
-
-const statCard = css({
-  padding: theme.spacing(3),
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  border: `1px solid ${theme.colors.border}`,
-  boxShadow: theme.shadow.sm,
-  '& .stat-label': {
-    fontSize: 13,
-    color: theme.colors.textMuted,
-    marginBottom: theme.spacing(1),
-    fontWeight: 500,
-  },
-  '& .stat-value': {
-    fontSize: 28,
-    fontWeight: 700,
-    color: theme.colors.text,
-    marginBottom: theme.spacing(0.5),
-  },
-  '& .stat-unit': {
-    fontSize: 14,
-    color: theme.colors.textMuted,
-    marginLeft: theme.spacing(1),
-  },
-  '& .stat-detail': {
-    fontSize: 12,
-    color: theme.colors.textMuted,
-    marginTop: theme.spacing(1),
-  },
-});
-
-const primaryStatCard = css(statCard, {
-  backgroundColor: `${theme.colors.primary}08`,
-  borderColor: `${theme.colors.primary}30`,
-  '& .stat-value': {
-    color: theme.colors.primary,
-  },
-});
-
-const cardGridStyles = css({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-  gap: theme.spacing(4),
-});
-
-const cardStyles = css({
-  padding: theme.spacing(4),
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  border: `1px solid ${theme.colors.border}`,
-  boxShadow: theme.shadow.sm,
-  '& a': {
-    color: theme.colors.primary,
-    fontWeight: 600,
-    textDecoration: 'none',
-  },
-  '& a:hover': { textDecoration: 'underline' },
-  '& h2': { fontSize: 18, marginBottom: theme.spacing(2) },
-  '& p': { fontSize: 14, margin: 0 },
-});
-
-const sectionTitle = css({
-  fontSize: 16,
-  fontWeight: 600,
-  color: theme.colors.text,
-  marginBottom: theme.spacing(3),
-});
-
-const chartSection = css({
-  marginBottom: theme.spacing(6),
-});
-
-const chartCard = css({
-  padding: theme.spacing(4),
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  border: `1px solid ${theme.colors.border}`,
-  boxShadow: theme.shadow.sm,
-});
+import * as s from './index.css';
 
 /** 금액을 천 단위 구분 포맷(예: 1,234,567)으로 반환 */
 function formatAmount(value: number): string {
@@ -213,55 +118,51 @@ export function HomePage() {
   }, [salesRows, userRole, currentCorporationId]);
 
   return (
-    <div css={pageStyles}>
-      <h1>Promr Brand Chart</h1>
-      <p>법인 실적·처방사진 업로드 및 제약사 법인 정산 확인</p>
+    <div className={s.page}>
+      <h1 className={s.pageTitle}>Promr Brand Chart</h1>
+      <p className={s.pageDesc}>법인 실적·처방사진 업로드 및 제약사 법인 정산 확인</p>
 
       {userRole === 'corporation' && (
-        <div css={statsSection}>
-          <h2 css={sectionTitle}>나의 현황</h2>
-          <div css={statsGrid}>
-            <div css={primaryStatCard}>
-              <div className="stat-label">이번 달 총 매출</div>
-              <div className="stat-value">
+        <div className={s.statsSection}>
+          <h2 className={s.sectionTitle}>나의 현황</h2>
+          <div className={s.statsGrid}>
+            <div className={s.primaryStatCard}>
+              <div className={s.statLabel}>이번 달 총 매출</div>
+              <div className={s.primaryStatValue}>
                 {formatAmount(corporationStats.thisMonthAmount)}
-                <span className="stat-unit">원</span>
+                <span className={s.statUnit}>원</span>
               </div>
-              <div className="stat-detail">
+              <div className={s.statDetail}>
                 {corporationStats.thisMonthSalesCount}건
                 {corporationStats.lastMonthAmount > 0 && (
-                  <span style={{ 
-                    marginLeft: theme.spacing(1),
-                    color: corporationStats.growthRate >= 0 ? '#10b981' : '#ef4444',
-                    fontWeight: 600,
-                  }}>
+                  <span className={corporationStats.growthRate >= 0 ? s.growthUp : s.growthDown}>
                     {corporationStats.growthRate >= 0 ? <HiArrowUp size={14} style={{ verticalAlign: 'middle' }} /> : <HiArrowDown size={14} style={{ verticalAlign: 'middle' }} />} {Math.abs(corporationStats.growthRate).toFixed(1)}%
                   </span>
                 )}
               </div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">전체 실적</div>
-              <div className="stat-value">{corporationStats.totalSalesCount}</div>
-              <div className="stat-detail">
+            <div className={s.statCard}>
+              <div className={s.statLabel}>전체 실적</div>
+              <div className={s.statValue}>{corporationStats.totalSalesCount}</div>
+              <div className={s.statDetail}>
                 총 {formatAmount(corporationStats.totalAmount)}원
               </div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">처방사진 업로드</div>
-              <div className="stat-value">{corporationStats.prescriptionCount}</div>
-              <div className="stat-detail">건</div>
+            <div className={s.statCard}>
+              <div className={s.statLabel}>처방사진 업로드</div>
+              <div className={s.statValue}>{corporationStats.prescriptionCount}</div>
+              <div className={s.statDetail}>건</div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">등록된 딜러</div>
-              <div className="stat-value">{corporationStats.dealerCount}</div>
-              <div className="stat-detail">명</div>
+            <div className={s.statCard}>
+              <div className={s.statLabel}>등록된 딜러</div>
+              <div className={s.statValue}>{corporationStats.dealerCount}</div>
+              <div className={s.statDetail}>명</div>
             </div>
             {corporationStats.pendingRequestCount > 0 && (
-              <div css={statCard}>
-                <div className="stat-label">대기 중인 필터링 요청</div>
-                <div className="stat-value">{corporationStats.pendingRequestCount}</div>
-                <div className="stat-detail">건</div>
+              <div className={s.statCard}>
+                <div className={s.statLabel}>대기 중인 필터링 요청</div>
+                <div className={s.statValue}>{corporationStats.pendingRequestCount}</div>
+                <div className={s.statDetail}>건</div>
               </div>
             )}
           </div>
@@ -269,101 +170,97 @@ export function HomePage() {
       )}
 
       {userRole === 'pharma' && (
-        <div css={statsSection}>
-          <h2 css={sectionTitle}>전체 현황</h2>
-          <div css={statsGrid}>
-            <div css={primaryStatCard}>
-              <div className="stat-label">이번 달 총 매출</div>
-              <div className="stat-value">
+        <div className={s.statsSection}>
+          <h2 className={s.sectionTitle}>전체 현황</h2>
+          <div className={s.statsGrid}>
+            <div className={s.primaryStatCard}>
+              <div className={s.statLabel}>이번 달 총 매출</div>
+              <div className={s.primaryStatValue}>
                 {formatAmount(pharmaStats.thisMonthAmount)}
-                <span className="stat-unit">원</span>
+                <span className={s.statUnit}>원</span>
               </div>
-              <div className="stat-detail">
+              <div className={s.statDetail}>
                 {pharmaStats.thisMonthSalesCount}건
                 {pharmaStats.lastMonthAmount > 0 && (
-                  <span style={{ 
-                    marginLeft: theme.spacing(1),
-                    color: pharmaStats.growthRate >= 0 ? '#10b981' : '#ef4444',
-                    fontWeight: 600,
-                  }}>
+                  <span className={pharmaStats.growthRate >= 0 ? s.growthUp : s.growthDown}>
                     {pharmaStats.growthRate >= 0 ? <HiArrowUp size={14} style={{ verticalAlign: 'middle' }} /> : <HiArrowDown size={14} style={{ verticalAlign: 'middle' }} />} {Math.abs(pharmaStats.growthRate).toFixed(1)}%
                   </span>
                 )}
               </div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">전체 실적</div>
-              <div className="stat-value">{pharmaStats.totalSalesCount}</div>
-              <div className="stat-detail">
+            <div className={s.statCard}>
+              <div className={s.statLabel}>전체 실적</div>
+              <div className={s.statValue}>{pharmaStats.totalSalesCount}</div>
+              <div className={s.statDetail}>
                 총 {formatAmount(pharmaStats.totalAmount)}원
               </div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">등록된 법인</div>
-              <div className="stat-value">{pharmaStats.corpCount}</div>
-              <div className="stat-detail">개</div>
+            <div className={s.statCard}>
+              <div className={s.statLabel}>등록된 법인</div>
+              <div className={s.statValue}>{pharmaStats.corpCount}</div>
+              <div className={s.statDetail}>개</div>
             </div>
-            <div css={statCard}>
-              <div className="stat-label">등록된 병의원</div>
-              <div className="stat-value">{pharmaStats.hospitalCount}</div>
-              <div className="stat-detail">개</div>
+            <div className={s.statCard}>
+              <div className={s.statLabel}>등록된 병의원</div>
+              <div className={s.statValue}>{pharmaStats.hospitalCount}</div>
+              <div className={s.statDetail}>개</div>
             </div>
             {pharmaStats.pendingRequestCount > 0 && (
-              <div css={statCard}>
-                <div className="stat-label">처리 대기 중인 요청</div>
-                <div className="stat-value">{pharmaStats.pendingRequestCount}</div>
-                <div className="stat-detail">건</div>
+              <div className={s.statCard}>
+                <div className={s.statLabel}>처리 대기 중인 요청</div>
+                <div className={s.statValue}>{pharmaStats.pendingRequestCount}</div>
+                <div className={s.statDetail}>건</div>
               </div>
             )}
           </div>
         </div>
       )}
 
-      <h2 css={sectionTitle}>바로가기</h2>
-      <div css={cardGridStyles}>
+      <h2 className={s.sectionTitle}>바로가기</h2>
+      <div className={s.cardGrid}>
         {userRole === 'corporation' && (
           <>
-            <div css={cardStyles}>
-              <h2>실적 등록</h2>
-              <p>실적 업로드(엑셀)와 처방사진 업로드를 진행합니다.</p>
-              <Link href="/upload/sales">실적 등록 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>실적 등록</h2>
+              <p className={s.cardDesc}>실적 업로드(엑셀)와 처방사진 업로드를 진행합니다.</p>
+              <Link href="/upload/sales" className={clsx(s.cardLink, s.cardLinkHover)}>실적 등록 페이지로 →</Link>
             </div>
-            <div css={cardStyles}>
-              <h2>계약관리</h2>
-              <p>딜러(영업사원) 정보를 관리합니다.</p>
-              <Link href="/dealer-manage">계약관리 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>계약관리</h2>
+              <p className={s.cardDesc}>딜러(영업사원) 정보를 관리합니다.</p>
+              <Link href="/dealer-manage" className={clsx(s.cardLink, s.cardLinkHover)}>계약관리 페이지로 →</Link>
             </div>
           </>
         )}
         {userRole === 'pharma' && (
           <>
-            <div css={cardStyles}>
-              <h2>기준정보 관리</h2>
-              <p>병의원, 수수료를 관리합니다.</p>
-              <Link href="/hospitals">기준정보 관리 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>기준정보 관리</h2>
+              <p className={s.cardDesc}>병의원, 수수료를 관리합니다.</p>
+              <Link href="/hospitals" className={clsx(s.cardLink, s.cardLinkHover)}>기준정보 관리 페이지로 →</Link>
             </div>
-            <div css={cardStyles}>
-              <h2>정산확인</h2>
-              <p>전체 법인·병의원 실적을 필터로 조회하고 정산합니다.</p>
-              <Link href="/aggregate">정산확인 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>정산확인</h2>
+              <p className={s.cardDesc}>전체 법인·병의원 실적을 필터로 조회하고 정산합니다.</p>
+              <Link href="/aggregate" className={clsx(s.cardLink, s.cardLinkHover)}>정산확인 페이지로 →</Link>
             </div>
-            <div css={cardStyles}>
-              <h2>법인별 정산확인</h2>
-              <p>법인을 선택하여 해당 법인의 실적 표를 확인합니다.</p>
-              <Link href="/settlement">법인별 정산확인 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>법인별 정산확인</h2>
+              <p className={s.cardDesc}>법인을 선택하여 해당 법인의 실적 표를 확인합니다.</p>
+              <Link href="/settlement" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 정산확인 페이지로 →</Link>
             </div>
-            <div css={cardStyles}>
-              <h2>법인별 계약 조회</h2>
-              <p>법인별 딜러 계약 정보를 조회합니다.</p>
-              <Link href="/dealer-view">법인별 계약 조회 페이지로 →</Link>
+            <div className={s.card}>
+              <h2 className={s.cardTitle}>법인별 계약 조회</h2>
+              <p className={s.cardDesc}>법인별 딜러 계약 정보를 조회합니다.</p>
+              <Link href="/dealer-view" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 계약 조회 페이지로 →</Link>
             </div>
           </>
         )}
       </div>
 
-      <div css={chartSection}>
-        <h2 css={sectionTitle}>월별 매출 추이</h2>
-        <div css={chartCard}>
+      <div className={s.chartSection}>
+        <h2 className={s.sectionTitle}>월별 매출 추이</h2>
+        <div className={s.chartCard}>
           {monthlySalesData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={monthlySalesData}>
@@ -399,7 +296,7 @@ export function HomePage() {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div style={{ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted }}>
+            <div className={s.chartEmpty}>
               매출 데이터가 없습니다.
             </div>
           )}

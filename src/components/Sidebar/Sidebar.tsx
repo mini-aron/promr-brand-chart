@@ -1,90 +1,16 @@
 'use client';
-/** @jsxImportSource @emotion/react */
 import { useState, useEffect } from 'react';
-import { css } from '@emotion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useThemeMode } from '@/context/ThemeContext';
 import { HiChevronRight } from 'react-icons/hi';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Column } from '@/components/Common/Flex';
+import { clsx } from 'clsx';
 import { SingleSelect } from '@/components/Common/Select';
-
-const asideStyles = css({
-  width: 220,
-  minWidth: 220,
-  flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(2),
-  backgroundColor: theme.colors.surface,
-  borderRight: `1px solid ${theme.colors.border}`,
-  padding: theme.spacing(3),
-  boxShadow: theme.shadow.sm,
-  borderRadius: theme.radius.lg,
-});
-
-const logoStyles = css({
-  fontFamily: theme.fontFamily,
-  display: 'block',
-  fontSize: 24,
-  fontWeight: 700,
-  letterSpacing: '-0.02em',
-  textDecoration: 'none',
-  marginBottom: theme.spacing(2),
-  '& .logo-pro': { color: theme.colors.primary },
-  '& .logo-pf': { color: theme.colors.text },
-});
-
-const navLinks = css({
-  '& a': {
-    color: theme.colors.text,
-    textDecoration: 'none',
-    fontWeight: 600,
-    padding: `${theme.buttonPadding.y}px ${theme.spacing(2)}px`,
-    borderRadius: theme.radius.md,
-    '&:hover': { backgroundColor: theme.colors.background },
-  },
-});
-
-const activeLinkStyles = css({
-  color: `${theme.colors.primary} !important`,
-  backgroundColor: `${theme.colors.primary}12`,
-});
-
-const subNavWrap = css({
-  paddingLeft: theme.spacing(2),
-  marginTop: 2,
-  borderLeft: `2px solid ${theme.colors.border}`,
-  marginLeft: theme.spacing(1),
-  '& a': {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    fontSize: 14,
-  },
-});
-
-const chevronStyles = (open: boolean) =>
-  css({
-    fontSize: 12,
-    transition: 'transform 0.2s',
-    transform: open ? 'rotate(90deg)' : 'rotate(0)',
-  });
-
-const themeToggleStyles = css({
-  fontSize: 13,
-  padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-});
-
-const bottomBlockStyles = css({
-  marginTop: 'auto',
-  paddingTop: theme.spacing(2),
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(1),
-});
+import * as s from './Sidebar.css';
 
 type NavLink = { to: string; label: string };
 
@@ -157,14 +83,14 @@ export function Sidebar() {
     pathname === path || (path === '/upload' && pathname.startsWith('/upload'));
 
   return (
-    <aside css={asideStyles}>
-      <Link href="/home" css={logoStyles} aria-label="PROPF 홈">
-        <span className="logo-pro">PRO</span>
-        <span className="logo-pf">PF</span>
+    <aside className={s.aside}>
+      <Link href="/home" className={s.logo} aria-label="PROPF 홈">
+        <span className={s.logoPro}>PRO</span>
+        <span className={s.logoPf}>PF</span>
       </Link>
       <nav>
-        <Column gap={theme.spacing(1)} css={navLinks}>
-          <Link href="/home" css={isActive('/home') ? activeLinkStyles : undefined}>
+        <Column gap={4} className={s.navLinks}>
+          <Link href="/home" className={clsx(s.navLink, isActive('/home') && s.activeLink)}>
             홈
           </Link>
           {navItems.map((item) =>
@@ -173,22 +99,22 @@ export function Sidebar() {
                 <Button
                   variant="menu"
                   size="menu"
-                  css={isSectionActive(item, pathname) ? activeLinkStyles : undefined}
+                  className={isSectionActive(item, pathname) ? s.activeLink : undefined}
                   onClick={() => toggleSection(item.label)}
                   aria-expanded={openSections[item.label]}
                 >
                   {item.label}
-                  <span css={chevronStyles(!!openSections[item.label])}>
+                  <span className={openSections[item.label] ? s.chevronOpen : s.chevronClosed}>
                     <HiChevronRight size={14} />
                   </span>
                 </Button>
                 {openSections[item.label] && (
-                  <Column gap={1} css={subNavWrap}>
+                  <Column gap={4} className={s.subNavWrap}>
                     {item.children.map((link) => (
                       <Link
                         key={link.to}
                         href={link.to}
-                        css={isActive(link.to) ? activeLinkStyles : undefined}
+                        className={clsx(s.subNavLink, isActive(link.to) && s.activeLink)}
                       >
                         {link.label}
                       </Link>
@@ -200,7 +126,7 @@ export function Sidebar() {
               <Link
                 key={item.to}
                 href={item.to}
-                css={isActive(item.to) ? activeLinkStyles : undefined}
+                className={clsx(s.navLink, isActive(item.to) && s.activeLink)}
               >
                 {item.label}
               </Link>
@@ -208,11 +134,11 @@ export function Sidebar() {
           )}
         </Column>
       </nav>
-      <div css={bottomBlockStyles}>
-        <Button variant="ghost" css={themeToggleStyles} onClick={toggleTheme} aria-label="테마 전환">
+      <div className={s.bottomBlock}>
+        <Button variant="ghost" className={s.themeToggle} onClick={toggleTheme} aria-label="테마 전환">
           {themeMode === 'light' ? '다크 모드' : '라이트 모드'}
         </Button>
-        <Button variant="ghost" css={themeToggleStyles} onClick={() => logout()} aria-label="로그아웃">
+        <Button variant="ghost" className={s.themeToggle} onClick={() => logout()} aria-label="로그아웃">
           로그아웃
         </Button>
         <SingleSelect

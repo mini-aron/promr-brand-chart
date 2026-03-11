@@ -1,6 +1,11 @@
 /** @jsxImportSource @emotion/react */
-import { css, type SerializedStyles } from '@emotion/react';
 import type { ReactNode, HTMLAttributes, CSSProperties } from 'react';
+import { clsx } from 'clsx';
+import type { SerializedStyles } from '@emotion/react';
+import * as s from './Flex.css';
+
+const gapToCss = (gap: string | number) =>
+  typeof gap === 'number' ? `${gap}px` : gap;
 
 export type FlexProps = {
   direction?: 'row' | 'column';
@@ -11,12 +16,9 @@ export type FlexProps = {
   /** flex shorthand (e.g. 1 for flex: 1) */
   flex?: number | string;
   children: ReactNode;
-  /** Emotion css override (theme, 미디어쿼리 등 사용 가능) */
-  css?: SerializedStyles | SerializedStyles[];
+  /** @deprecated VE 마이그레이션 후 className 사용 */
+  css?: SerializedStyles | Array<SerializedStyles | false | undefined>;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'css'>;
-
-const gapToCss = (gap: string | number) =>
-  typeof gap === 'number' ? `${gap}px` : gap;
 
 export function Flex({
   direction = 'row',
@@ -24,26 +26,28 @@ export function Flex({
   justifyContent = 'flex-start',
   alignItems = direction === 'row' ? 'center' : 'stretch',
   wrap,
-  flex,
-  css: cssProp,
+  flex: flexProp,
   children,
+  className,
+  css: cssProp,
   style,
   ...rest
 }: FlexProps) {
-  const baseStyle = css({
-    display: 'flex',
+  const computedStyle: React.CSSProperties = {
     flexDirection: direction,
     gap: gapToCss(gap),
     justifyContent,
     alignItems,
     ...(wrap && { flexWrap: wrap }),
-    ...(flex !== undefined && { flex: typeof flex === 'number' ? flex : flex }),
-  });
+    ...(flexProp !== undefined && { flex: typeof flexProp === 'number' ? flexProp : flexProp }),
+    ...style,
+  };
 
   return (
     <div
-      css={cssProp ? [baseStyle, cssProp] : baseStyle}
-      style={style}
+      className={clsx(s.flex, className)}
+      css={cssProp}
+      style={computedStyle}
       {...rest}
     >
       {children}
