@@ -10,6 +10,55 @@ import { Button } from '@/components/Common/Button';
 import { Checkbox } from '@/components/Common/Checkbox';
 import { FilterInput } from '@/components/Common/Input';
 import { ProductFeeTable } from './FeeTable';
+import { Row } from '@/components/Common/Flex';
+
+type EventFormState = {
+  productCode: string;
+  type: FeeEventType;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isFixedFee: boolean;
+  fixedFeeRate: number;
+  additionalFeeRate: number;
+  note: string;
+  corporationId: string;
+  hospitalId: string;
+  priority: number;
+  error: string | null;
+};
+
+const INITIAL_EVENT_FORM: EventFormState = {
+  productCode: '',
+  type: 'item',
+  name: '',
+  startDate: '',
+  endDate: '',
+  isFixedFee: true,
+  fixedFeeRate: 1,
+  additionalFeeRate: 1,
+  note: '',
+  corporationId: '',
+  hospitalId: '',
+  priority: 1,
+  error: null,
+};
+
+type AddProductFormState = {
+  search: string;
+  selectedProduct: ProductFee | null;
+  feeRate: number;
+  error: string | null;
+  excelFileName: string | null;
+};
+
+const INITIAL_ADD_PRODUCT_FORM: AddProductFormState = {
+  search: '',
+  selectedProduct: null,
+  feeRate: 0,
+  error: null,
+  excelFileName: null,
+};
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -232,26 +281,17 @@ export function FeeManagePage() {
     [selectedMonth]
   );
 
-  const [productSearch, setProductSearch] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<ProductFee | null>(null);
-  const [newFeeRate, setNewFeeRate] = useState<number>(0);
-  const [addError, setAddError] = useState<string | null>(null);
-  const [excelFileName, setExcelFileName] = useState<string | null>(null);
-
-  const [eventProductCode, setEventProductCode] = useState('');
-  const [eventType, setEventType] = useState<FeeEventType>('item');
-  const [eventName, setEventName] = useState('');
-  const [eventStartDate, setEventStartDate] = useState('');
-  const [eventEndDate, setEventEndDate] = useState('');
-  const [eventIsFixedFee, setEventIsFixedFee] = useState(true);
-  const [eventFixedFeeRate, setEventFixedFeeRate] = useState<number>(1);
-  const [eventAdditionalFeeRate, setEventAdditionalFeeRate] = useState<number>(1);
-  const [eventNote, setEventNote] = useState('');
-  const [eventCorporationId, setEventCorporationId] = useState('');
-  const [eventHospitalId, setEventHospitalId] = useState('');
-  const [eventPriority, setEventPriority] = useState<number>(1);
-  const [eventFormError, setEventFormError] = useState<string | null>(null);
+  const [addProductForm, setAddProductForm] = useState<AddProductFormState>(INITIAL_ADD_PRODUCT_FORM);
+  const [eventForm, setEventForm] = useState<EventFormState>(INITIAL_EVENT_FORM);
   const [rightPanelMode, setRightPanelMode] = useState<'event' | 'product'>('product');
+
+  const updateEventForm = useCallback((patch: Partial<EventFormState>) => {
+    setEventForm((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const resetEventForm = useCallback(() => {
+    setEventForm(INITIAL_EVENT_FORM);
+  }, []);
 
   const initialFees = initialMonthlyFees[selectedMonth];
   const isRowModified = useCallback(
@@ -283,34 +323,33 @@ export function FeeManagePage() {
 
   const addableProducts = useMemo(() => {
     const currentCodes = new Set((monthlyFees[selectedMonth] ?? [...mockProductFees]).map((p) => p.productCode));
-    const q = productSearch.trim().toLowerCase();
+    const q = addProductForm.search.trim().toLowerCase();
     return mockProductFees.filter(
       (p) =>
         !currentCodes.has(p.productCode) &&
         (!q || p.productName.toLowerCase().includes(q) || p.productCode.toLowerCase().includes(q))
     );
-  }, [selectedMonth, monthlyFees, productSearch]);
+  }, [selectedMonth, monthlyFees, addProductForm.search]);
 
   useEffect(() => {
-    if (
-      selectedProduct &&
-      !addableProducts.some((p) => p.productCode === selectedProduct.productCode)
-    ) {
-      setSelectedProduct(null);
+    const { selectedProduct } = addProductForm;
+    if (selectedProduct && !addableProducts.some((p) => p.productCode === selectedProduct.productCode)) {
+      setAddProductForm((prev) => ({ ...prev, selectedProduct: null }));
     }
-  }, [addableProducts, selectedProduct]);
+  }, [addableProducts, addProductForm.selectedProduct]);
 
   const addProduct = useCallback(() => {
+    const { selectedProduct, feeRate } = addProductForm;
     if (!selectedProduct) {
-      setAddError('품목을 검색 후 목록에서 선택하세요.');
+      setAddProductForm((prev) => ({ ...prev, error: '품목을 검색 후 목록에서 선택하세요.' }));
       return;
     }
     const list = monthlyFees[selectedMonth] ?? [...mockProductFees];
     if (list.some((p) => p.productCode === selectedProduct.productCode)) {
-      setAddError('이미 존재하는 품목입니다.');
+      setAddProductForm((prev) => ({ ...prev, error: '이미 존재하는 품목입니다.' }));
       return;
     }
-    setAddError(null);
+    setAddProductForm(INITIAL_ADD_PRODUCT_FORM);
     setMonthlyFees((prev) => {
       const base = prev[selectedMonth] ?? [...mockProductFees];
       return {
@@ -320,7 +359,7 @@ export function FeeManagePage() {
           {
             productCode: selectedProduct.productCode,
             productName: selectedProduct.productName,
-            feeRate: newFeeRate,
+            feeRate,
             ediCode: selectedProduct.ediCode,
             createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
             updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -330,11 +369,8 @@ export function FeeManagePage() {
         ],
       };
     });
-    setSelectedProduct(null);
-    setProductSearch('');
-    setNewFeeRate(0);
     setRightPanelMode('event');
-  }, [selectedMonth, monthlyFees, selectedProduct, newFeeRate]);
+  }, [selectedMonth, monthlyFees, addProductForm]);
 
   const eventsByProduct = useMemo(() => {
     const map = new Map<string, FeeEvent[]>();
@@ -353,126 +389,106 @@ export function FeeManagePage() {
   );
 
   const hospitalOptions = useMemo(() => {
-    if (!eventCorporationId) return [];
+    if (!eventForm.corporationId) return [];
     return mockHospitals
-      .filter((h) => h.corporationId === eventCorporationId)
+      .filter((h) => h.corporationId === eventForm.corporationId)
       .map((h) => ({
         label: `${h.name}${h.accountCode ? ` (${h.accountCode})` : ''}`,
         value: h.id,
       }));
-  }, [eventCorporationId]);
+  }, [eventForm.corporationId]);
 
   const handleAddEvent = useCallback(() => {
-    const n = eventName.trim();
-    if (!eventProductCode) {
-      setEventFormError('좌측 표에서 품목을 선택하세요.');
+    const {
+      productCode,
+      type,
+      name,
+      startDate,
+      endDate,
+      isFixedFee,
+      fixedFeeRate,
+      additionalFeeRate,
+      note,
+      corporationId,
+      hospitalId,
+      priority,
+    } = eventForm;
+
+    const n = name.trim();
+    if (!productCode) {
+      setEventForm((prev) => ({ ...prev, error: '좌측 표에서 품목을 선택하세요.' }));
       return;
     }
     if (!n) {
-      setEventFormError('이벤트 이름을 입력하세요.');
+      setEventForm((prev) => ({ ...prev, error: '이벤트 이름을 입력하세요.' }));
       return;
     }
-    if (!eventStartDate || !eventEndDate) {
-      setEventFormError('시작일·종료일을 입력하세요.');
+    if (!startDate || !endDate) {
+      setEventForm((prev) => ({ ...prev, error: '시작일·종료일을 입력하세요.' }));
       return;
     }
-    if (new Date(eventStartDate) > new Date(eventEndDate)) {
-      setEventFormError('종료일은 시작일 이후여야 합니다.');
+    if (new Date(startDate) > new Date(endDate)) {
+      setEventForm((prev) => ({ ...prev, error: '종료일은 시작일 이후여야 합니다.' }));
       return;
     }
-    if (eventType !== 'item' && !eventCorporationId) {
-      setEventFormError('법인을 선택하세요.');
+    if (type !== 'item' && !corporationId) {
+      setEventForm((prev) => ({ ...prev, error: '법인을 선택하세요.' }));
       return;
     }
-    if (eventType === 'corporation_hospital' && !eventHospitalId) {
-      setEventFormError('병의원을 선택하세요.');
+    if (type === 'corporation_hospital' && !hospitalId) {
+      setEventForm((prev) => ({ ...prev, error: '병의원을 선택하세요.' }));
       return;
     }
-    const rate = eventIsFixedFee ? eventFixedFeeRate : eventAdditionalFeeRate;
-    if (eventIsFixedFee && (rate < 1 || rate > 100)) {
-      setEventFormError('고정수수료율은 1~100 사이로 입력하세요.');
+    const rate = isFixedFee ? fixedFeeRate : additionalFeeRate;
+    if (isFixedFee && (rate < 1 || rate > 100)) {
+      setEventForm((prev) => ({ ...prev, error: '고정수수료율은 1~100 사이로 입력하세요.' }));
       return;
     }
-    if (!eventIsFixedFee && (rate < -100 || rate > 100)) {
-      setEventFormError('추가수수료율은 -100~100 사이로 입력하세요.');
+    if (!isFixedFee && (rate < -100 || rate > 100)) {
+      setEventForm((prev) => ({ ...prev, error: '추가수수료율은 -100~100 사이로 입력하세요.' }));
       return;
     }
-    setEventFormError(null);
+
     const newEvent: FeeEvent = {
       id: generateEventId(),
-      productCode: eventProductCode,
-      type: eventType,
+      productCode,
+      type,
       name: n,
-      startDate: eventStartDate,
-      endDate: eventEndDate,
-      isFixedFee: eventIsFixedFee,
-      ...(eventIsFixedFee ? { fixedFeeRate: rate } : { additionalFeeRate: rate }),
-      note: eventNote.trim() || undefined,
-      ...(eventType !== 'item' && { corporationId: eventCorporationId }),
-      ...(eventType === 'corporation_hospital' && { hospitalId: eventHospitalId }),
-      priority: eventPriority,
+      startDate,
+      endDate,
+      isFixedFee,
+      ...(isFixedFee ? { fixedFeeRate: rate } : { additionalFeeRate: rate }),
+      note: note.trim() || undefined,
+      ...(type !== 'item' && { corporationId }),
+      ...(type === 'corporation_hospital' && { hospitalId }),
+      priority,
     };
     setFeeEvents((prev) => [...prev, newEvent]);
-    setExpandedProducts((prev) => new Set(prev).add(eventProductCode));
-    setEventFormError(null);
-    setEventName('');
-    setEventPriority(1);
-    setEventStartDate('');
-    setEventEndDate('');
-    setEventIsFixedFee(true);
-    setEventFixedFeeRate(1);
-    setEventAdditionalFeeRate(1);
-    setEventNote('');
-    setEventCorporationId('');
-    setEventHospitalId('');
-  }, [
-    eventProductCode,
-    eventName,
-    eventPriority,
-    eventStartDate,
-    eventEndDate,
-    eventType,
-    eventCorporationId,
-    eventHospitalId,
-    eventIsFixedFee,
-    eventFixedFeeRate,
-    eventAdditionalFeeRate,
-    eventNote,
-  ]);
+    setExpandedProducts((prev) => new Set(prev).add(productCode));
+    setEventForm(INITIAL_EVENT_FORM);
+  }, [eventForm]);
 
   const handleDeleteEvent = useCallback((eventId: string) => {
     setFeeEvents((prev) => prev.filter((e) => e.id !== eventId));
   }, []);
 
-  const resetEventForm = useCallback(() => {
-    setEventProductCode('');
-    setEventType('item');
-    setEventName('');
-    setEventStartDate('');
-    setEventEndDate('');
-    setEventIsFixedFee(true);
-    setEventFixedFeeRate(1);
-    setEventAdditionalFeeRate(1);
-    setEventNote('');
-    setEventCorporationId('');
-    setEventHospitalId('');
-    setEventPriority(1);
-    setEventFormError(null);
-  }, []);
 
   const handleRowClickForEvent = useCallback(
     (productCode: string, e: React.MouseEvent) => {
       if (rightPanelMode !== 'event') return;
       if ((e.target as HTMLElement).closest('input, button')) return;
-      setEventProductCode(productCode);
+      updateEventForm({ productCode });
     },
-    [rightPanelMode]
+    [rightPanelMode, updateEventForm]
   );
 
-  const handleSwitchToEventMode = useCallback((productCode: string) => {
-    setRightPanelMode('event');
-    setEventProductCode(productCode);
-  }, []);
+  const handleSwitchToEventMode = useCallback(
+    (productCode: string) => {
+      setRightPanelMode('event');
+      updateEventForm({ productCode });
+    },
+    [updateEventForm]
+  );
 
   return (
     <div css={pageStyles}>
@@ -482,7 +498,7 @@ export function FeeManagePage() {
       <div css={layoutWrap}>
         <div css={leftCard}>
           <div css={filterRow}>
-            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
+            <Row alignItems="center" gap={theme.spacing(1)}>
               <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>적용 월</span>
               <SingleSelect
                 id="fee-month"
@@ -492,8 +508,8 @@ export function FeeManagePage() {
                 placeholder="월 선택"
                 aria-label="적용 월"
               />
-            </div>
-            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
+            </Row>
+            <Row alignItems="center" gap={theme.spacing(1)}>
               <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>품목 검색</span>
               <FilterInput
                 id="table-product-search"
@@ -504,7 +520,7 @@ export function FeeManagePage() {
                 aria-label="품목명 검색"
                 css={css({ minHeight: 36, width: 160, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
               />
-            </div>
+            </Row>
             <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
               <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>최종수수료 기준</span>
               <SingleSelect
@@ -574,7 +590,7 @@ export function FeeManagePage() {
             eventsByProduct={eventsByProduct}
             expandedProducts={expandedProducts}
             rightPanelMode={rightPanelMode}
-            eventProductCode={eventProductCode}
+            eventProductCode={eventForm.productCode}
             isRowModified={isRowModified}
             feeScope={tableCorporationId ? { corporationId: tableCorporationId, hospitalId: tableHospitalId || undefined } : { type: 'item' }}
             tableCriteria={tableCriteria}
@@ -616,8 +632,8 @@ export function FeeManagePage() {
                   id="product-search"
                   type="search"
                   placeholder="품목명·품목코드로 검색"
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
+                  value={addProductForm.search}
+                  onChange={(e) => setAddProductForm((prev) => ({ ...prev, search: e.target.value }))}
                   aria-label="품목명 검색"
                 />
               </div>
@@ -632,10 +648,10 @@ export function FeeManagePage() {
                       value: p.productCode,
                     })),
                   ]}
-                  selected={selectedProduct ? selectedProduct.productCode : ''}
+                  selected={addProductForm.selectedProduct ? addProductForm.selectedProduct.productCode : ''}
                   onChange={(v) => {
                     const p = addableProducts.find((x) => x.productCode === v) ?? null;
-                    setSelectedProduct(p);
+                    setAddProductForm((prev) => ({ ...prev, selectedProduct: p }));
                   }}
                   placeholder="선택하세요 (품목코드 · 품목명)"
                   aria-label="추가할 품목 선택"
@@ -651,8 +667,8 @@ export function FeeManagePage() {
                     min={0}
                     max={100}
                     step={0.1}
-                    value={newFeeRate === 0 ? '' : newFeeRate}
-                    onChange={(e) => setNewFeeRate(Number(e.target.value) || 0)}
+                    value={addProductForm.feeRate === 0 ? '' : addProductForm.feeRate}
+                    onChange={(e) => setAddProductForm((prev) => ({ ...prev, feeRate: Number(e.target.value) || 0 }))}
                     placeholder="0"
                     aria-label="수수료율 입력"
                   />
@@ -666,7 +682,7 @@ export function FeeManagePage() {
                 <label>수수료 엑셀 업로드</label>
                 <label
                   css={excelUploadZone}
-                  data-has-file={!!excelFileName}
+                  data-has-file={!!addProductForm.excelFileName}
                   htmlFor="fee-excel-upload"
                 >
                   <input
@@ -675,13 +691,13 @@ export function FeeManagePage() {
                     accept=".xlsx,.xls"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      setExcelFileName(file?.name ?? null);
+                      setAddProductForm((prev) => ({ ...prev, excelFileName: file?.name ?? null }));
                     }}
                     aria-label="수수료 엑셀 파일 선택"
                   />
                   <Upload size={24} className="upload-icon" aria-hidden />
                   <span className="upload-text">
-                    {excelFileName ?? '클릭하여 엑셀 파일 선택'}
+                    {addProductForm.excelFileName ?? '클릭하여 엑셀 파일 선택'}
                   </span>
                   <span className="upload-hint">.xlsx, .xls 지원</span>
                 </label>
@@ -695,9 +711,9 @@ export function FeeManagePage() {
                 <Download size={16} />
                 엑셀 양식 다운로드
               </Button>
-              {addError && (
+              {addProductForm.error && (
                 <p css={css({ marginTop: theme.spacing(2), fontSize: 13, color: theme.colors.error })}>
-                  {addError}
+                  {addProductForm.error}
                 </p>
               )}
             </>
@@ -707,10 +723,10 @@ export function FeeManagePage() {
           <div css={formField}>
             <label>품목</label>
             <div css={css({ padding: theme.spacing(1.5), backgroundColor: theme.colors.background, borderRadius: theme.radius.md, fontSize: 14 })}>
-              {eventProductCode ? (
+              {eventForm.productCode ? (
                 <span>
-                  {currentFees.find((x) => x.productCode === eventProductCode)?.productName ?? eventProductCode}{' '}
-                  <span css={css({ color: theme.colors.textMuted, fontSize: 13 })}>({eventProductCode})</span>
+                  {currentFees.find((x) => x.productCode === eventForm.productCode)?.productName ?? eventForm.productCode}{' '}
+                  <span css={css({ color: theme.colors.textMuted, fontSize: 13 })}>({eventForm.productCode})</span>
                 </span>
               ) : (
                 <span css={css({ color: theme.colors.textMuted })}>좌측 표에서 품목을 선택하세요</span>
@@ -726,36 +742,29 @@ export function FeeManagePage() {
                 { label: '법인별 이벤트', value: 'corporation' },
                 { label: '법인·병원 이벤트', value: 'corporation_hospital' },
               ]}
-              selected={eventType}
-              onChange={(v) => {
-                setEventType(v as FeeEventType);
-                setEventCorporationId('');
-                setEventHospitalId('');
-              }}
+              selected={eventForm.type}
+              onChange={(v) => updateEventForm({ type: v as FeeEventType, corporationId: '', hospitalId: '' })}
             />
           </div>
-          {eventType !== 'item' && (
+          {eventForm.type !== 'item' && (
             <>
               <div css={formField}>
                 <label htmlFor="event-corp">법인 *</label>
                 <SingleSelect
                   id="event-corp"
                   options={[{ label: '선택', value: '' }, ...corpOptions]}
-                  selected={eventCorporationId}
-                  onChange={(v) => {
-                    setEventCorporationId(String(v));
-                    setEventHospitalId('');
-                  }}
+                  selected={eventForm.corporationId}
+                  onChange={(v) => updateEventForm({ corporationId: String(v), hospitalId: '' })}
                 />
               </div>
-              {eventType === 'corporation_hospital' && (
+              {eventForm.type === 'corporation_hospital' && (
                 <div css={formField}>
                   <label htmlFor="event-hospital">병의원 *</label>
                   <SingleSelect
                     id="event-hospital"
                     options={[{ label: '선택', value: '' }, ...hospitalOptions]}
-                    selected={eventHospitalId}
-                    onChange={(v) => setEventHospitalId(String(v))}
+                    selected={eventForm.hospitalId}
+                    onChange={(v) => updateEventForm({ hospitalId: String(v) })}
                   />
                 </div>
               )}
@@ -766,8 +775,8 @@ export function FeeManagePage() {
             <input
               id="event-name"
               type="text"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
+              value={eventForm.name}
+              onChange={(e) => updateEventForm({ name: e.target.value })}
               placeholder="이벤트 이름"
             />
           </div>
@@ -777,8 +786,8 @@ export function FeeManagePage() {
               id="event-priority"
               type="number"
               min={1}
-              value={eventPriority}
-              onChange={(e) => setEventPriority(Math.max(1, Number(e.target.value) || 1))}
+              value={eventForm.priority}
+              onChange={(e) => updateEventForm({ priority: Math.max(1, Number(e.target.value) || 1) })}
             />
           </div>
           <div css={css({ display: 'flex', gap: theme.spacing(2), marginBottom: theme.spacing(3) })}>
@@ -787,8 +796,8 @@ export function FeeManagePage() {
               <input
                 id="event-start"
                 type="date"
-                value={eventStartDate}
-                onChange={(e) => setEventStartDate(e.target.value)}
+                value={eventForm.startDate}
+                onChange={(e) => updateEventForm({ startDate: e.target.value })}
               />
             </div>
             <div css={[formField, css({ flex: 1 })]}>
@@ -796,27 +805,27 @@ export function FeeManagePage() {
               <input
                 id="event-end"
                 type="date"
-                value={eventEndDate}
-                onChange={(e) => setEventEndDate(e.target.value)}
+                value={eventForm.endDate}
+                onChange={(e) => updateEventForm({ endDate: e.target.value })}
               />
             </div>
           </div>
           <div css={formField}>
             <Checkbox
               id="event-fixed-fee"
-              checked={eventIsFixedFee}
-              onChange={setEventIsFixedFee}
+              checked={eventForm.isFixedFee}
+              onChange={(v) => updateEventForm({ isFixedFee: v })}
               layout="vertical"
-              label={eventIsFixedFee ? '고정수수료' : '추가수수료'}
+              label={eventForm.isFixedFee ? '고정수수료' : '추가수수료'}
               description={
-                eventIsFixedFee
+                eventForm.isFixedFee
                   ? '다른 수수료에 영향받지 않고 해당 고정율만 사용'
                   : '기본수수료에 추가하여 적용'
               }
               aria-label="고정수수료 여부"
             />
           </div>
-          {eventIsFixedFee ? (
+          {eventForm.isFixedFee ? (
             <div css={formField}>
               <label htmlFor="event-fixed-rate">고정수수료율 (1~100)% *</label>
               <input
@@ -824,8 +833,8 @@ export function FeeManagePage() {
                 type="number"
                 min={1}
                 max={100}
-                value={eventFixedFeeRate}
-                onChange={(e) => setEventFixedFeeRate(Number(e.target.value) || 1)}
+                value={eventForm.fixedFeeRate}
+                onChange={(e) => updateEventForm({ fixedFeeRate: Number(e.target.value) || 1 })}
               />
             </div>
           ) : (
@@ -837,8 +846,8 @@ export function FeeManagePage() {
                 min={-100}
                 max={100}
                 step={0.1}
-                value={eventAdditionalFeeRate}
-                onChange={(e) => setEventAdditionalFeeRate(Number(e.target.value) || 0)}
+                value={eventForm.additionalFeeRate}
+                onChange={(e) => updateEventForm({ additionalFeeRate: Number(e.target.value) || 0 })}
               />
             </div>
           )}
@@ -846,8 +855,8 @@ export function FeeManagePage() {
             <label htmlFor="event-note">비고 (설명)</label>
             <textarea
               id="event-note"
-              value={eventNote}
-              onChange={(e) => setEventNote(e.target.value)}
+              value={eventForm.note}
+              onChange={(e) => updateEventForm({ note: e.target.value })}
               placeholder="설명"
             />
           </div>
@@ -859,9 +868,9 @@ export function FeeManagePage() {
               초기화
             </Button>
           </div>
-          {eventFormError && (
+          {eventForm.error && (
             <p css={css({ marginTop: theme.spacing(2), fontSize: 13, color: theme.colors.error })}>
-              {eventFormError}
+              {eventForm.error}
             </p>
           )}
             </>

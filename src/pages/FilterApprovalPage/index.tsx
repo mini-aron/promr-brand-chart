@@ -275,32 +275,7 @@ export function FilterApprovalPage() {
       <div css={layoutWrap}>
         <div css={leftCard}>
           <div css={filterRowStyles}>
-            <SingleSelect
-              id="filter-corp"
-              options={[
-                { label: '전체', value: '' },
-                ...corporations.map((c) => ({ label: c.name, value: c.id })),
-              ]}
-              selected={filterCorpId ?? ''}
-              onChange={(v) => setFilterCorpId(v === '' ? null : String(v))}
-              placeholder="법인"
-              size="large"
-              aria-label="법인 필터"
-            />
-            <SingleSelect
-              id="filter-status"
-              options={[
-                { label: '전체', value: '' },
-                { label: '대기', value: 'pending' },
-                { label: '승인', value: 'approved' },
-                { label: '승인불가', value: 'rejected' },
-              ]}
-              selected={filterStatus ?? ''}
-              onChange={(v) => setFilterStatus(v === '' ? null : String(v))}
-              placeholder="상태"
-              size="large"
-              aria-label="상태 필터"
-            />
+            
           </div>
 
           <div css={listWrap}>
