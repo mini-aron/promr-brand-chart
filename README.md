@@ -1,29 +1,44 @@
-# Promr Brand Chart
+# Promr Brand Chart (PROPF)
 
 법인 실적·처방사진 업로드 및 제약사 **정산** 확인을 위한 웹 앱입니다.
 
 ## 기술 스택
 
-- **Vite** + **React 18** + **TypeScript**
+- **Next.js 14** (App Router) + **React 18** + **TypeScript**
 - **Emotion** (CSS-in-JS)
-- **React Router** v6
+- **@tanstack/react-table** (테이블)
+- **Recharts** (차트)
+- **Axios** (HTTP)
 - **xlsx** (엑셀 파싱)
+- **Storybook** (컴포넌트 개발/문서화)
 
 ## 사용자 유형
 
-- **법인**: **병의원**(또는 전체)과 **월**을 선택한 뒤 실적 엑셀 업로드, 해당 처방 사진 업로드. **품목**·**거래처** 엑셀 다운로드 제공.
-- **제약사**: 실적/처방 업로드 메뉴 없음. 법인이 올린 실적을 **거래처 단위 정산 표**로 확인 (원내/원외 구분, 합계 행).
+- **법인**: 실적·처방 업로드, 계약관리, 법인 실적 조회, 필터링 요청.
+- **제약사**: 병의원/수수료 기준정보 관리, 정산확인, 법인별 정산·계약 조회, 거래선 관리.
 
 ## 페이지 구성
 
 | 경로 | 설명 | 노출 대상 |
 |------|------|-----------|
-| `/` | 홈 (업로드/정산 링크) | 전체 |
-| `/upload/sales` | 실적 업로드 (엑셀) | 법인만 |
-| `/upload/prescription` | 처방사진 업로드 (병원별 또는 전체) | 법인만 |
-| `/aggregate` | 법인 정산 확인 (거래처별 원내/원외 품목수·처방액, 합계) | 제약사만 |
+| `/` | 루트 (로그인 시 `/home`, 비로그인 시 `/promotion` 리다이렉트) | 전체 |
+| `/login` | 로그인 | 전체 |
+| `/promotion` | 프로모션/랜딩 | 비로그인 |
+| `/home` | 대시보드 홈 | 로그인 전체 |
+| `/upload` | 실적 등록 (업로드 메인) | 법인 |
+| `/upload/sales` | 실적 업로드 (엑셀) | 법인 |
+| `/upload/prescription` | 처방사진 업로드 | 법인 |
+| `/upload/notice` | 업로드 공지 | 법인 |
+| `/dealer-manage` | 계약관리 | 법인 |
+| `/aggregate` | 법인 실적 조회 / 정산확인 | 법인·제약사 |
+| `/settlement` | 법인별 정산확인 | 제약사 |
+| `/hospitals` | 병의원 관리 | 제약사 |
+| `/fees` | 수수료관리 | 제약사 |
+| `/filter-request` | 필터링 요청 | 법인 |
+| `/filter-approval` | 거래선 관리 | 제약사 |
+| `/dealer-view` | 법인별 계약 조회 | 제약사 |
 
-**사이드 메뉴** 왼쪽에서 화면별 메뉴가 보이며, 하단에서 **법인 / 제약사**를 선택하면 메뉴 구성이 바뀝니다.
+**사이드바** 왼쪽에서 화면별 메뉴가 보이며, 하단에서 **법인 / 제약사**를 선택하면 메뉴 구성이 바뀝니다.
 
 ## 실행 방법
 
@@ -32,7 +47,17 @@ npm install
 npm run dev
 ```
 
-브라우저에서 `http://localhost:5173` 접속.
+브라우저에서 `http://localhost:5000` 접속.
+
+```bash
+# 프로덕션 빌드 및 실행
+npm run build
+npm start
+
+# Storybook (컴포넌트 개발)
+npm run storybook
+# → http://localhost:6006
+```
 
 ## 엑셀 실적 업로드 (법인)
 
@@ -53,4 +78,15 @@ npm run dev
 
 ## 데이터
 
-현재는 메모리 상태로만 동작하며, 새로고침 시 목 데이터로 초기화됩니다. 백엔드 연동 시 `src/context/AppContext.tsx` 및 `src/store/mockData.ts`를 API 호출로 교체하면 됩니다.
+현재는 메모리 상태로만 동작하며, 새로고침 시 목 데이터로 초기화됩니다. 백엔드 연동 시 `src/context/AppContext.tsx` 및 관련 mock 데이터를 API 호출로 교체하면 됩니다.
+
+## 스크립트
+
+| 명령어 | 설명 |
+|--------|------|
+| `npm run dev` | 개발 서버 (포트 5000) |
+| `npm run build` | 프로덕션 빌드 |
+| `npm start` | 프로덕션 서버 실행 |
+| `npm run lint` | ESLint 실행 |
+| `npm run storybook` | Storybook 개발 서버 (포트 6006) |
+| `npm run build-storybook` | Storybook 정적 빌드 |
