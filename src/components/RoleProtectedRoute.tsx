@@ -2,7 +2,7 @@
 /** @jsxImportSource @emotion/react */
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
 import type { UserRole } from '@/types';
 
 type RoleProtectedRouteProps = {

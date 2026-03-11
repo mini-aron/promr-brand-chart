@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import { mockCorporations, mockHospitals, mockSalesRows } from '@/store/mockData';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
@@ -79,7 +80,10 @@ function formatAmount(n: number): string {
 }
 
 export function AggregatePage() {
-  const { userRole, currentCorporationId, corporations, hospitals, salesRows } = useApp();
+  const { userRole, currentCorporationId } = useApp();
+  const corporations = mockCorporations;
+  const hospitals = mockHospitals;
+  const salesRows = mockSalesRows;
   const isCorporation = userRole === 'corporation';
   const [corporationId, setCorporationId] = useState<string | ''>(
     () => (isCorporation ? currentCorporationId : '')

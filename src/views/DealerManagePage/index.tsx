@@ -3,7 +3,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import { mockDealers } from '@/store/mockData';
 import type { Dealer } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -181,7 +182,14 @@ const confirmModalBox = css({
 });
 
 export function DealerManagePage() {
-  const { dealers, currentCorporationId, addDealer, deleteDealer } = useApp();
+  const { currentCorporationId } = useApp();
+  const [dealers, setDealers] = useState<Dealer[]>(mockDealers);
+  const addDealer = useCallback((dealer: Dealer) => {
+    setDealers((prev) => [...prev, dealer]);
+  }, []);
+  const deleteDealer = useCallback((dealerId: string) => {
+    setDealers((prev) => prev.filter((d) => d.id !== dealerId));
+  }, []);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSalespersonName, setNewSalespersonName] = useState('');
   const [newPhone, setNewPhone] = useState('');

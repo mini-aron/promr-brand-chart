@@ -3,7 +3,8 @@
 import { css } from '@emotion/react';
 import Link from 'next/link';
 import { HiPhotograph, HiDocumentText } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import { mockPharmas } from '@/store/mockData';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Column } from '@/components/Common/Flex';
@@ -127,7 +128,8 @@ const NOTICE_PREVIEW: { title: string; date: string }[] = [
 ];
 
 export function SalesRegisterPage() {
-  const { userRole, currentPharmaId, setCurrentPharmaId, pharmas } = useApp();
+  const { userRole, currentPharmaId, setCurrentPharmaId } = useApp();
+  const pharmas = mockPharmas;
 
   const showMenu = userRole === 'corporation' && pharmas.length > 0 && currentPharmaId;
 

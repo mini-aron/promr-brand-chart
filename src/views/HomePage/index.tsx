@@ -3,7 +3,15 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiArrowDown, HiArrowUp } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import {
+  mockCorporations,
+  mockDealers,
+  mockFilterRequests,
+  mockHospitals,
+  mockPrescriptionUploads,
+  mockSalesRows,
+} from '@/store/mockData';
 import { clsx } from 'clsx';
 import { theme } from '@/theme';
 import * as s from './index.css';
@@ -14,7 +22,13 @@ function formatAmount(value: number): string {
 }
 
 export function HomePage() {
-  const { userRole, salesRows, prescriptionUploads, currentCorporationId, dealers, hospitals, corporations, filterRequests } = useApp();
+  const { userRole, currentCorporationId } = useApp();
+  const salesRows = mockSalesRows;
+  const prescriptionUploads = mockPrescriptionUploads;
+  const dealers = mockDealers;
+  const hospitals = mockHospitals;
+  const corporations = mockCorporations;
+  const filterRequests = mockFilterRequests;
 
   const corporationStats = useMemo(() => {
     const mySalesRows = salesRows.filter((s) => s.corporationId === currentCorporationId);

@@ -10,8 +10,8 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { useApp } from '@/context/AppContext';
-import { mockProductFees } from '@/store/mockData';
+import { useApp } from '@/store/appStore';
+import { mockHospitals, mockPharmas, mockProductFees, mockSalesRows } from '@/store/mockData';
 import type { SalesRow } from '@/types';
 import { HiOutlineX } from 'react-icons/hi';
 import { theme } from '@/theme';
@@ -160,7 +160,13 @@ function getMonthOptions(): { label: string; value: string }[] {
 
 export function SalesUploadPage() {
   const router = useRouter();
-  const { userRole, currentCorporationId, currentPharmaId, pharmas, hospitals, salesRows, addSalesRows } = useApp();
+  const { userRole, currentCorporationId, currentPharmaId } = useApp();
+  const pharmas = mockPharmas;
+  const hospitals = mockHospitals;
+  const [salesRows, setSalesRows] = useState<SalesRow[]>(mockSalesRows);
+  const addSalesRows = useCallback((rows: SalesRow[]) => {
+    setSalesRows((prev) => [...prev, ...rows]);
+  }, []);
   const corporationHospitals = hospitals.filter((h) => h.corporationId === currentCorporationId);
   const [settlementMonth, setSettlementMonth] = useState<string>(() => {
     const d = new Date();

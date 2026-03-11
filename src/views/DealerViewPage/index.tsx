@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { mockCorporations, mockDealers } from '@/store/mockData';
 import type { Dealer } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -218,7 +218,8 @@ const emptyState = css({
 });
 
 export function DealerViewPage() {
-  const { corporations, dealers } = useApp();
+  const corporations = mockCorporations;
+  const dealers = mockDealers;
   const [selectedCorpId, setSelectedCorpId] = useState<string | null>(corporations[0]?.id ?? null);
   const [corpSearch, setCorpSearch] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);

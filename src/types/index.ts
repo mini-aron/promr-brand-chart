@@ -1,5 +1,3 @@
-export * from './models';
-
 /** 사용자 유형 */
 export type UserRole = 'corporation' | 'pharma';
 
@@ -48,9 +46,6 @@ export interface ProductFee {
   /** 마지막 업데이트 유저 */
   updatedBy?: string;
 }
-
-/** 수수료 테이블 조회 기준 타입 */
-export type FeeCriteriaType = 'product' | 'hospital';
 
 /** 수수료 이벤트 종류 */
 export type FeeEventType = 'item' | 'corporation' | 'corporation_hospital';
@@ -107,12 +102,6 @@ export interface PrescriptionUpload {
   uploadedAt: string;
   /** 업로드 시 선택한 월 (YYYY-MM) */
   settlementMonth?: string;
-}
-
-/** 필터 상태 (제약사 법인 정산 확인용) */
-export interface AggregateFilter {
-  corporationId: string | null;
-  hospitalId: string | null;
 }
 
 /** 필터링 승인요청: 해당 병의원과 거래해도 되는지 여부 승인 요청 (법인별 필터링 승인요청 메뉴용) */

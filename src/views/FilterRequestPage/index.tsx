@@ -2,7 +2,8 @@
 /** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import { mockFilterRequests, mockHospitals, mockPharmas } from '@/store/mockData';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { FilterInput } from '@/components/Common/Input';
@@ -188,8 +189,72 @@ function formatDateTime(iso: string): string {
 }
 
 export function FilterRequestPage() {
-  const { currentCorporationId, currentPharmaId, pharmas, hospitals, filterRequests, addFilterRequest, addFilterRequestNewHospital } =
-    useApp();
+  const { currentCorporationId, currentPharmaId } = useApp();
+  const pharmas = mockPharmas;
+  const hospitals = mockHospitals;
+  const [filterRequests, setFilterRequests] = useState(mockFilterRequests);
+  const addFilterRequest = useCallback(
+    (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string, status?: FilterRequest['status']) => {
+      const id = `fr-${Date.now()}`;
+      const now = new Date().toISOString().slice(0, 19);
+      const newStatus = status ?? 'pending';
+      const processedAt = newStatus !== 'pending' ? now : undefined;
+      setFilterRequests((prev) => [
+        ...prev,
+        {
+          id,
+          corporationId,
+          pharmaId,
+          hospitalId,
+          status: newStatus,
+          requestedAt: now,
+          requestMessage,
+          processedAt,
+          createdAt: now,
+          updatedAt: newStatus !== 'pending' ? now : undefined,
+          createdBy: 'admin',
+          updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
+        },
+      ]);
+    },
+    []
+  );
+  const addFilterRequestNewHospital = useCallback(
+    (
+      corporationId: string,
+      pharmaId: string,
+      payload: {
+        hospitalName: string;
+        businessNumber: string;
+        address: string;
+        representativeName: string;
+        requestMessage?: string;
+      }
+    ) => {
+      const id = `fr-${Date.now()}`;
+      const requestedAt = new Date().toISOString().slice(0, 19);
+      const hospitalId = `new-${id}`;
+      setFilterRequests((prev) => [
+        ...prev,
+        {
+          id,
+          corporationId,
+          pharmaId,
+          hospitalId,
+          status: 'pending' as const,
+          requestedAt,
+          hospitalName: payload.hospitalName,
+          businessNumber: payload.businessNumber,
+          address: payload.address,
+          representativeName: payload.representativeName,
+          requestMessage: payload.requestMessage,
+          createdAt: requestedAt,
+          createdBy: 'admin',
+        },
+      ]);
+    },
+    []
+  );
   const [hospitalSearch, setHospitalSearch] = useState('');
   const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
   const [requestMessage, setRequestMessage] = useState('');

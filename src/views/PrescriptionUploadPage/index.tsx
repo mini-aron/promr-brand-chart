@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
+import { mockHospitals, mockPrescriptionUploads, mockSalesRows } from '@/store/mockData';
 import type { PrescriptionUpload } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -144,7 +145,13 @@ function getMonthOptions(count: number): { value: string; label: string }[] {
 const MONTH_OPTIONS = getMonthOptions(24);
 
 export function PrescriptionUploadPage() {
-  const { currentCorporationId, hospitals, salesRows, addPrescriptionUpload } = useApp();
+  const { currentCorporationId } = useApp();
+  const [prescriptionUploads, setPrescriptionUploads] = useState<PrescriptionUpload[]>(mockPrescriptionUploads);
+  const hospitals = mockHospitals;
+  const salesRows = mockSalesRows;
+  const addPrescriptionUpload = useCallback((upload: PrescriptionUpload) => {
+    setPrescriptionUploads((prev) => [...prev, upload]);
+  }, []);
   const [settlementMonth, setSettlementMonth] = useState<string>(() => {
     const n = new Date();
     return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}`;

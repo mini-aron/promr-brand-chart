@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { mockCorporations, mockHospitals, mockSalesRows } from '@/store/mockData';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { formatAmount } from '@/utils/formatNumber';
@@ -296,7 +296,9 @@ function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방
 // --- Page ---
 
 export function SettlementByCorpPage() {
-  const { corporations, hospitals, salesRows } = useApp();
+  const corporations = mockCorporations;
+  const hospitals = mockHospitals;
+  const salesRows = mockSalesRows;
   const settlement = useSettlementByCorp({ corporations, hospitals, salesRows });
   const { 정산월, 처방월 } = getSettlementMonths();
 

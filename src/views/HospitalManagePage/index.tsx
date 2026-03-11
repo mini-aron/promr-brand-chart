@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
-import { useApp } from '@/context/AppContext';
+import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { Hospital } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
@@ -155,7 +155,14 @@ const saveBar = css({
 });
 
 export function HospitalManagePage() {
-  const { hospitals, corporations, addHospital, updateHospital } = useApp();
+  const corporations = mockCorporations;
+  const [hospitals, setHospitals] = useState<Hospital[]>(mockHospitals);
+  const addHospital = useCallback((hospital: Hospital) => {
+    setHospitals((prev) => [...prev, hospital]);
+  }, []);
+  const updateHospital = useCallback((id: string, patch: Partial<Pick<Hospital, 'accountCode'>>) => {
+    setHospitals((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
+  }, []);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [businessNumberInput, setBusinessNumberInput] = useState('');

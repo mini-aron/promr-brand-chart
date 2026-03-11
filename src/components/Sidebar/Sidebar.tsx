@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/store/appStore';
 import { useAuthContext } from '@/context/AuthContext';
 import { useThemeMode } from '@/context/ThemeContext';
 import { HiChevronRight } from 'react-icons/hi';
