@@ -26,7 +26,7 @@ export interface ProductFeeTableSectionProps {
   expandedProducts: Set<string>;
   rightPanelMode: 'event' | 'product';
   getFinalFeeForRow: (p: ProductFee, scope?: ScopeForCompute) => number;
-  getRowCss: (p: ProductFee) => ReturnType<typeof css> | undefined;
+  getRowClassName?: (p: ProductFee) => string | undefined;
   isEventApplicable: (e: FeeEvent) => boolean;
   isEventInFilterScope: (e: FeeEvent, scope?: ScopeForCompute) => boolean;
   getEventScopeText: (e: FeeEvent) => string;
@@ -47,7 +47,7 @@ export interface ProductFeeTableSectionProps {
   onRowClickForEvent: (productCode: string, e: React.MouseEvent) => void;
   onDeleteEvent: (eventId: string) => void;
   onSwitchToEventMode: (productCode: string) => void;
-  feeTableWrap: ReturnType<typeof css>;
+  tableWrapClassName: string;
   finalFeeDivider: ReturnType<typeof css>;
   expandCell: ReturnType<typeof css>;
   expandCellCount: ReturnType<typeof css>;
@@ -87,7 +87,7 @@ export function ProductFeeTableSection({
   expandedProducts,
   rightPanelMode,
   getFinalFeeForRow,
-  getRowCss,
+  getRowClassName,
   isEventApplicable,
   isEventInFilterScope,
   getEventScopeText,
@@ -104,7 +104,7 @@ export function ProductFeeTableSection({
   onRowClickForEvent,
   onDeleteEvent,
   onSwitchToEventMode,
-  feeTableWrap,
+  tableWrapClassName,
   finalFeeDivider,
   expandCell,
   expandCellCount,
@@ -267,7 +267,7 @@ export function ProductFeeTableSection({
   const leafColumns = table.getAllLeafColumns();
 
   return (
-    <div css={feeTableWrap}>
+    <div className={tableWrapClassName}>
       <table>
         <colgroup>
           {leafColumns.map((col) => (
@@ -305,7 +305,7 @@ export function ProductFeeTableSection({
             return (
               <React.Fragment key={row.id}>
                 <tr
-                  css={getRowCss(p)}
+                  className={getRowClassName?.(p)}
                   onClick={(e) => onRowClickForEvent(p.productCode, e)}
                   role={rightPanelMode === 'event' ? 'button' : undefined}
                   style={rightPanelMode === 'event' ? { cursor: 'pointer' } : undefined}

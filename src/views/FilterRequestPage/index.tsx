@@ -10,6 +10,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { FilterRequest } from '@/types';
+import * as s from './index.css';
 
 const pageStyles = css({
   width: '100%',
@@ -151,14 +152,6 @@ const filterRowStyles = css({
   gap: theme.spacing(2),
   marginBottom: theme.spacing(3),
   '& > *': { minWidth: 140 },
-});
-
-const filterRequestTableWrap = css({
-  fontSize: 14,
-  '& th, & td': {
-    padding: theme.spacing(2),
-    borderRight: 'none',
-  },
 });
 
 const statusBadge = (status: string) =>
@@ -384,7 +377,7 @@ export function FilterRequestPage() {
             columns={columns}
             data={filteredMyRequests}
             getRowId={(r) => r.id}
-            tableCss={filterRequestTableWrap}
+            className={s.filterRequestTableWrap}
             emptyMessage={myRequests.length === 0 ? '요청한 필터링 내역이 없습니다.' : '조건에 맞는 요청이 없습니다.'}
           />
         </section>

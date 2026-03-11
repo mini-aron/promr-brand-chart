@@ -9,7 +9,8 @@ import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
-import { tableRowModified } from '@/style/TableStyles';
+import * as tableStyles from '@/style/TableStyles.css';
+import * as s from './index.css';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -39,11 +40,6 @@ const searchRow = css({
       boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
     },
   },
-});
-
-const hospitalTableWrap = css({
-  '& table': { minWidth: 700 },
-  '& th:first-child, & td:first-child': { width: 110, maxWidth: 110 },
 });
 
 const modalOverlay = css({
@@ -419,8 +415,8 @@ export function HospitalManagePage() {
         columns={columns}
         data={filtered}
         getRowId={(h) => h.id}
-        tableCss={hospitalTableWrap}
-        getRowCss={(h) => (isRowModified(h) ? tableRowModified : undefined)}
+        className={s.hospitalTableWrap}
+        getRowClassName={(h) => (isRowModified(h) ? tableStyles.tableRowModified : undefined)}
       />
       {filtered.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>

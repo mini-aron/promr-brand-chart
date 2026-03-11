@@ -9,6 +9,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import * as s from './index.css';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -70,31 +71,6 @@ type AggregateRow = {
   outHouseItemCount: number;
   outHouseAmount: number;
 };
-
-const aggregateTableWrap = css({
-  maxHeight: 'calc(100vh - 280px)',
-  minHeight: 320,
-  '& table': { minWidth: 1000, tableLayout: 'fixed' },
-  '& th, & td': { whiteSpace: 'nowrap' },
-  '& thead tr:first-of-type th': { borderBottom: `1px solid ${theme.colors.border}` },
-  '& .col-amount, & .col-inout': { textAlign: 'right' },
-  '& tfoot tr': {
-    position: 'sticky',
-    bottom: 0,
-    zIndex: 1,
-    fontWeight: 700,
-    borderTop: `2px solid ${theme.colors.border}`,
-    boxShadow: `0 -2px 8px ${theme.colors.border}40`,
-  },
-  '& tfoot td': {
-    backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-    fontSize: 13,
-    fontWeight: 700,
-  },
-  '& tfoot .col-amount, & tfoot .col-inout': { textAlign: 'right' },
-});
 
 const sortIcon = css({ marginLeft: 4, opacity: 0.6, fontSize: 10 });
 
@@ -328,7 +304,7 @@ export function AggregatePage() {
         columns={columns}
         data={settlementRows}
         getRowId={(r) => r.hospitalId}
-        tableCss={aggregateTableWrap}
+        className={s.aggregateTableWrap}
         renderFooter={() => (
           <tr>
             <td colSpan={9}>합계</td>

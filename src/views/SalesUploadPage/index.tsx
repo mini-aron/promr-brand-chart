@@ -20,7 +20,9 @@ import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
 import { downloadRowsAsExcel } from '@/utils/salesUploadExcelDownload';
-import { tableWrap } from '@/style/TableStyles';
+import { clsx } from 'clsx';
+import * as tableStyles from '@/style/TableStyles.css';
+import * as s from './index.css';
 
 const EXCEL_TEMPLATE_HEADERS = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
 const VALID_PRODUCT_CODES = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
@@ -42,47 +44,6 @@ const dropzoneStyles = (isDrag: boolean) =>
     transition: 'background-color 0.2s, border-color 0.2s',
     '&:hover': { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}08` },
   });
-
-const salesTableWrap = css(tableWrap, {
-  marginTop: theme.spacing(4),
-  '& .col-num': { textAlign: 'right' },
-  '& tfoot tr': {
-    fontWeight: 700,
-    borderTop: `2px solid ${theme.colors.border}`,
-    backgroundColor: theme.colors.background,
-  },
-  '& tfoot td': { padding: theme.spacing(2) },
-  '& td input, & td select': {
-    padding: `${theme.spacing(1)}px ${theme.spacing(1.5)}px`,
-    fontSize: 12,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surface,
-    boxSizing: 'border-box',
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
-  '& td input[type="text"]': { width: '100%', minWidth: 80 },
-  '& td select': { 
-    width: '100%', 
-    minWidth: 120,
-    cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 8px center',
-    paddingRight: 28,
-  },
-  '& td input[type="number"]': {
-    width: 56,
-    minWidth: 56,
-    textAlign: 'right',
-  },
-  '& td[data-invalid="true"]': {
-    outline: `2px solid ${theme.colors.error}`,
-    outlineOffset: -2,
-    backgroundColor: `${theme.colors.error}14`,
-  },
-});
 
 const separatorRowStyles = css({
   '& td': {
@@ -689,7 +650,7 @@ export function SalesUploadPage() {
               {invalidProductCodeCount > 0 && ` ${invalidProductCodeCount}건의 제품코드가 품목 마스터에 없습니다. 제품코드 셀을 확인하세요.`}
             </div>
           )}
-          <div css={salesTableWrap}>
+          <div className={clsx(tableStyles.tableWrap, s.salesTableWrap)}>
             <table>
               <colgroup>
                 {previewTable.getAllLeafColumns().map((col) => (

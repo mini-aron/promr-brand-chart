@@ -1,8 +1,7 @@
-/** @jsxImportSource @emotion/react */
-import { css } from '@emotion/react';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { HiChevronDown, HiChevronUp } from 'react-icons/hi';
-import { theme } from '@/theme';
+import { clsx } from 'clsx';
+import * as s from './Select.css';
 
 export type Option = {
   label: string;
@@ -13,97 +12,14 @@ export type Option = {
 
 export type SelectSize = 'default' | 'large';
 
-const DROPDOWN_MAX_HEIGHT = 200;
-const GAP = 2;
 const ICON_SIZE = 14;
 
-const wrap = css({ position: 'relative', width: '100%' });
-
-const trigger = css({
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.sm,
-  padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-  cursor: 'pointer',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  color: theme.colors.text,
-  minHeight: 32,
-  fontSize: 13,
-  background: theme.colors.surface,
-  '&:hover': { borderColor: theme.colors.primary, backgroundColor: theme.colors.background },
-});
-
-const triggerLarge = css({ minHeight: 48, padding: `0 ${theme.spacing(3)}px`, fontSize: 15 });
-
-const listStyle = (hasSearch: boolean) =>
-  css({
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: `calc(100% + ${GAP}px)`,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.sm,
-    background: theme.colors.surface,
-    padding: hasSearch ? `0 6px ${theme.spacing(1)}px 6px` : '8px 6px',
-    listStyleType: 'none',
-    boxShadow: theme.shadow.md,
-    zIndex: 10000,
-    maxHeight: DROPDOWN_MAX_HEIGHT,
-    overflowY: 'auto',
-    ...(hasSearch && { '& li:first-of-type': { marginTop: 0 } }),
-  });
-
-const searchInput = css({
-  position: 'sticky',
-  top: 0,
-  width: 'calc(100% + 12px)',
-  margin: '0 -6px',
-  padding: '6px 8px 4px 8px',
-  border: 'none',
-  borderBottom: `1px solid ${theme.colors.border}`,
-  background: theme.colors.surface,
-  fontSize: 13,
-  outline: 'none',
-  color: theme.colors.text,
-  boxSizing: 'border-box',
-  borderTopLeftRadius: theme.radius.sm,
-  borderTopRightRadius: theme.radius.sm,
-  '&:focus': { borderBottomColor: theme.colors.primary },
-});
-
-const item = (isSelected: boolean, isFocused: boolean) =>
-  css({
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    cursor: 'pointer',
-    backgroundColor: isSelected || isFocused ? `${theme.colors.primary}14` : 'transparent',
-    color: isSelected ? theme.colors.primary : theme.colors.text,
-    fontSize: 13,
-    borderRadius: 4,
-    margin: '2px 0',
-    '&:hover': { backgroundColor: `${theme.colors.primary}26` },
-    ...(isFocused && { outline: `2px solid ${theme.colors.primary}`, outlineOffset: -2 }),
-  });
-
-const optionContent = css({ minWidth: 0, overflow: 'hidden' });
-const optionLabel = css({ fontWeight: 500, display: 'block' });
-const optionDescription = css({
-  fontSize: 11,
-  color: theme.colors.textMuted,
-  marginTop: 2,
-  display: 'block',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-});
-const checkboxLabel = css({
-  display: 'flex',
-  alignItems: 'flex-start',
-  cursor: 'pointer',
-  gap: theme.spacing(1),
-  width: '100%',
-  '& input': { cursor: 'pointer', marginTop: 2 },
-});
+function getItemClass(isSelected: boolean, isFocused: boolean): string {
+  if (isSelected && isFocused) return s.itemSelectedFocused;
+  if (isSelected) return s.itemSelected;
+  if (isFocused) return s.itemFocused;
+  return s.item;
+}
 
 type BaseProps = {
   options: Option[];
@@ -275,7 +191,7 @@ function SelectCore({
   return (
     <div
       ref={dropdownRef}
-      css={wrap}
+      className={s.wrap}
       id={id}
       tabIndex={isOpen ? -1 : undefined}
       onBlur={handleBlur}
@@ -286,19 +202,19 @@ function SelectCore({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel}
-        css={[trigger, size === 'large' && triggerLarge]}
+        className={clsx(s.trigger, size === 'large' && s.triggerLarge)}
         onClick={() => setIsOpen((p) => !p)}
       >
         <span>{displayLabel}</span>
         {isOpen ? <HiChevronUp size={ICON_SIZE} /> : <HiChevronDown size={ICON_SIZE} />}
       </div>
       {isOpen && (
-        <ul ref={listRef} css={listStyle(enableSearch)} role="listbox">
+        <ul ref={listRef} className={enableSearch ? s.listWithSearch : s.list} role="listbox">
           {enableSearch && (
             <input
               ref={searchInputRef}
               type="text"
-              css={searchInput}
+              className={s.searchInput}
               placeholder="검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -309,22 +225,22 @@ function SelectCore({
             <li
               role="option"
               data-option-index={-1}
-              css={item(false, highlightedIndex === -1)}
+              className={getItemClass(false, highlightedIndex === -1)}
               onClick={() => {
                 onChange([searchTerm]);
                 closeDropdown();
               }}
               onMouseEnter={() => setHighlightedIndex(-1)}
             >
-              <span css={optionLabel}>"{searchTerm}"로 검색</span>
+              <span className={s.optionLabel}>"{searchTerm}"로 검색</span>
             </li>
           )}
           {filteredOptions.map((opt, i) => {
             const isSelected = value.includes(opt.value);
             const content = (
-              <div css={optionContent}>
-                <span css={optionLabel}>{opt.label}</span>
-                {opt.description && <span css={optionDescription}>{opt.description}</span>}
+              <div className={s.optionContent}>
+                <span className={s.optionLabel}>{opt.label}</span>
+                {opt.description && <span className={s.optionDescription}>{opt.description}</span>}
               </div>
             );
             return (
@@ -333,14 +249,15 @@ function SelectCore({
                 role="option"
                 aria-selected={isSelected}
                 data-option-index={i}
-                css={item(isSelected, i === highlightedIndex)}
+                className={getItemClass(isSelected, i === highlightedIndex)}
                 onMouseEnter={() => setHighlightedIndex(i)}
                 onClick={multiple ? undefined : () => { onChange([opt.value]); closeDropdown(); }}
               >
                 {multiple ? (
-                  <label css={checkboxLabel}>
+                  <label className={s.checkboxLabel}>
                     <input
                       type="checkbox"
+                      className={s.checkboxInput}
                       checked={isSelected}
                       onChange={() => handleSelect(opt)}
                     />

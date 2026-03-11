@@ -11,6 +11,7 @@ import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
 import { FilterInput } from '@/components/Common/Input';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import * as s from './index.css';
 import type { Corporation, Hospital } from '@/types';
 import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
 
@@ -54,35 +55,6 @@ const mainArea = css({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-});
-
-const settlementTableWrap = css({
-  '& table': { minWidth: 720 },
-  flex: 1,
-  minHeight: 0,
-  overflow: 'auto',
-  '& th, & td': {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  '& .col-no': { width: 40, minWidth: 40, maxWidth: 40, textAlign: 'center' },
-  '& .col-amount, & .col-inout': { textAlign: 'right' },
-  '& tfoot tr': {
-    position: 'sticky',
-    bottom: 0,
-    zIndex: 1,
-    fontWeight: 700,
-    borderTop: `2px solid ${theme.colors.border}`,
-    boxShadow: `0 -2px 8px ${theme.colors.border}40`,
-  },
-  '& tfoot td': {
-    backgroundColor: theme.colors.background,
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-    fontSize: 12,
-    fontWeight: 700,
-  },
-  '& tfoot .col-amount, & tfoot .col-inout': { textAlign: 'right' },
 });
 
 const corpListSidebar = css({
@@ -307,7 +279,7 @@ function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방
       data={rows}
       getRowId={(r) => (isPromr ? `${r.hospitalId}-${r.salespersonLabel}` : r.hospitalId)}
       variant="compact"
-      tableCss={settlementTableWrap}
+      className={s.settlementTableWrap}
       renderFooter={() => (
         <tr>
           <td colSpan={footerColSpan}>합계</td>

@@ -10,6 +10,7 @@ import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import * as s from './index.css';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -18,10 +19,6 @@ const pageStyles = css({
 
 const headerRowWrap = css({
   marginBottom: theme.spacing(4),
-});
-
-const dealerTableWrap = css({
-  '& table': { minWidth: 900 },
 });
 
 const modalOverlay = css({
@@ -517,7 +514,7 @@ export function DealerManagePage() {
         columns={columns}
         data={filteredDealers}
         getRowId={(d) => d.id}
-        tableCss={dealerTableWrap}
+        className={s.dealerTableWrap}
       />
       {filteredDealers.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>

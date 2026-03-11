@@ -1,22 +1,13 @@
 /** @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/react';
+import { clsx } from 'clsx';
 import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { ProductFee, FeeEvent } from '@/types';
 import { theme } from '@/theme';
-import { tableRowModified, tableWrapPlain } from '@/style/TableStyles';
+import * as tableStyles from '@/style/TableStyles.css';
 import { ProductFeeTableSection } from './ProductFeeTableSection';
-
-const feeTableWrap = css([
-  tableWrapPlain,
-  css({
-    overflow: 'visible',
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.md,
-    '& table': { minWidth: 400 },
-    '& th, & td': { padding: theme.spacing(0.75), fontSize: 13 },
-  }),
-]);
+import * as s from './ProductFeeTable.css';
 
 const finalFeeDivider = css({
   borderRight: `2px solid ${theme.colors.text} !important`,
@@ -327,22 +318,20 @@ export function ProductFeeTable({
     [feeScopeForCompute]
   );
 
-  const getRowCss = useCallback(
+  const getRowClassName = useCallback(
     (p: ProductFee) => {
       const idx = currentFees.findIndex((x) => x.productCode === p.productCode);
       const modified = isRowModified(idx);
       const selectedForEvent = rightPanelMode === 'event' && eventProductCode === p.productCode;
-      const selectedStyles = css({
-        outline: `2px solid ${theme.colors.primary}`,
-        boxShadow: `0 0 12px 2px ${theme.colors.primary}30`,
-      });
-      if (modified && selectedForEvent) return css([tableRowModified, selectedStyles]);
-      if (modified) return tableRowModified;
-      if (selectedForEvent) return selectedStyles;
+      if (modified && selectedForEvent) return clsx(tableStyles.tableRowModified, s.selectedRow);
+      if (modified) return tableStyles.tableRowModified;
+      if (selectedForEvent) return s.selectedRow;
       return undefined;
     },
     [currentFees, isRowModified, rightPanelMode, eventProductCode]
   );
+
+  const tableWrapClassName = clsx(tableStyles.tableWrapPlain, s.feeTableWrapOverrides);
 
   const colCount = showFinalFee ? 10 : 9;
 
@@ -396,7 +385,7 @@ export function ProductFeeTable({
       expandedProducts,
       rightPanelMode,
       getFinalFeeForRow,
-      getRowCss,
+      getRowClassName,
       isEventApplicable,
       isEventInFilterScope,
       getEventScopeText,
@@ -413,7 +402,7 @@ export function ProductFeeTable({
       onRowClickForEvent,
       onDeleteEvent,
       onSwitchToEventMode,
-      feeTableWrap,
+      tableWrapClassName,
       finalFeeDivider,
       expandCell,
       expandCellCount,
@@ -434,7 +423,7 @@ export function ProductFeeTable({
       expandedProducts,
       rightPanelMode,
       getFinalFeeForRow,
-      getRowCss,
+      getRowClassName,
       isEventApplicable,
       isEventInFilterScope,
       getEventScopeText,

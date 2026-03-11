@@ -1,2 +1,1 @@
-export * from './TableStyles';
-export * from './FilterFieldStyles';
+export * from './TableStyles.css';

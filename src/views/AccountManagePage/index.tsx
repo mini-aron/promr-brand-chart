@@ -11,6 +11,7 @@ import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
+import * as s from './index.css';
 
 const pageStyles = css({
   '& h1': { marginBottom: theme.spacing(2) },
@@ -33,10 +34,6 @@ const searchRow = css({
       boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
     },
   },
-});
-
-const accountTableWrap = css({
-  '& table': { minWidth: 700 },
 });
 
 const addFormSection = css({
@@ -379,7 +376,7 @@ export function AccountManagePage() {
         columns={columns}
         data={filtered}
         getRowId={(h) => h.id}
-        tableCss={accountTableWrap}
+        className={s.accountTableWrap}
       />
       {filtered.length === 0 && (
         <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
