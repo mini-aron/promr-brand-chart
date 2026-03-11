@@ -1,12 +1,11 @@
 /** @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo } from 'react';
 import { css } from '@emotion/react';
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { ProductFee, FeeEvent } from '@/types';
 import { theme } from '@/theme';
-import { Button } from '@/components/Common/Button';
 import { tableRowModified, tableWrapPlain } from '@/style/TableStyles';
+import { ProductFeeTableSection } from './ProductFeeTableSection';
 
 const feeTableWrap = css([
   tableWrapPlain,
@@ -16,19 +15,12 @@ const feeTableWrap = css([
     borderRadius: theme.radius.md,
     '& table': { minWidth: 400 },
     '& th, & td': { padding: theme.spacing(0.75), fontSize: 13 },
-    '& th:nth-of-type(2), & td:nth-of-type(2)': { width: 220, minWidth: 220, maxWidth: 220 },
-    '& td:nth-of-type(2)': { padding: 0, verticalAlign: 'middle' },
-    '& th:nth-of-type(5), & td:nth-of-type(5)': {
-      textAlign: 'right',
-      fontVariantNumeric: 'tabular-nums',
-    },
-    '& th:nth-of-type(6), & td:nth-of-type(6)': {
-      textAlign: 'right',
-      fontVariantNumeric: 'tabular-nums',
-      paddingRight: theme.spacing(2),
-    },
   }),
 ]);
+
+const finalFeeDivider = css({
+  borderRight: `2px solid ${theme.colors.text} !important`,
+});
 
 const expandCell = css({
   width: 36,
@@ -122,6 +114,7 @@ const eventExpandWrap = (isExpanded: boolean) =>
 
 const eventTableWrap = css({
   width: '100%',
+  tableLayout: 'fixed',
   borderCollapse: 'collapse',
   fontSize: 12,
   '& th, & td': {
@@ -131,10 +124,14 @@ const eventTableWrap = css({
     borderBottom: `1px solid ${theme.colors.border}`,
     verticalAlign: 'middle',
   },
-  '& th:nth-of-type(2), & td:nth-of-type(2), & th:nth-of-type(4), & td:nth-of-type(4), & th:nth-of-type(5), & td:nth-of-type(5)': {
+  '& th:nth-of-type(3), & td:nth-of-type(3), & th:nth-of-type(6), & td:nth-of-type(6), & th:nth-of-type(7), & td:nth-of-type(7), & th:nth-of-type(8), & td:nth-of-type(8), & th:nth-of-type(9), & td:nth-of-type(9)': {
     textAlign: 'center',
   },
-  '& th:last-child, & td:last-child': { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
+  '& th:nth-of-type(5), & td:nth-of-type(5)': {
+    textAlign: 'right',
+    fontVariantNumeric: 'tabular-nums',
+    borderRight: `2px solid ${theme.colors.text}`,
+  },
   '& th': {
     backgroundColor: theme.colors.background,
     fontWeight: 600,
@@ -147,20 +144,13 @@ const eventTableWrap = css({
 const eventFeeRateBadgeBase = css({ fontSize: 12, fontWeight: 600 });
 
 const finalFeeResultWrap = css({
-  padding: theme.spacing(1.5),
-  paddingRight: theme.spacing(2),
-  marginTop: theme.spacing(1),
-  borderTop: `1px solid ${theme.colors.border}`,
   backgroundColor: theme.colors.surface,
+  '& tr td': { borderTop: `1px solid ${theme.colors.border}` },
+});
+
+const finalFeeResultRow = css({
   fontSize: 13,
-  '& .final-fee-header': {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: theme.spacing(2),
-    marginBottom: theme.spacing(1),
-    flexWrap: 'wrap',
-  },
+  '& td': { borderBottom: 'none' },
   '& .final-fee-title': { fontWeight: 600 },
   '& .final-fee-rate': { fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: 14 },
 });
@@ -354,7 +344,7 @@ export function ProductFeeTable({
     [currentFees, isRowModified, rightPanelMode, eventProductCode]
   );
 
-  const colCount = showFinalFee ? 6 : 5;
+  const colCount = showFinalFee ? 10 : 9;
 
   const getScopeForCorp = useCallback((corporationId: string): ScopeForCompute => {
     const firstHospital = mockHospitals.find((h) => h.corporationId === corporationId);
@@ -399,211 +389,68 @@ export function ProductFeeTable({
     return map;
   }, [eventsByProduct]);
 
-  const renderTableBody = useCallback(
-    (scopeOverride?: ScopeForCompute, productCodesToShow?: Set<string>) => {
-      const feesToRender = productCodesToShow
-        ? filteredFees.filter((p) => productCodesToShow.has(p.productCode))
-        : filteredFees;
-      return feesToRender.map((p) => {
-        const originalIdx = currentFees.findIndex((x) => x.productCode === p.productCode);
-        const productEvents = eventsByProduct.get(p.productCode) ?? [];
-        const hasEvents = productEvents.length > 0;
-        const isExpanded = expandedProducts.has(p.productCode);
-        return (
-          <React.Fragment key={p.productCode}>
-            <tr
-              css={getRowCss(p)}
-              onClick={(e) => onRowClickForEvent(p.productCode, e)}
-              role={rightPanelMode === 'event' ? 'button' : undefined}
-              style={rightPanelMode === 'event' ? { cursor: 'pointer' } : undefined}
-            >
-              <td
-                css={[expandCell, { borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` }]}
-                onClick={() => hasEvents && onToggleExpand(p.productCode)}
-                role={hasEvents ? 'button' : undefined}
-                aria-label={hasEvents ? (isExpanded ? '이벤트 접기' : `이벤트 펼치기 (${productEvents.length}건)`) : undefined}
-              >
-                {hasEvents ? (
-                  <>
-                    {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                    <span css={expandCellCount}>{productEvents.length}</span>
-                  </>
-                ) : null}
-              </td>
-              <td css={{ padding: 0, verticalAlign: 'middle', borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` }}>
-                <input
-                  type="text"
-                  css={productCodeInputStyles}
-                  value={p.productCode}
-                  onChange={(e) => onUpdateProductCode(originalIdx, e.target.value)}
-                  aria-label={`${p.productName} 품목코드`}
-                />
-              </td>
-              <td css={{ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` }}>
-                {p.productName}
-              </td>
-              <td css={{ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` }}>
-                {p.ediCode ?? '-'}
-              </td>
-              <td css={{ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}`, borderRight: `1px solid ${theme.colors.border}` }}>
-                <span css={feeInputCell}>
-                  <input
-                    css={feeInputStyles}
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    value={p.feeRate}
-                    onChange={(e) => onUpdateFeeRate(p.productCode, Number(e.target.value) || 0)}
-                    aria-label={`${p.productName} 기본 수수료`}
-                  />
-                  <span className="fee-suffix">%</span>
-                </span>
-              </td>
-              {showFinalFee && (
-                <td css={{ padding: theme.spacing(0.75), borderBottom: `1px solid ${theme.colors.border}` }}>
-                  <span css={feeInputCell}>
-                    {getFinalFeeForRow(p, scopeOverride)}%
-                  </span>
-                </td>
-              )}
-            </tr>
-            {hasEvents && (
-              <tr css={eventSubRow(isExpanded)}>
-                <td colSpan={colCount}>
-                  <div css={eventExpandWrap(isExpanded)}>
-                    {isExpanded && productEvents.length > 0 && (
-                      <>
-                        <div
-                          css={css({
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            marginBottom: theme.spacing(1),
-                            paddingLeft: theme.spacing(1.5),
-                            paddingRight: theme.spacing(1.5),
-                          })}
-                        >
-                          <p css={{ margin: 0, fontSize: 11, color: theme.colors.textMuted }}>
-                            아래로 갈수록 우선순위 높음. 가장 아래(최우선)가 고정이면 해당 고정수수료 적용.
-                          </p>
-                          <Button
-                            variant="ghost"
-                            size="small"
-                            onClick={() => onSwitchToEventMode(p.productCode)}
-                            css={css({
-                              padding: theme.spacing(0.5),
-                              minHeight: 0,
-                              backgroundColor: theme.colors.border,
-                              borderRadius: theme.radius.sm,
-                              '&:hover': { backgroundColor: `${theme.colors.primary}30` },
-                            })}
-                            aria-label="이벤트 추가"
-                          >
-                            <Plus size={18} />
-                          </Button>
-                        </div>
-                        <table css={eventTableWrap}>
-                          <thead>
-                            <tr>
-                              <th>제목</th>
-                              <th>적용범위</th>
-                              <th>비고</th>
-                              <th>시작날짜</th>
-                              <th>끝 날짜</th>
-                              <th>수수료</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sortEventsByScope(productEvents).map((e) => {
-                              const applicable = isEventApplicable(e);
-                              const inScope = isEventInFilterScope(e, scopeOverride);
-                              return (
-                              <tr
-                                key={e.id}
-                                css={!applicable ? { opacity: 0.5 } : undefined}
-                              >
-                                <td>
-                                  <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' })}>
-                                    <Button variant="ghost" size="small" onClick={() => onDeleteEvent(e.id)}>
-                                      삭제
-                                    </Button>
-                                    <strong>{e.name}</strong>
-                                    <span css={{ fontSize: 11, color: applicable ? theme.colors.success : theme.colors.textMuted }}>
-                                      {applicable ? '적용 가능' : '적용 불가'}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td>{getEventScopeText(e)}</td>
-                                <td css={{ color: theme.colors.textMuted }}>{e.note ?? '-'}</td>
-                                <td>{e.startDate}</td>
-                                <td>{e.endDate}</td>
-                                <td css={!inScope ? { opacity: 0.5 } : undefined}>
-                                  <span
-                                    css={[
-                                      eventFeeRateBadgeBase,
-                                      {
-                                        color: applicable ? getEventFeeRateColor(e) : theme.colors.textMuted,
-                                        opacity: applicable ? 1 : 0.6,
-                                      },
-                                    ]}
-                                  >
-                                    {formatEventFeeRate(e)}
-                                  </span>
-                                </td>
-                              </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </>
-                    )}
-                    {isExpanded && (
-                      <div css={finalFeeResultWrap}>
-                        <div className="final-fee-header">
-                          <span className="final-fee-title">위 이벤트 수수료 적용 결과</span>
-                          <span className="final-fee-rate" css={[eventFeeRateBadgeBase, { color: theme.colors.text }]}>
-                            {computeFinalFeeForScope(p.feeRate, productEvents, scopeOverride ?? feeScopeForCompute ?? { type: 'item' })}%
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )}
-          </React.Fragment>
-        );
-      });
-    },
-    [
-      filteredFees,
+  const sectionProps = useMemo(
+    () => ({
       currentFees,
       eventsByProduct,
       expandedProducts,
-      getRowCss,
+      rightPanelMode,
       getFinalFeeForRow,
-      isEventInFilterScope,
-      sortEventsByScope,
+      getRowCss,
       isEventApplicable,
+      isEventInFilterScope,
       getEventScopeText,
       getEventFeeRateColor,
       formatEventFeeRate,
+      sortEventsByScope,
       computeFinalFeeForScope,
       feeScopeForCompute,
+      showFinalFee,
       colCount,
-      eventSubRow,
-      eventExpandWrap,
-      eventTableWrap,
-      finalFeeResultWrap,
       onToggleExpand,
-      onUpdateProductCode,
       onUpdateFeeRate,
+      onUpdateProductCode,
       onRowClickForEvent,
       onDeleteEvent,
       onSwitchToEventMode,
+      feeTableWrap,
+      finalFeeDivider,
+      expandCell,
+      expandCellCount,
+      feeInputStyles,
+      productCodeInputStyles,
+      feeInputCell,
+      thBase,
+      eventSubRow,
+      eventExpandWrap,
+      eventTableWrap,
+      eventFeeRateBadgeBase,
+      finalFeeResultWrap,
+      finalFeeResultRow,
+    }),
+    [
+      currentFees,
+      eventsByProduct,
+      expandedProducts,
       rightPanelMode,
-      eventProductCode,
+      getFinalFeeForRow,
+      getRowCss,
+      isEventApplicable,
+      isEventInFilterScope,
+      getEventScopeText,
+      getEventFeeRateColor,
+      formatEventFeeRate,
+      sortEventsByScope,
+      computeFinalFeeForScope,
+      feeScopeForCompute,
+      showFinalFee,
+      colCount,
+      onToggleExpand,
+      onUpdateFeeRate,
+      onUpdateProductCode,
+      onRowClickForEvent,
+      onDeleteEvent,
+      onSwitchToEventMode,
     ]
   );
 
@@ -622,29 +469,11 @@ export function ProductFeeTable({
           return (
             <div key={corp.id}>
               <h3 css={corpSectionHeader}>{corp.name}</h3>
-              <div css={feeTableWrap}>
-                <table>
-                  <colgroup>
-                    <col style={{ width: 36, minWidth: 36 }} />
-                    <col style={{ width: 220, minWidth: 220 }} />
-                    <col />
-                    <col />
-                    <col style={{ width: 100 }} />
-                    {showFinalFee && <col style={{ width: 100 }} />}
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th css={[thBase, { textAlign: 'center', width: 36 }]} />
-                      <th css={[thBase, { textAlign: 'left' }]}>품목코드</th>
-                      <th css={[thBase, { textAlign: 'left' }]}>품목명</th>
-                      <th css={[thBase, { textAlign: 'left' }]}>EDI코드</th>
-                      <th css={[thBase, { textAlign: 'right' }, showFinalFee ? {} : { borderRight: 'none' }]}>기본 수수료 (%)</th>
-                      {showFinalFee && <th css={[thBase, { textAlign: 'right', borderRight: 'none' }]}>최종수수료 (%)</th>}
-                    </tr>
-                  </thead>
-                  <tbody>{renderTableBody(scope, productCodes)}</tbody>
-                </table>
-              </div>
+              <ProductFeeTableSection
+                data={filteredFees.filter((p) => productCodes.has(p.productCode))}
+                scopeOverride={scope}
+                {...sectionProps}
+              />
             </div>
           );
         })
@@ -673,29 +502,11 @@ export function ProductFeeTable({
           return (
             <div key={`${corp.id}-${hospital.id}`}>
               <h3 css={corpSectionHeader}>{corp.name} / {hospital.name}</h3>
-              <div css={feeTableWrap}>
-                <table>
-                  <colgroup>
-                    <col style={{ width: 36, minWidth: 36 }} />
-                    <col style={{ width: 220, minWidth: 220 }} />
-                    <col />
-                    <col />
-                    <col style={{ width: 100 }} />
-                    {showFinalFee && <col style={{ width: 100 }} />}
-                  </colgroup>
-                  <thead>
-                    <tr>
-                      <th css={[thBase, { textAlign: 'center', width: 36 }]} />
-                      <th css={[thBase, { textAlign: 'left' }]}>품목코드</th>
-                      <th css={[thBase, { textAlign: 'left' }]}>품목명</th>
-                      <th css={[thBase, { textAlign: 'left' }]}>EDI코드</th>
-                      <th css={[thBase, { textAlign: 'right' }, showFinalFee ? {} : { borderRight: 'none' }]}>기본 수수료 (%)</th>
-                      {showFinalFee && <th css={[thBase, { textAlign: 'right', borderRight: 'none' }]}>최종수수료 (%)</th>}
-                    </tr>
-                  </thead>
-                  <tbody>{renderTableBody(scope, productCodes)}</tbody>
-                </table>
-              </div>
+              <ProductFeeTableSection
+                data={filteredFees.filter((p) => productCodes.has(p.productCode))}
+                scopeOverride={scope}
+                {...sectionProps}
+              />
             </div>
           );
         })
@@ -705,28 +516,9 @@ export function ProductFeeTable({
   }
 
   return (
-    <div css={feeTableWrap}>
-      <table>
-        <colgroup>
-          <col style={{ width: 36, minWidth: 36 }} />
-          <col style={{ width: 220, minWidth: 220 }} />
-          <col />
-          <col />
-          <col style={{ width: 100 }} />
-          {showFinalFee && <col style={{ width: 100 }} />}
-        </colgroup>
-        <thead>
-          <tr>
-            <th css={[thBase, { textAlign: 'center', width: 36 }]} />
-            <th css={[thBase, { textAlign: 'left' }]}>품목코드</th>
-            <th css={[thBase, { textAlign: 'left' }]}>품목명</th>
-            <th css={[thBase, { textAlign: 'left' }]}>EDI코드</th>
-            <th css={[thBase, { textAlign: 'right' }, showFinalFee ? {} : { borderRight: 'none' }]}>기본 수수료 (%)</th>
-            {showFinalFee && <th css={[thBase, { textAlign: 'right', borderRight: 'none' }]}>최종수수료 (%)</th>}
-          </tr>
-        </thead>
-        <tbody>{renderTableBody()}</tbody>
-      </table>
-    </div>
+    <ProductFeeTableSection
+      data={filteredFees}
+      {...sectionProps}
+    />
   );
 }

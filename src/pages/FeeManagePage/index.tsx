@@ -185,10 +185,11 @@ export function FeeManagePage() {
 
   const updateFeeRate = useCallback(
     (productCode: string, feeRate: number) => {
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
       setMonthlyFees((prev) => {
         const list = prev[selectedMonth] ?? [...mockProductFees];
         const next = list.map((p) =>
-          p.productCode === productCode ? { ...p, feeRate } : p
+          p.productCode === productCode ? { ...p, feeRate, updatedAt: now, updatedBy: 'admin' } : p
         );
         return { ...prev, [selectedMonth]: next };
       });
@@ -198,11 +199,12 @@ export function FeeManagePage() {
 
   const updateProductCode = useCallback(
     (index: number, newCode: string) => {
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
       setMonthlyFees((prev) => {
         const list = prev[selectedMonth] ?? [...mockProductFees];
         if (index < 0 || index >= list.length) return prev;
         const next = list.map((p, i) =>
-          i === index ? { ...p, productCode: newCode } : p
+          i === index ? { ...p, productCode: newCode, updatedAt: now, updatedBy: 'admin' } : p
         );
         return { ...prev, [selectedMonth]: next };
       });
@@ -295,7 +297,16 @@ export function FeeManagePage() {
         ...prev,
         [selectedMonth]: [
           ...base,
-          { productCode: selectedProduct.productCode, productName: selectedProduct.productName, feeRate: newFeeRate, ediCode: selectedProduct.ediCode },
+          {
+            productCode: selectedProduct.productCode,
+            productName: selectedProduct.productName,
+            feeRate: newFeeRate,
+            ediCode: selectedProduct.ediCode,
+            createdAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            updatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            createdBy: 'admin',
+            updatedBy: 'admin',
+          },
         ],
       };
     });

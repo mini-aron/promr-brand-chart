@@ -39,6 +39,14 @@ export interface ProductFee {
   finalFeeRate?: number;
   /** EDI 코드 */
   ediCode?: string;
+  /** 등록일 (ISO 8601) */
+  createdAt?: string;
+  /** 마지막 업데이트일 (ISO 8601) */
+  updatedAt?: string;
+  /** 생성자 */
+  createdBy?: string;
+  /** 마지막 업데이트 유저 */
+  updatedBy?: string;
 }
 
 /** 수수료 테이블 조회 기준 타입 */
@@ -65,6 +73,8 @@ export interface FeeEvent {
   hospitalId?: string;
   /** 우선순위 (낮을수록 우선) */
   priority?: number;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 /** 실적(엑셀) 행 데이터 */
