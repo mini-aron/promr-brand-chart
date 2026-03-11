@@ -33,7 +33,7 @@ type AppActions = {
   addHospital: (hospital: Hospital) => void;
   updateHospital: (id: string, patch: Partial<Pick<Hospital, 'accountCode'>>) => void;
   updateFilterRequestStatus: (id: string, status: 'approved' | 'rejected') => void;
-  addFilterRequest: (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string) => void;
+  addFilterRequest: (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string, status?: FilterRequest['status']) => void;
   addFilterRequestNewHospital: (
     corporationId: string,
     pharmaId: string,
@@ -73,21 +73,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [dealers, setDealers] = useState<Dealer[]>(initialState.dealers);
 
   const updateFilterRequestStatus = useCallback((id: string, status: 'approved' | 'rejected') => {
-    const processedAt = new Date().toISOString().slice(0, 19);
+    const now = new Date().toISOString().slice(0, 19);
     setFilterRequests((prev) =>
       prev.map((r) =>
-        r.id === id ? { ...r, status, processedAt } : r
+        r.id === id ? { ...r, status, processedAt: now, updatedAt: now, updatedBy: 'admin' } : r
       )
     );
   }, []);
 
   const addFilterRequest = useCallback(
-    (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string) => {
+    (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string, status?: FilterRequest['status']) => {
       const id = `fr-${Date.now()}`;
-      const requestedAt = new Date().toISOString().slice(0, 19);
+      const now = new Date().toISOString().slice(0, 19);
+      const newStatus = status ?? 'pending';
+      const processedAt = newStatus !== 'pending' ? now : undefined;
       setFilterRequests((prev) => [
         ...prev,
-        { id, corporationId, pharmaId, hospitalId, status: 'pending', requestedAt, requestMessage },
+        {
+          id,
+          corporationId,
+          pharmaId,
+          hospitalId,
+          status: newStatus,
+          requestedAt: now,
+          requestMessage,
+          processedAt,
+          createdAt: now,
+          updatedAt: newStatus !== 'pending' ? now : undefined,
+          createdBy: 'admin',
+          updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
+        },
       ]);
     },
     []
@@ -122,6 +137,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           address: payload.address,
           representativeName: payload.representativeName,
           requestMessage: payload.requestMessage,
+          createdAt: requestedAt,
+          createdBy: 'admin',
         },
       ]);
     },

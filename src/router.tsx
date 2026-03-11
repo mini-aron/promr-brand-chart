@@ -122,14 +122,6 @@ export const router = createBrowserRouter([
               </RoleProtectedRoute>
             ),
           },
-          {
-            path: 'deadline-manage',
-            element: (
-              <RoleProtectedRoute allowedRoles={['pharma']}>
-                <P.DeadlineManagePage />
-              </RoleProtectedRoute>
-            ),
-          },
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },

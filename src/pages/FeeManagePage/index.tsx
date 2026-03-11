@@ -26,11 +26,31 @@ const layoutWrap = css({
 const leftCard = css({
   flex: 1,
   minWidth: 320,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 0,
   backgroundColor: theme.colors.surface,
   border: `1px solid ${theme.colors.border}`,
   borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
+  overflow: 'hidden',
   boxShadow: theme.shadow.sm,
+});
+
+const filterRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(2),
+  padding: theme.spacing(2),
+  flexWrap: 'wrap',
+  backgroundColor: theme.colors.background,
+  borderBottom: `1px solid ${theme.colors.border}`,
+});
+
+const tableWrap = css({
+  flex: 1,
+  minHeight: 0,
+  padding: theme.spacing(2),
+  overflow: 'auto',
 });
 
 const rightPanel = css({
@@ -461,9 +481,9 @@ export function FeeManagePage() {
 
       <div css={layoutWrap}>
         <div css={leftCard}>
-          <div css={css({ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(2), marginBottom: theme.spacing(4), flexWrap: 'wrap' })}>
-            <div css={css({ minWidth: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 15 } })}>
-              <label htmlFor="fee-month">적용 월</label>
+          <div css={filterRow}>
+            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
+              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>적용 월</span>
               <SingleSelect
                 id="fee-month"
                 options={MONTH_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
@@ -473,34 +493,20 @@ export function FeeManagePage() {
                 aria-label="적용 월"
               />
             </div>
-            <div css={css({ width: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
-              <label htmlFor="table-product-search">품목명 검색</label>
+            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
+              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>품목 검색</span>
               <FilterInput
                 id="table-product-search"
                 type="search"
-                placeholder="품목명·품목코드로 검색"
+                placeholder="품목명·품목코드"
                 value={tableProductSearch}
                 onChange={(e) => setTableProductSearch(e.target.value)}
                 aria-label="품목명 검색"
-                css={css({ minHeight: 36, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
+                css={css({ minHeight: 36, width: 160, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
               />
             </div>
-            <div
-              css={css({
-                width: 1,
-                alignSelf: 'stretch',
-                backgroundColor: theme.colors.border,
-                margin: `0 ${theme.spacing(1)}px`,
-              })}
-              aria-hidden
-            />
-            <div css={css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(1) })}>
-              <span css={css({ fontSize: 11, color: theme.colors.textMuted, fontWeight: 600 })}>
-                최종수수료 기준
-              </span>
-              <div css={css({ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(2), flexWrap: 'wrap' })}>
-              <div css={css({ minWidth: 180, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
-                <label htmlFor="table-corporation">법인</label>
+            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
+              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>최종수수료 기준</span>
               <SingleSelect
                 id="table-corporation"
                 options={[
@@ -512,13 +518,10 @@ export function FeeManagePage() {
                   setTableCorporationId(String(v));
                   setTableHospitalId('');
                 }}
-                placeholder="법인 선택"
+                placeholder="법인"
                 enableSearch
                 aria-label="법인"
               />
-              </div>
-              <div css={css({ minWidth: 200, '& label': { display: 'block', marginBottom: theme.spacing(2), fontWeight: 600, fontSize: 13 } })}>
-                <label htmlFor="table-hospital">병원</label>
               <SingleSelect
                 id="table-hospital"
                 options={[
@@ -529,15 +532,13 @@ export function FeeManagePage() {
                 ]}
                 selected={tableHospitalId}
                 onChange={(v) => setTableHospitalId(String(v))}
-                placeholder="병원 선택"
+                placeholder="병원"
                 enableSearch
                 aria-label="병원"
               />
-              </div>
-              </div>
             </div>
             {modifiedCount > 0 && (
-              <Button variant="primary" onClick={handleSave}>
+              <Button variant="primary" size="small" onClick={handleSave}>
                 저장 ({modifiedCount}건)
               </Button>
             )}
@@ -554,18 +555,19 @@ export function FeeManagePage() {
                 size="small"
                 onClick={() => setTableCriteria('corporation')}
               >
-                법인별 수수료
+                법인별
               </Button>
               <Button
                 variant={tableCriteria === 'hospital' ? 'primary' : 'secondary'}
                 size="small"
                 onClick={() => setTableCriteria('hospital')}
               >
-                병원별 수수료
+                병원별
               </Button>
             </div>
           </div>
 
+          <div css={tableWrap}>
           <ProductFeeTable
             filteredFees={filteredFees}
             currentFees={currentFees}
@@ -583,6 +585,7 @@ export function FeeManagePage() {
             onDeleteEvent={handleDeleteEvent}
             onSwitchToEventMode={handleSwitchToEventMode}
           />
+          </div>
         </div>
 
         <aside css={rightPanel}>

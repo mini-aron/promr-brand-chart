@@ -127,6 +127,14 @@ export interface FilterRequest {
   requestedAt: string;
   /** 승인/반려 처리 시각 (optional) */
   processedAt?: string;
+  /** 생성일 (ISO 8601) */
+  createdAt?: string;
+  /** 업데이트일 (ISO 8601) */
+  updatedAt?: string;
+  /** 생성자 */
+  createdBy?: string;
+  /** 최종 수정자 */
+  updatedBy?: string;
   /** 요청 문의 (법인 발송 메시지) */
   requestMessage?: string;
   /** 신규 병의원 추가 요청 시 입력 정보 (hospitalId가 new- 로 시작할 때) */

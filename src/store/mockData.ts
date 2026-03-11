@@ -135,11 +135,11 @@ export const mockPrescriptionUploads: PrescriptionUpload[] = [
 
 /** ========== 더미: 필터링 승인요청 (해당 병의원 거래 허용 여부 요청) ========== */
 export const mockFilterRequests: FilterRequest[] = [
-  { id: 'fr-1', corporationId: 'corp-1', hospitalId: 'h-1', status: 'pending', requestedAt: '2026-02-24T09:00:00' },
-  { id: 'fr-2', corporationId: 'corp-1', hospitalId: 'h-5', status: 'pending', requestedAt: '2026-02-24T11:30:00' },
-  { id: 'fr-3', corporationId: 'corp-2', hospitalId: 'h-2', status: 'pending', requestedAt: '2026-02-23T14:00:00' },
-  { id: 'fr-4', corporationId: 'corp-2', hospitalId: 'h-6', status: 'approved', requestedAt: '2026-02-22T10:00:00', processedAt: '2026-02-23T09:00:00' },
-  { id: 'fr-5', corporationId: 'corp-3', hospitalId: 'h-3', status: 'rejected', requestedAt: '2026-02-21T16:00:00', processedAt: '2026-02-22T11:00:00' },
+  { id: 'fr-1', corporationId: 'corp-1', hospitalId: 'h-1', status: 'pending', requestedAt: '2026-02-24T09:00:00', createdAt: '2026-02-24T09:00:00', createdBy: MOCK_USER },
+  { id: 'fr-2', corporationId: 'corp-1', hospitalId: 'h-5', status: 'pending', requestedAt: '2026-02-24T11:30:00', createdAt: '2026-02-24T11:30:00', createdBy: MOCK_USER },
+  { id: 'fr-3', corporationId: 'corp-2', hospitalId: 'h-2', status: 'pending', requestedAt: '2026-02-23T14:00:00', createdAt: '2026-02-23T14:00:00', createdBy: MOCK_USER },
+  { id: 'fr-4', corporationId: 'corp-2', hospitalId: 'h-6', status: 'approved', requestedAt: '2026-02-22T10:00:00', processedAt: '2026-02-23T09:00:00', createdAt: '2026-02-22T10:00:00', updatedAt: '2026-02-23T09:00:00', createdBy: MOCK_USER, updatedBy: MOCK_USER },
+  { id: 'fr-5', corporationId: 'corp-3', hospitalId: 'h-3', status: 'rejected', requestedAt: '2026-02-21T16:00:00', processedAt: '2026-02-22T11:00:00', createdAt: '2026-02-21T16:00:00', updatedAt: '2026-02-22T11:00:00', createdBy: MOCK_USER, updatedBy: MOCK_USER },
 ];
 
 /** ========== 더미: 딜러(영업사원) ========== */

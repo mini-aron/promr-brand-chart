@@ -16,102 +16,50 @@ const pageStyles = css({
   minHeight: 0,
   '& .page-header': {
     flexShrink: 0,
-    marginBottom: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   },
   '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600 },
-  '& .page-header p': { margin: 0, fontSize: 13 },
+  '& .page-header p': { margin: 0, fontSize: 13, color: theme.colors.textMuted },
 });
 
 const layoutWrap = css({
-  display: 'flex',
-  gap: theme.spacing(4),
   flex: 1,
   minHeight: 0,
+  display: 'flex',
+  gap: theme.spacing(4),
   alignItems: 'stretch',
 });
 
-const mainArea = css({
+const leftCard = css({
   flex: 1,
-  minWidth: 0,
-  minHeight: 0,
+  minWidth: 320,
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-});
-
-const corpListSidebar = css({
-  width: 260,
-  flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: 0,
   backgroundColor: theme.colors.surface,
   border: `1px solid ${theme.colors.border}`,
   borderRadius: theme.radius.lg,
   boxShadow: theme.shadow.sm,
-  '& .corp-search': {
-    flexShrink: 0,
-    padding: theme.spacing(2),
-    '& input': {
-      width: '100%',
-      minHeight: 44,
-      padding: `0 ${theme.spacing(2)}px`,
-      fontSize: 14,
-      borderRadius: theme.radius.md,
-      border: `2px solid ${theme.colors.border}`,
-      '&:focus': {
-        outline: 'none',
-        borderColor: theme.colors.primary,
-        boxShadow: `0 0 0 2px ${theme.colors.primary}20`,
-      },
-      '&::placeholder': { color: theme.colors.textMuted },
-    },
-  },
-  '& .corp-list': {
-    flex: 1,
-    minHeight: 0,
-    overflow: 'auto',
-    padding: theme.spacing(2),
-    paddingTop: 0,
-  },
-  '& button': {
-    display: 'block',
-    width: '100%',
-    padding: theme.spacing(2),
-    marginBottom: theme.spacing(1),
-    textAlign: 'left',
-    border: 'none',
-    borderRadius: theme.radius.md,
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: 500,
-    color: theme.colors.text,
-    '&:hover': { backgroundColor: theme.colors.background },
-  },
-  '& button[data-active="true"]': {
-    backgroundColor: `${theme.colors.primary}14`,
-    color: theme.colors.primary,
-    fontWeight: 600,
-  },
 });
 
-const pendingBadge = css({
-  display: 'inline-block',
-  marginLeft: theme.spacing(1),
-  padding: '2px 8px',
-  fontSize: 11,
-  fontWeight: 600,
-  color: theme.colors.primary,
-  backgroundColor: `${theme.colors.primary}18`,
-  borderRadius: theme.radius.sm,
+const filterRowStyles = css({
+  display: 'flex',
+  flexWrap: 'nowrap',
+  gap: theme.spacing(2),
+  alignItems: 'center',
+  padding: theme.spacing(2),
+  backgroundColor: theme.colors.background,
+  borderBottom: `1px solid ${theme.colors.border}`,
+  '& > *': { flexShrink: 0 },
 });
 
 const listWrap = css({
   flex: 1,
   minHeight: 0,
+  overflow: 'auto',
+  padding: theme.spacing(2),
   fontSize: 14,
-  '& table': { minWidth: 560 },
+  '& table': { minWidth: 680 },
   '& th, & td': {
     padding: theme.spacing(2),
     borderRight: 'none',
@@ -119,65 +67,50 @@ const listWrap = css({
   '& th': { fontSize: 13 },
 });
 
-const statusBadge = (status: string) =>
-  css({
-    display: 'inline-block',
-    padding: '4px 10px',
-    borderRadius: theme.radius.sm,
+const rightPanel = css({
+  width: 360,
+  flexShrink: 0,
+  backgroundColor: theme.colors.surface,
+  border: `1px solid ${theme.colors.border}`,
+  borderRadius: theme.radius.lg,
+  padding: theme.spacing(4),
+  boxShadow: theme.shadow.sm,
+  alignSelf: 'flex-start',
+});
+
+const formField = css({
+  marginBottom: theme.spacing(3),
+  '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 },
+});
+
+const statusCellFill = (status: string) => {
+  const pad = theme.spacing(2);
+  return css({
+    display: 'block',
+    margin: -pad,
+    padding: pad,
+    minHeight: '100%',
+    boxSizing: 'content-box',
     fontSize: 12,
     fontWeight: 600,
     ...(status === 'pending' && {
-      backgroundColor: `${theme.colors.primary}18`,
-      color: theme.colors.primary,
+      backgroundColor: 'color-mix(in srgb, var(--color-primary) 6%, transparent)',
+      color: 'var(--color-primary)',
     }),
     ...(status === 'approved' && {
-      backgroundColor: `${theme.colors.success}18`,
-      color: theme.colors.success,
+      backgroundColor: 'color-mix(in srgb, var(--color-success) 6%, transparent)',
+      color: 'var(--color-success)',
     }),
     ...(status === 'rejected' && {
-      backgroundColor: `${theme.colors.error}18`,
-      color: theme.colors.error,
+      backgroundColor: 'color-mix(in srgb, var(--color-error) 6%, transparent)',
+      color: 'var(--color-error)',
     }),
   });
+};
 
 const btnGroup = css({
   display: 'flex',
   gap: theme.spacing(1),
-});
-
-const addFormStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(2),
-  alignItems: 'flex-end',
-  marginBottom: theme.spacing(3),
-  padding: theme.spacing(2),
-  backgroundColor: theme.colors.background,
-  borderRadius: theme.radius.md,
-  border: `1px solid ${theme.colors.border}`,
-  '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 },
-  '& input': {
-    flex: 1,
-    minWidth: 200,
-    minHeight: 40,
-    padding: `0 ${theme.spacing(2)}px`,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
-  '& button': {
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(3)}px`,
-    fontSize: 14,
-    fontWeight: 600,
-    borderRadius: theme.radius.md,
-    border: 'none',
-    backgroundColor: theme.colors.primary,
-    color: theme.colors.buttonText,
-    cursor: 'pointer',
-    '&:hover': { backgroundColor: theme.colors.primaryHover },
-    '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
-  },
 });
 
 function formatDateTime(iso: string): string {
@@ -195,6 +128,19 @@ function formatDateTime(iso: string): string {
   }
 }
 
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch {
+    return iso.slice(0, 10);
+  }
+}
+
 const STATUS_LABEL: Record<string, string> = {
   pending: '대기',
   approved: '승인',
@@ -203,51 +149,41 @@ const STATUS_LABEL: Record<string, string> = {
 
 export function FilterApprovalPage() {
   const { corporations, hospitals, currentPharmaId, filterRequests, updateFilterRequestStatus, addFilterRequest } = useApp();
-  const [selectedCorpId, setSelectedCorpId] = useState<string | null>(null);
-  const [corpSearch, setCorpSearch] = useState('');
+  const [filterCorpId, setFilterCorpId] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [addCorpId, setAddCorpId] = useState<string | null>(null);
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
+  const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
 
-  const corporationsFiltered = useMemo(() => {
-    const q = corpSearch.trim().toLowerCase();
-    if (!q) return corporations;
-    return corporations.filter((c) => c.name.toLowerCase().includes(q));
-  }, [corporations, corpSearch]);
-
-  const pendingCountByCorpId = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const r of filterRequests) {
-      if (r.status !== 'pending') continue;
-      map.set(r.corporationId, (map.get(r.corporationId) ?? 0) + 1);
-    }
-    return map;
-  }, [filterRequests]);
-
-  const requestsForCorp = useMemo(() => {
-    if (!selectedCorpId) return [];
+  const filteredRequests = useMemo(() => {
     return filterRequests
-      .filter((r) => r.corporationId === selectedCorpId)
+      .filter((r) => !filterCorpId || r.corporationId === filterCorpId)
+      .filter((r) => !filterStatus || r.status === filterStatus)
       .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
-  }, [filterRequests, selectedCorpId]);
+  }, [filterRequests, filterCorpId, filterStatus]);
 
-  const selectedCorp = selectedCorpId ? corporations.find((c) => c.id === selectedCorpId) : null;
+  const hospitalsForAddCorp = useMemo(() => {
+    if (!addCorpId) return [];
+    return hospitals.filter((h) => h.corporationId === addCorpId);
+  }, [addCorpId, hospitals]);
 
-  const hospitalsForCorp = useMemo(() => {
-    if (!selectedCorpId) return [];
-    return hospitals.filter((h) => h.corporationId === selectedCorpId);
-  }, [selectedCorpId, hospitals]);
-
-  const requestedHospitalIds = useMemo(() => {
-    if (!selectedCorpId) return new Set<string>();
+  const requestedHospitalIdsForAddCorp = useMemo(() => {
+    if (!addCorpId) return new Set<string>();
     return new Set(
       filterRequests
-        .filter((r) => r.corporationId === selectedCorpId)
+        .filter((r) => r.corporationId === addCorpId)
         .map((r) => r.hospitalId)
     );
-  }, [selectedCorpId, filterRequests]);
+  }, [addCorpId, filterRequests]);
 
   const addableHospitals = useMemo(
-    () => hospitalsForCorp.filter((h) => !requestedHospitalIds.has(h.id)),
-    [hospitalsForCorp, requestedHospitalIds]
+    () => hospitalsForAddCorp.filter((h) => !requestedHospitalIdsForAddCorp.has(h.id)),
+    [hospitalsForAddCorp, requestedHospitalIdsForAddCorp]
+  );
+
+  const getCorporation = useCallback(
+    (id: string) => corporations.find((c) => c.id === id),
+    [corporations]
   );
 
   const getHospital = useCallback(
@@ -258,6 +194,20 @@ export function FilterApprovalPage() {
   const columnHelper = createColumnHelper<FilterRequest>();
   const columns = useMemo(
     () => [
+      columnHelper.accessor('status', {
+        id: 'status',
+        header: '상태',
+        size: 72,
+        cell: (info) => (
+          <span css={statusCellFill(info.getValue())}>
+            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
+          </span>
+        ),
+      }),
+      columnHelper.accessor(
+        (r) => getCorporation(r.corporationId)?.name ?? '-',
+        { id: 'corporation', header: '법인' }
+      ),
       columnHelper.accessor(
         (r) => getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-',
         { id: 'hospital', header: '병의원' }
@@ -266,17 +216,29 @@ export function FilterApprovalPage() {
         header: '요청 일시',
         cell: (info) => formatDateTime(info.getValue()),
       }),
-      columnHelper.accessor('status', {
-        header: '상태',
-        cell: (info) => (
-          <span css={statusBadge(info.getValue())}>
-            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
-          </span>
-        ),
+      columnHelper.accessor((r) => r.createdAt ?? r.requestedAt, {
+        id: 'createdAt',
+        header: '생성일',
+        cell: (info) => {
+          const v = info.getValue();
+          return v ? formatDate(v) : '-';
+        },
       }),
-      columnHelper.accessor('processedAt', {
-        header: '처리 일시',
-        cell: (info) => (info.getValue() ? formatDateTime(info.getValue()!) : '-'),
+      columnHelper.accessor((r) => r.updatedAt ?? r.processedAt, {
+        id: 'updatedAt',
+        header: '업데이트일',
+        cell: (info) => {
+          const v = info.getValue();
+          return v ? formatDate(v) : '-';
+        },
+      }),
+      columnHelper.accessor('createdBy', {
+        header: '생성자',
+        cell: (info) => info.getValue() ?? '-',
+      }),
+      columnHelper.accessor('updatedBy', {
+        header: '업데이트',
+        cell: (info) => info.getValue() ?? '-',
       }),
       columnHelper.display({
         id: 'actions',
@@ -293,109 +255,133 @@ export function FilterApprovalPage() {
         ),
       }),
     ],
-    [getHospital, updateFilterRequestStatus]
+    [getCorporation, getHospital, updateFilterRequestStatus]
   );
 
   const handleAddFilter = useCallback(() => {
-    if (!selectedCorpId || !selectedHospitalId) return;
-    addFilterRequest(selectedCorpId, currentPharmaId, selectedHospitalId);
+    if (!addCorpId || !selectedHospitalId || !currentPharmaId) return;
+    addFilterRequest(addCorpId, currentPharmaId, selectedHospitalId, undefined, addStatus);
     setSelectedHospitalId('');
-  }, [selectedCorpId, selectedHospitalId, currentPharmaId, addFilterRequest]);
+  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addFilterRequest]);
 
 
   return (
     <div css={pageStyles}>
       <header className="page-header">
-        <h1>법인별 필터링 승인요청</h1>
-        <p>해당 법인이 병의원과 거래해도 되는지 승인·승인불가 처리합니다. 좌측에서 법인 선택 후 우측에서 병의원별 요청을 처리하세요.</p>
+        <h1>거래선 관리</h1>
+        <p>법인·병의원별 거래 허용 여부를 등록하고 승인·승인불가 처리합니다.</p>
       </header>
 
       <div css={layoutWrap}>
-        <aside css={corpListSidebar}>
-          <div className="corp-search">
-            <input
-              type="search"
-              placeholder="법인 검색"
-              value={corpSearch}
-              onChange={(e) => setCorpSearch(e.target.value)}
-              aria-label="법인 검색"
+        <div css={leftCard}>
+          <div css={filterRowStyles}>
+            <SingleSelect
+              id="filter-corp"
+              options={[
+                { label: '전체', value: '' },
+                ...corporations.map((c) => ({ label: c.name, value: c.id })),
+              ]}
+              selected={filterCorpId ?? ''}
+              onChange={(v) => setFilterCorpId(v === '' ? null : String(v))}
+              placeholder="법인"
+              size="large"
+              aria-label="법인 필터"
+            />
+            <SingleSelect
+              id="filter-status"
+              options={[
+                { label: '전체', value: '' },
+                { label: '대기', value: 'pending' },
+                { label: '승인', value: 'approved' },
+                { label: '승인불가', value: 'rejected' },
+              ]}
+              selected={filterStatus ?? ''}
+              onChange={(v) => setFilterStatus(v === '' ? null : String(v))}
+              placeholder="상태"
+              size="large"
+              aria-label="상태 필터"
             />
           </div>
-          <div className="corp-list">
-            {corporationsFiltered.map((c) => {
-              const pendingCount = pendingCountByCorpId.get(c.id) ?? 0;
-              return (
-                <button
-                  key={c.id}
-                  type="button"
-                  data-active={selectedCorpId === c.id}
-                  onClick={() => setSelectedCorpId(c.id)}
-                >
-                  {c.name}
-                  {pendingCount > 0 && (
-                    <span css={pendingBadge}>미처리 {pendingCount}건</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </aside>
 
-        <main css={mainArea}>
-          {selectedCorp ? (
-            <>
-              <p css={css({ marginBottom: theme.spacing(2), fontSize: 14, color: theme.colors.textMuted })}>
-                <strong css={css({ color: theme.colors.text })}>{selectedCorp.name}</strong> — 병의원별 거래 허용 요청
-              </p>
-              <div css={addFormStyles}>
-                <div css={css({ flex: '1 1 260px' })}>
-                  <label htmlFor="filter-add-hospital">병의원 선택 (거래 허용 요청 추가)</label>
-                  <SingleSelect
-                    id="filter-add-hospital"
-                    options={[
-                      {
-                        label: addableHospitals.length === 0
-                          ? '추가 가능한 병의원 없음 (이미 요청됨)'
-                          : '병의원 선택',
-                        value: '',
-                      },
-                      ...addableHospitals.map((h) => ({
-                        label: h.name,
-                        value: h.id,
-                        description: h.address || undefined,
-                      })),
-                    ]}
-                    selected={selectedHospitalId}
-                    onChange={(v) => setSelectedHospitalId(String(v))}
-                    placeholder={addableHospitals.length === 0 ? '추가 가능한 병의원 없음 (이미 요청됨)' : '병의원 선택'}
-                    enableSearch
-                    aria-label="병의원 선택"
-                  />
-                </div>
-                <Button variant="primary" onClick={handleAddFilter} disabled={!selectedHospitalId}>
-                  요청 추가
-                </Button>
-              </div>
-              <div css={css({ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' })}>
-                <DataTable<FilterRequest>
-                  columns={columns}
-                  data={requestsForCorp}
-                  getRowId={(r) => r.id}
-                  tableCss={listWrap}
-                />
-                {requestsForCorp.length === 0 && (
-                  <p css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
-                    해당 법인의 병의원 거래 허용 요청이 없습니다.
-                  </p>
-                )}
-              </div>
-            </>
-          ) : (
-            <p css={css({ color: theme.colors.textMuted, padding: theme.spacing(4) })}>
-              좌측에서 법인을 선택하세요.
-            </p>
-          )}
-        </main>
+          <div css={listWrap}>
+            <DataTable<FilterRequest>
+              columns={columns}
+              data={filteredRequests}
+              getRowId={(r) => r.id}
+              emptyMessage={filterRequests.length === 0 ? '등록된 거래선이 없습니다.' : '조건에 맞는 항목이 없습니다.'}
+            />
+          </div>
+        </div>
+
+        <aside css={rightPanel}>
+          <h3 css={css({ fontSize: 16, marginBottom: theme.spacing(3) })}>거래선 추가</h3>
+          <div css={formField}>
+            <label htmlFor="filter-add-corp">법인 *</label>
+            <SingleSelect
+              id="filter-add-corp"
+              options={[
+                { label: '법인 선택', value: '' },
+                ...corporations.map((c) => ({ label: c.name, value: c.id })),
+              ]}
+              selected={addCorpId ?? ''}
+              onChange={(v) => {
+                setAddCorpId(v === '' ? null : String(v));
+                setSelectedHospitalId('');
+              }}
+              placeholder="법인 선택"
+              aria-label="법인 선택"
+            />
+          </div>
+          <div css={formField}>
+            <label htmlFor="filter-add-hospital">병의원 *</label>
+            <SingleSelect
+              id="filter-add-hospital"
+              options={[
+                {
+                  label: !addCorpId
+                    ? '법인을 먼저 선택하세요'
+                    : addableHospitals.length === 0
+                      ? '추가 가능한 병의원 없음'
+                      : '병의원 선택',
+                  value: '',
+                },
+                ...addableHospitals.map((h) => ({
+                  label: h.name,
+                  value: h.id,
+                  description: h.address || undefined,
+                })),
+              ]}
+              selected={selectedHospitalId}
+              onChange={(v) => setSelectedHospitalId(String(v))}
+              placeholder={!addCorpId ? '법인을 먼저 선택하세요' : addableHospitals.length === 0 ? '추가 가능한 병의원 없음' : '병의원 선택'}
+              enableSearch
+              aria-label="병의원 선택"
+            />
+          </div>
+          <div css={formField}>
+            <label htmlFor="filter-add-status">상태</label>
+            <SingleSelect
+              id="filter-add-status"
+              options={[
+                { label: '대기', value: 'pending' },
+                { label: '승인', value: 'approved' },
+                { label: '승인불가', value: 'rejected' },
+              ]}
+              selected={addStatus}
+              onChange={(v) => setAddStatus((v as FilterRequest['status']) ?? 'pending')}
+              placeholder="상태"
+              aria-label="상태 선택"
+            />
+          </div>
+          <Button
+            variant="primary"
+            onClick={handleAddFilter}
+            disabled={!addCorpId || !selectedHospitalId}
+            css={css({ width: '100%' })}
+          >
+            추가
+          </Button>
+        </aside>
       </div>
     </div>
   );

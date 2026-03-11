@@ -110,12 +110,11 @@ const pharmaNavItems: NavItem[] = [
     children: [
       { to: '/hospitals', label: '병의원 관리' },
       { to: '/fees', label: '수수료관리' },
-      { to: '/deadline-manage', label: '마감일 관리' },
     ],
   },
   { to: '/aggregate', label: '정산확인' },
   { to: '/settlement', label: '법인별 정산확인' },
-  { to: '/filter-approval', label: '법인별 필터링 승인요청' },
+  { to: '/filter-approval', label: '거래선 관리' },
   { to: '/dealer-view', label: '법인별 계약 조회' },
 ];
 

@@ -2,6 +2,12 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { css } from '@emotion/react';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { useApp } from '@/context/AppContext';
 import { mockProductFees } from '@/store/mockData';
 import type { SalesRow } from '@/types';
@@ -154,6 +160,28 @@ const downloadRowWrap = css({
   },
 });
 
+/** 업로드 미리보기 테이블 행: 데이터 / 파일합계 / 구분선 */
+type PreviewTableRow =
+  | {
+      type: 'data';
+      id: string;
+      index: number;
+      row: SalesRow;
+      quantity: number;
+      productName: string;
+      hospitalId: string | undefined;
+      isInvalidProductCode: boolean;
+      isInvalidHospital: boolean;
+    }
+  | {
+      type: 'sum';
+      id: string;
+      fileName: string;
+      totalQuantity: number;
+      totalAmount: number;
+    }
+  | { type: 'separator'; id: string };
+
 /** 적용 월 옵션 (최근 12개월) */
 function getMonthOptions(): { label: string; value: string }[] {
   const list: { label: string; value: string }[] = [];
@@ -231,16 +259,6 @@ export function SalesUploadPage() {
     };
   }, [effectiveRows, uploadedFiles]);
 
-  const invalidProductCodeCount = useMemo(() => {
-    return preview.filter((r) => r.productCode && !validProductCodes.has(r.productCode)).length;
-  }, [preview, validProductCodes]);
-
-  const invalidHospitalCount = useMemo(() => {
-    return preview.filter(
-      (r) => r.businessNumber && r.businessNumber.trim() !== '' && !validBusinessNumbers.has(r.businessNumber)
-    ).length;
-  }, [preview, validBusinessNumbers]);
-
   const setRowEdit = useCallback((rowId: string, field: 'quantity' | 'productName' | 'hospitalId', value: number | string) => {
     setEditedOverrides((prev) => ({
       ...prev,
@@ -250,6 +268,157 @@ export function SalesUploadPage() {
       },
     }));
   }, []);
+
+  const tableRows = useMemo((): PreviewTableRow[] => {
+    const out: PreviewTableRow[] = [];
+    preview.forEach((r, i) => {
+      const qty = editedOverrides[r.id]?.quantity ?? r.quantity;
+      const productName = editedOverrides[r.id]?.productName ?? r.productName;
+      const hospitalId = editedOverrides[r.id]?.hospitalId ?? r.hospitalId;
+      const isInvalidProductCode = !!(r.productCode && !validProductCodes.has(r.productCode));
+      const isInvalidHospital = !!(
+        r.businessNumber &&
+        r.businessNumber.trim() !== '' &&
+        !validBusinessNumbers.has(r.businessNumber)
+      );
+      out.push({
+        type: 'data',
+        id: r.id,
+        index: i,
+        row: r,
+        quantity: qty,
+        productName,
+        hospitalId,
+        isInvalidProductCode,
+        isInvalidHospital,
+      });
+      if (separatorAfterIndices.includes(i)) {
+        const fileIndex = separatorAfterIndices.indexOf(i);
+        if (showFileSums && fileTotals[fileIndex]) {
+          const ft = fileTotals[fileIndex];
+          out.push({
+            type: 'sum',
+            id: `sum-${i}`,
+            fileName: ft.fileName,
+            totalQuantity: ft.totalQuantity,
+            totalAmount: ft.totalAmount,
+          });
+        } else {
+          out.push({ type: 'separator', id: `sep-${i}` });
+        }
+      }
+    });
+    return out;
+  }, [preview, editedOverrides, separatorAfterIndices, showFileSums, fileTotals, validProductCodes, validBusinessNumbers]);
+
+  const columnHelper = createColumnHelper<PreviewTableRow>();
+  const previewColumns = useMemo(
+    () => [
+      columnHelper.display({
+        id: 'index',
+        size: 50,
+        header: '#',
+        cell: ({ row }) =>
+          row.original.type === 'data' ? (
+            <span css={css({ display: 'block', textAlign: 'center', color: theme.colors.textMuted, fontSize: 11 })}>
+              {(row.original.index as number) + 1}
+            </span>
+          ) : null,
+      }),
+      columnHelper.display({
+        id: 'hospital',
+        header: () => '병의원',
+        cell: ({ row }) => {
+          if (row.original.type !== 'data') return null;
+          const { row: r, hospitalId } = row.original;
+          return (
+            <SingleSelect
+              options={corporationHospitals.map((h) => ({
+                label: h.name,
+                value: h.id,
+                description: h.address || undefined,
+              }))}
+              selected={hospitalId ?? null}
+              onChange={(v) => setRowEdit(r.id, 'hospitalId', String(v))}
+              placeholder="병의원"
+              enableSearch
+              aria-label={`${r.id} 병의원`}
+            />
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'businessNumber',
+        header: () => '사업자번호',
+        cell: ({ row }) => (row.original.type === 'data' ? row.original.row.businessNumber || '-' : null),
+      }),
+      columnHelper.display({
+        id: 'productName',
+        header: () => '제품명',
+        cell: ({ row }) => {
+          if (row.original.type !== 'data') return null;
+          const { row: r, productName } = row.original;
+          return (
+            <input
+              type="text"
+              value={productName}
+              onChange={(e) => setRowEdit(r.id, 'productName', e.target.value)}
+              aria-label={`${r.id} 제품명`}
+            />
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'productCode',
+        header: () => '제품코드',
+        cell: ({ row }) =>
+          row.original.type === 'data' ? (row.original.row.productCode || '-') : null,
+      }),
+      columnHelper.display({
+        id: 'quantity',
+        header: () => '수량',
+        meta: { className: 'col-num' },
+        cell: ({ row }) => {
+          if (row.original.type !== 'data') return null;
+          const { row: r, quantity } = row.original;
+          return (
+            <input
+              type="number"
+              min={0}
+              value={quantity}
+              onChange={(e) => setRowEdit(r.id, 'quantity', Number(e.target.value) || 0)}
+              aria-label={`${r.id} 수량`}
+            />
+          );
+        },
+      }),
+      columnHelper.display({
+        id: 'amount',
+        header: () => '금액',
+        meta: { className: 'col-num' },
+        cell: ({ row }) =>
+          row.original.type === 'data' ? row.original.row.amount.toLocaleString() : null,
+      }),
+    ],
+    [columnHelper, corporationHospitals, setRowEdit]
+  );
+
+  const previewTable = useReactTable({
+    data: tableRows,
+    columns: previewColumns,
+    getRowId: (row) => row.id,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  const invalidProductCodeCount = useMemo(() => {
+    return preview.filter((r) => r.productCode && !validProductCodes.has(r.productCode)).length;
+  }, [preview, validProductCodes]);
+
+  const invalidHospitalCount = useMemo(() => {
+    return preview.filter(
+      (r) => r.businessNumber && r.businessNumber.trim() !== '' && !validBusinessNumbers.has(r.businessNumber)
+    ).length;
+  }, [preview, validBusinessNumbers]);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -517,96 +686,71 @@ export function SalesUploadPage() {
           )}
           <div css={salesTableWrap}>
             <table>
+              <colgroup>
+                {previewTable.getAllLeafColumns().map((col) => (
+                  <col key={col.id} style={{ width: col.getSize() }} />
+                ))}
+              </colgroup>
               <thead>
-                <tr>
-                  <th style={{ width: 50, textAlign: 'center' }}>#</th>
-                  <th>병의원</th>
-                  <th>사업자번호</th>
-                  <th>제품명</th>
-                  <th>제품코드</th>
-                  <th className="col-num">수량</th>
-                  <th className="col-num">금액</th>
-                </tr>
+                {previewTable.getHeaderGroups().map((hg) => (
+                  <tr key={hg.id}>
+                    {hg.headers.map((h) => (
+                      <th
+                        key={h.id}
+                        style={
+                          h.id === 'index'
+                            ? { width: 50, textAlign: 'center' }
+                            : (h.column.columnDef.meta as { className?: string })?.className === 'col-num'
+                              ? { textAlign: 'right' }
+                              : undefined
+                        }
+                        className={(h.column.columnDef.meta as { className?: string })?.className}
+                      >
+                        {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                      </th>
+                    ))}
+                  </tr>
+                ))}
               </thead>
               <tbody>
-                {preview.flatMap((r, i) => {
-                  const qty = editedOverrides[r.id]?.quantity ?? r.quantity;
-                  const productName = editedOverrides[r.id]?.productName ?? r.productName;
-                  const hospitalId = editedOverrides[r.id]?.hospitalId ?? r.hospitalId;
-                  const isInvalidProductCode = r.productCode && !validProductCodes.has(r.productCode);
-                  const isInvalidHospital =
-                    r.businessNumber &&
-                    r.businessNumber.trim() !== '' &&
-                    !validBusinessNumbers.has(r.businessNumber);
-                  const row = (
-                    <tr key={r.id}>
-                      <td style={{ textAlign: 'center', color: theme.colors.textMuted, fontSize: 11 }}>
-                        {i + 1}
-                      </td>
-                      <td {...(isInvalidHospital && { 'data-invalid': 'true' })}>
-                        <SingleSelect
-                          options={corporationHospitals.map((h) => ({
-                            label: h.name,
-                            value: h.id,
-                            description: h.address || undefined,
-                          }))}
-                          selected={hospitalId}
-                          onChange={(v) => setRowEdit(r.id, 'hospitalId', String(v))}
-                          placeholder="병의원"
-                          enableSearch
-                          aria-label={`${r.id} 병의원`}
-                        />
-                      </td>
-                      <td>{r.businessNumber || '-'}</td>
-                      <td>
-                        <input
-                          type="text"
-                          value={productName}
-                          onChange={(e) => setRowEdit(r.id, 'productName', e.target.value)}
-                          aria-label={`${r.id} 제품명`}
-                        />
-                      </td>
-                      <td {...(isInvalidProductCode && { 'data-invalid': 'true' })}>
-                        {r.productCode || '-'}
-                      </td>
-                      <td className="col-num">
-                        <input
-                          type="number"
-                          min={0}
-                          value={qty}
-                          onChange={(e) => setRowEdit(r.id, 'quantity', Number(e.target.value) || 0)}
-                          aria-label={`${r.id} 수량`}
-                        />
-                      </td>
-                      <td className="col-num">{r.amount.toLocaleString()}</td>
-                    </tr>
-                  );
-                  const sep = separatorAfterIndices.includes(i) ? (
-                    showFileSums ? (
-                      (() => {
-                        const fileIndex = separatorAfterIndices.indexOf(i);
-                        const ft = fileTotals[fileIndex];
-                        return ft ? (
-                          <tr key={`sum-${i}`} css={fileSumRowStyles}>
-                            <td colSpan={5}>
-                              {ft.fileName} 합계
-                            </td>
-                            <td className="col-num">{ft.totalQuantity.toLocaleString()}</td>
-                            <td className="col-num">{ft.totalAmount.toLocaleString()}</td>
-                          </tr>
-                        ) : (
-                          <tr key={`sep-${i}`} css={separatorRowStyles}>
-                            <td colSpan={7} />
-                          </tr>
-                        );
-                      })()
-                    ) : (
-                      <tr key={`sep-${i}`} css={separatorRowStyles}>
+                {previewTable.getRowModel().rows.map((row) => {
+                  const raw = row.original;
+                  if (raw.type === 'sum') {
+                    return (
+                      <tr key={row.id} css={fileSumRowStyles}>
+                        <td colSpan={5}>{raw.fileName} 합계</td>
+                        <td className="col-num">{raw.totalQuantity.toLocaleString()}</td>
+                        <td className="col-num">{raw.totalAmount.toLocaleString()}</td>
+                      </tr>
+                    );
+                  }
+                  if (raw.type === 'separator') {
+                    return (
+                      <tr key={row.id} css={separatorRowStyles}>
                         <td colSpan={7} />
                       </tr>
-                    )
-                  ) : null;
-                  return sep ? [row, sep] : [row];
+                    );
+                  }
+                  return (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map((cell) => {
+                        const isHospital = cell.column.id === 'hospital';
+                        const isProductCode = cell.column.id === 'productCode';
+                        const dataInvalid =
+                          raw.type === 'data' &&
+                          ((isHospital && raw.isInvalidHospital) || (isProductCode && raw.isInvalidProductCode));
+                        return (
+                          <td
+                            key={cell.id}
+                            {...(dataInvalid && { 'data-invalid': 'true' })}
+                            className={(cell.column.columnDef.meta as { className?: string })?.className}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
                 })}
               </tbody>
               <tfoot>
