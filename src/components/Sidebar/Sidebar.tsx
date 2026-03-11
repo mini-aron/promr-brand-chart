@@ -1,7 +1,9 @@
+'use client';
 /** @jsxImportSource @emotion/react */
 import { useState, useEffect } from 'react';
 import { css } from '@emotion/react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { useAuthContext } from '@/context/AuthContext';
 import { useThemeMode } from '@/context/ThemeContext';
@@ -127,7 +129,7 @@ function isSectionActive(section: NavSection, pathname: string): boolean {
 }
 
 export function Sidebar() {
-  const location = useLocation();
+  const pathname = usePathname();
   const { userRole, setUserRole } = useApp();
   const { logout } = useAuthContext();
   const { themeMode, toggleTheme } = useThemeMode();
@@ -140,29 +142,29 @@ export function Sidebar() {
     const items = getNavItems(userRole);
     const next: Record<string, boolean> = {};
     items.forEach((item) => {
-      if (isNavSection(item) && isSectionActive(item, location.pathname)) {
+      if (isNavSection(item) && isSectionActive(item, pathname)) {
         next[item.label] = true;
       }
     });
     setOpenSections((prev) => ({ ...prev, ...next }));
-  }, [location.pathname, userRole]);
+  }, [pathname, userRole]);
 
   const toggleSection = (label: string) => {
     setOpenSections((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
   const isActive = (path: string) =>
-    location.pathname === path || (path === '/upload' && location.pathname.startsWith('/upload'));
+    pathname === path || (path === '/upload' && pathname.startsWith('/upload'));
 
   return (
     <aside css={asideStyles}>
-      <Link to="/" css={logoStyles} aria-label="PROPF 홈">
+      <Link href="/home" css={logoStyles} aria-label="PROPF 홈">
         <span className="logo-pro">PRO</span>
         <span className="logo-pf">PF</span>
       </Link>
       <nav>
         <Column gap={theme.spacing(1)} css={navLinks}>
-          <Link to="/" css={isActive('/') ? activeLinkStyles : undefined}>
+          <Link href="/home" css={isActive('/home') ? activeLinkStyles : undefined}>
             홈
           </Link>
           {navItems.map((item) =>
@@ -171,7 +173,7 @@ export function Sidebar() {
                 <Button
                   variant="menu"
                   size="menu"
-                  css={isSectionActive(item, location.pathname) ? activeLinkStyles : undefined}
+                  css={isSectionActive(item, pathname) ? activeLinkStyles : undefined}
                   onClick={() => toggleSection(item.label)}
                   aria-expanded={openSections[item.label]}
                 >
@@ -185,7 +187,7 @@ export function Sidebar() {
                     {item.children.map((link) => (
                       <Link
                         key={link.to}
-                        to={link.to}
+                        href={link.to}
                         css={isActive(link.to) ? activeLinkStyles : undefined}
                       >
                         {link.label}
@@ -197,7 +199,7 @@ export function Sidebar() {
             ) : (
               <Link
                 key={item.to}
-                to={item.to}
+                href={item.to}
                 css={isActive(item.to) ? activeLinkStyles : undefined}
               >
                 {item.label}

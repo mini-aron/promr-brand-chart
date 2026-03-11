@@ -1,6 +1,7 @@
-/** @jsxImportSource @emotion/react */
+'use client';
+
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { getStorage, removeStorage, setStorage } from '@/utils/storage';
 import { login as loginApi, logout as logoutApi } from '@/api/services/authService';
 
@@ -19,7 +20,7 @@ type AuthActions = {
 const AuthContext = createContext<(AuthState & AuthActions) | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(() => getStorage<string>(AUTH_TOKEN_KEY));
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,18 +35,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!email?.trim() && !password) {
           setStorage(AUTH_TOKEN_KEY, 'demo-token');
           setToken('demo-token');
-          navigate('/', { replace: true });
+          router.replace('/home');
           return;
         }
         const { token: newToken } = await loginApi({ email, password });
         setStorage(AUTH_TOKEN_KEY, newToken);
         setToken(newToken);
-        navigate('/', { replace: true });
+        router.replace('/home');
       } catch (err) {
-        if (import.meta.env.DEV && email && password) {
+        if (process.env.NODE_ENV === 'development' && email && password) {
           setStorage(AUTH_TOKEN_KEY, 'demo-token');
           setToken('demo-token');
-          navigate('/', { replace: true });
+          router.replace('/home');
         } else {
           throw err;
         }
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     },
-    [navigate]
+    [router]
   );
 
   const logout = useCallback(async () => {
@@ -64,9 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } finally {
       removeStorage(AUTH_TOKEN_KEY);
       setToken(null);
-      navigate('/promotion', { replace: true });
+      router.replace('/promotion');
     }
-  }, [navigate, token]);
+  }, [router, token]);
 
   const value = useMemo<AuthState & AuthActions>(
     () => ({

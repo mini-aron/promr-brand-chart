@@ -1,5 +1,7 @@
+'use client';
 /** @jsxImportSource @emotion/react */
-import { Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import type { UserRole } from '@/types';
 
@@ -8,13 +10,17 @@ type RoleProtectedRouteProps = {
   children: React.ReactNode;
 };
 
-
 export function RoleProtectedRoute({ allowedRoles, children }: RoleProtectedRouteProps) {
+  const router = useRouter();
   const { userRole } = useApp();
 
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    if (!allowedRoles.includes(userRole)) {
+      router.replace('/home');
+    }
+  }, [allowedRoles, userRole, router]);
+
+  if (!allowedRoles.includes(userRole)) return null;
 
   return <>{children}</>;
 }

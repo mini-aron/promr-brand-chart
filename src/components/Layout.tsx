@@ -1,6 +1,6 @@
+'use client';
 /** @jsxImportSource @emotion/react */
 import { css } from '@emotion/react';
-import { Outlet } from 'react-router-dom';
 import { theme } from '@/theme';
 import { Flex } from '@/components/Common/Flex';
 import { Sidebar } from '@/components/Sidebar';
@@ -23,13 +23,11 @@ const mainStyles = css({
   boxSizing: 'border-box',
 });
 
-export function Layout() {
+export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <Flex direction="row" gap={0} alignItems="stretch" css={layoutWrap}>
       <Sidebar />
-      <main css={mainStyles}>
-        <Outlet />
-      </main>
+      <main css={mainStyles}>{children}</main>
     </Flex>
   );
 }

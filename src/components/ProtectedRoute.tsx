@@ -1,9 +1,11 @@
+'use client';
 /** @jsxImportSource @emotion/react */
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthContext } from '@/context/AuthContext';
 
 type ProtectedRouteProps = {
-  children?: React.ReactNode;
+  children: React.ReactNode;
 };
 
 /**
@@ -11,16 +13,19 @@ type ProtectedRouteProps = {
  * 비인증 시 /promotion으로 리다이렉트.
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuthContext();
-  const location = useLocation();
 
-  if (isLoading) {
-    return null;
-  }
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      router.replace(`/promotion?from=${encodeURIComponent(pathname)}`);
+    }
+  }, [isAuthenticated, isLoading, router, pathname]);
 
-  if (!isAuthenticated) {
-    return <Navigate to="/promotion" state={{ from: location }} replace />;
-  }
+  if (isLoading) return null;
+  if (!isAuthenticated) return null;
 
-  return children ? <>{children}</> : <Outlet />;
+  return <>{children}</>;
 }

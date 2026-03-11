@@ -1,6 +1,7 @@
 const PREFIX = 'promr_';
 
 export function getStorage<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
   try {
     const raw = localStorage.getItem(PREFIX + key);
     return raw ? (JSON.parse(raw) as T) : null;
