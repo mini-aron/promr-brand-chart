@@ -1,15 +1,15 @@
 'use client';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '@/store/appStore';
-import { mockCorporations, mockFilterRequests, mockHospitals } from '@/store/mockData';
-import { HiOutlineX } from 'react-icons/hi';
+import { mockCorporations, mockFilterRequests, mockHospitals, mockProductFees } from '@/store/mockData';
+import { HiOutlineX, HiOutlineTrash } from 'react-icons/hi';
 import { Button } from '@/components/Common/Button';
 import { Input } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
-import type { FilterRequest } from '@/types';
+import type { FilterRequest, FilterRequestProduct } from '@/types';
 import { Tooltip } from '@/components/Common/Tooltip';
 
 const DEADLINE_STORAGE_KEY = 'filter-approval-deadlines';
@@ -92,6 +92,128 @@ const PRODUCT_FILTER_MODE_OPTIONS = [
   { label: '금지품목 설정', value: 'prohibited' },
 ];
 
+const productPool: FilterRequestProduct[] = mockProductFees.map((p) => ({
+  productCode: p.productCode,
+  productName: p.productName,
+  productEdi: p.ediCode ?? '',
+}));
+
+type ProductListSectionProps = {
+  title: string;
+  products: FilterRequestProduct[];
+  onChange: (next: FilterRequestProduct[]) => void;
+};
+
+function ProductListSection({ title, products, onChange }: ProductListSectionProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const inList = new Set(products.map((p) => p.productCode));
+    return productPool.filter(
+      (p) => !inList.has(p.productCode) && p.productName.toLowerCase().includes(q)
+    );
+  }, [searchQuery, products]);
+
+  const addProduct = useCallback(
+    (p: FilterRequestProduct) => {
+      if (products.some((x) => x.productCode === p.productCode)) return;
+      onChange([...products, p]);
+    },
+    [products, onChange]
+  );
+
+  const removeProduct = useCallback(
+    (productCode: string) => onChange(products.filter((p) => p.productCode !== productCode)),
+    [products, onChange]
+  );
+
+  const reset = useCallback(() => onChange([]), [onChange]);
+
+  return (
+    <div className={s.productListSection}>
+      <div className={s.productListTitle}>{title}</div>
+      <div className={s.productSearchWrap}>
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="제품명 검색"
+          aria-label={`${title} 제품명 검색`}
+        />
+      </div>
+      {searchQuery.trim() && (
+        <div className={s.productSearchResults}>
+          {searchResults.length === 0 ? (
+            <div className={s.productSearchResultRow}>검색 결과 없음</div>
+          ) : (
+            searchResults.map((p) => (
+              <div key={p.productCode} className={s.productSearchResultRow}>
+                <span className={s.productSearchResultText}>
+                  {p.productName} ({p.productEdi})
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="small"
+                  onClick={() => addProduct(p)}
+                  aria-label={`${p.productName} 추가`}
+                >
+                  추가
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+      <div className={s.productTableWrap}>
+        <table>
+          <thead>
+            <tr>
+              <th>제품명</th>
+              <th>제품EDI</th>
+              <th style={{ width: 56 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={3} style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
+                  지정된 품목 없음
+                </td>
+              </tr>
+            ) : (
+              products.map((p) => (
+                <tr key={p.productCode}>
+                  <td>{p.productName}</td>
+                  <td>{p.productEdi}</td>
+                  <td>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="small"
+                      className={s.productRowDeleteBtn}
+                      onClick={() => removeProduct(p.productCode)}
+                      aria-label={`${p.productName} 삭제`}
+                    >
+                      <HiOutlineTrash size={14} />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className={s.productListBtnGroup}>
+        <Button type="button" variant="secondary" size="small" onClick={reset} disabled={products.length === 0}>
+          리셋
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function FilterApprovalPage() {
   const { currentPharmaId } = useApp();
   const corporations = mockCorporations;
@@ -107,7 +229,7 @@ export function FilterApprovalPage() {
   }, []);
 
   const updateFilterRequest = useCallback(
-    (id: string, updates: Partial<Pick<FilterRequest, 'corporationId' | 'hospitalId' | 'status' | 'additionalFeeRate' | 'productFilterMode'>>) => {
+    (id: string, updates: Partial<Pick<FilterRequest, 'corporationId' | 'hospitalId' | 'status' | 'additionalFeeRate' | 'productFilterMode' | 'allowedProducts' | 'prohibitedProducts'>>) => {
       const now = new Date().toISOString().slice(0, 19);
       setFilterRequests((prev) =>
         prev.map((r) =>
@@ -127,6 +249,8 @@ export function FilterApprovalPage() {
         status?: FilterRequest['status'];
         additionalFeeRate?: number;
         productFilterMode?: 'prohibited' | 'allowed';
+        allowedProducts?: FilterRequest['allowedProducts'];
+        prohibitedProducts?: FilterRequest['prohibitedProducts'];
       }
     ) => {
       const id = `fr-${Date.now()}`;
@@ -150,6 +274,8 @@ export function FilterApprovalPage() {
           updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
           additionalFeeRate: opts?.additionalFeeRate,
           productFilterMode: opts?.productFilterMode,
+          allowedProducts: opts?.allowedProducts ?? [],
+          prohibitedProducts: opts?.prohibitedProducts ?? [],
         },
       ]);
     },
@@ -162,6 +288,8 @@ export function FilterApprovalPage() {
   const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
   const [addAdditionalFeeRate, setAddAdditionalFeeRate] = useState(0);
   const [addProductFilterMode, setAddProductFilterMode] = useState<'prohibited' | 'allowed'>('allowed');
+  const [addAllowedProducts, setAddAllowedProducts] = useState<FilterRequestProduct[]>([]);
+  const [addProhibitedProducts, setAddProhibitedProducts] = useState<FilterRequestProduct[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const currentMonthKey = useMemo(() => getCurrentMonthKey(), []);
   const [deadlineDay, setDeadlineDay] = useState(0);
@@ -333,9 +461,13 @@ export function FilterApprovalPage() {
       status: addStatus,
       additionalFeeRate: addAdditionalFeeRate,
       productFilterMode: addProductFilterMode,
+      allowedProducts: addProductFilterMode === 'allowed' ? addAllowedProducts : [],
+      prohibitedProducts: addProductFilterMode === 'prohibited' ? addProhibitedProducts : [],
     });
     setSelectedHospitalId('');
-  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addAdditionalFeeRate, addProductFilterMode, addFilterRequest]);
+    setAddAllowedProducts([]);
+    setAddProhibitedProducts([]);
+  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addAdditionalFeeRate, addProductFilterMode, addAllowedProducts, addProhibitedProducts, addFilterRequest]);
 
 
   const maxDay = useMemo(() => {
@@ -501,15 +633,32 @@ export function FilterApprovalPage() {
                   id="detail-product-filter-mode"
                   options={PRODUCT_FILTER_MODE_OPTIONS}
                   selected={selectedRequest.productFilterMode ?? 'allowed'}
-                  onChange={(v) =>
+                  onChange={(v) => {
+                    const mode = (v as 'prohibited' | 'allowed') ?? 'allowed';
                     updateFilterRequest(selectedRequest.id, {
-                      productFilterMode: (v as 'prohibited' | 'allowed') ?? 'allowed',
-                    })
-                  }
+                      productFilterMode: mode,
+                      allowedProducts: mode === 'allowed' ? (selectedRequest.allowedProducts ?? []) : [],
+                      prohibitedProducts: mode === 'prohibited' ? (selectedRequest.prohibitedProducts ?? []) : [],
+                    });
+                  }}
                   placeholder="선택"
                   aria-label="품목 설정"
                 />
               </div>
+              {(selectedRequest.productFilterMode ?? 'allowed') === 'allowed' && (
+                <ProductListSection
+                  title="가능품목 지정"
+                  products={selectedRequest.allowedProducts ?? []}
+                  onChange={(next) => updateFilterRequest(selectedRequest.id, { allowedProducts: next })}
+                />
+              )}
+              {(selectedRequest.productFilterMode ?? 'allowed') === 'prohibited' && (
+                <ProductListSection
+                  title="불가품목 지정"
+                  products={selectedRequest.prohibitedProducts ?? []}
+                  onChange={(next) => updateFilterRequest(selectedRequest.id, { prohibitedProducts: next })}
+                />
+              )}
               <div className={s.detailSection}>
                 <div className={s.detailLabel}>요청 일시</div>
                 <div className={s.detailValue}>{formatDateTime(selectedRequest.requestedAt)}</div>
@@ -610,11 +759,30 @@ export function FilterApprovalPage() {
               id="filter-add-product-filter-mode"
               options={PRODUCT_FILTER_MODE_OPTIONS}
               selected={addProductFilterMode}
-              onChange={(v) => setAddProductFilterMode((v as 'prohibited' | 'allowed') ?? 'allowed')}
+              onChange={(v) => {
+                const mode = (v as 'prohibited' | 'allowed') ?? 'allowed';
+                setAddProductFilterMode(mode);
+                if (mode === 'allowed') setAddProhibitedProducts([]);
+                else setAddAllowedProducts([]);
+              }}
               placeholder="선택"
               aria-label="품목 설정"
             />
           </div>
+          {addProductFilterMode === 'allowed' && (
+            <ProductListSection
+              title="가능품목 지정"
+              products={addAllowedProducts}
+              onChange={setAddAllowedProducts}
+            />
+          )}
+          {addProductFilterMode === 'prohibited' && (
+            <ProductListSection
+              title="불가품목 지정"
+              products={addProhibitedProducts}
+              onChange={setAddProhibitedProducts}
+            />
+          )}
           <Button
             variant="primary"
             onClick={handleAddFilter}

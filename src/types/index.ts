@@ -106,6 +106,13 @@ export interface PrescriptionUpload {
   settlementMonth?: string;
 }
 
+/** 거래선 관리 품목 지정용 제품 한 건 */
+export interface FilterRequestProduct {
+  productCode: string;
+  productName: string;
+  productEdi: string;
+}
+
 /** 필터링 승인요청: 해당 병의원과 거래해도 되는지 여부 승인 요청 (법인별 필터링 승인요청 메뉴용) */
 export interface FilterRequest {
   id: string;
@@ -137,6 +144,10 @@ export interface FilterRequest {
   additionalFeeRate?: number;
   /** 금지·허용 품목 설정: 금지(prohibited) | 허용(allowed) 둘 중 하나 */
   productFilterMode?: 'prohibited' | 'allowed';
+  /** 가능품목 지정 목록 (허용품목 설정 시) */
+  allowedProducts?: FilterRequestProduct[];
+  /** 불가품목 지정 목록 (금지품목 설정 시) */
+  prohibitedProducts?: FilterRequestProduct[];
 }
 
 /** 법인 초대 정보 */

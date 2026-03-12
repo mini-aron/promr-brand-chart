@@ -147,3 +147,39 @@ export const detailSection = style({ marginBottom: 16 });
 export const detailLabel = style({ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 2 });
 export const detailValue = style({ fontSize: 14, fontWeight: 500 });
 
+/* 가능품목/불가품목 지정 */
+export const productListSection = style({ marginBottom: 16 });
+export const productListTitle = style({ fontSize: 13, fontWeight: 600, marginBottom: 8 });
+export const productSearchWrap = style({ marginBottom: 8 });
+export const productSearchResults = style({
+  maxHeight: 120,
+  overflowY: 'auto',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-md)',
+  marginBottom: 8,
+  fontSize: 12,
+});
+export const productSearchResultRow = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '6px 8px',
+  borderBottom: '1px solid var(--color-border)',
+  gap: 8,
+});
+globalStyle(`${productSearchResultRow}:last-child`, { borderBottom: 'none' });
+export const productSearchResultText = style({ flex: 1, minWidth: 0 });
+export const productTableWrap = style({
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-md)',
+  overflow: 'hidden',
+  marginBottom: 8,
+  fontSize: 12,
+});
+globalStyle(`${productTableWrap} table`, { width: '100%', borderCollapse: 'collapse' });
+globalStyle(`${productTableWrap} th, ${productTableWrap} td`, { padding: '6px 8px', textAlign: 'left', borderBottom: '1px solid var(--color-border)' });
+globalStyle(`${productTableWrap} tr:last-child td`, { borderBottom: 'none' });
+globalStyle(`${productTableWrap} th`, { backgroundColor: 'var(--color-background)', fontWeight: 600, fontSize: 11 });
+export const productListBtnGroup = style({ display: 'flex', gap: 6, flexWrap: 'wrap' });
+export const productRowDeleteBtn = style({ flexShrink: 0, padding: '2px 6px', fontSize: 11 });
+
