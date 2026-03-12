@@ -24,6 +24,7 @@ export interface DataTableProps<T> {
   variant?: TableVariant;
   className?: string;
   getRowClassName?: (row: T) => string | undefined;
+  onRowClick?: (row: T) => void;
   renderFooter?: () => React.ReactNode;
   emptyMessage?: React.ReactNode;
 }
@@ -35,6 +36,7 @@ export function DataTable<T>({
   variant = 'default',
   className,
   getRowClassName,
+  onRowClick,
   renderFooter,
   emptyMessage,
 }: DataTableProps<T>) {
@@ -48,7 +50,7 @@ export function DataTable<T>({
   const leafColumns = table.getAllLeafColumns();
 
   return (
-    <div className={clsx(variantMap[variant], className)}>
+    <div className={clsx(variantMap[variant], onRowClick && s.rowsClickable, className)}>
       <table>
         <colgroup>
           {leafColumns.map((col) => (
@@ -82,7 +84,23 @@ export function DataTable<T>({
             ) : null
           ) : (
             table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className={getRowClassName?.(row.original)}>
+              <tr
+                key={row.id}
+                className={getRowClassName?.(row.original)}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                role={onRowClick ? 'button' : undefined}
+                tabIndex={onRowClick ? 0 : undefined}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onRowClick(row.original);
+                        }
+                      }
+                    : undefined
+                }
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className={(cell.column.columnDef.meta as { className?: string })?.className}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
