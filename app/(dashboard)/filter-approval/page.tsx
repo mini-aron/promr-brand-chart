@@ -5,7 +5,7 @@ import { FilterApprovalPage } from '@/views/FilterApprovalPage';
 
 export default function FilterApprovalRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['pharma']}>
+    <RoleProtectedRoute allowedRoles={['pharma', 'admin']}>
       <FilterApprovalPage />
     </RoleProtectedRoute>
   );

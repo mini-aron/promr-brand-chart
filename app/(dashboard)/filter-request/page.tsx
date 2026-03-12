@@ -5,7 +5,7 @@ import { FilterRequestPage } from '@/views/FilterRequestPage';
 
 export default function FilterRequestRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['corporation']}>
+    <RoleProtectedRoute allowedRoles={['corporation', 'admin']}>
       <FilterRequestPage />
     </RoleProtectedRoute>
   );

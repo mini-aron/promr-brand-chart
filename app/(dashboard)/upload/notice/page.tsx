@@ -5,7 +5,7 @@ import { UploadNoticePage } from '@/views/UploadNoticePage';
 
 export default function UploadNoticeRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['corporation']}>
+    <RoleProtectedRoute allowedRoles={['corporation', 'admin']}>
       <UploadNoticePage />
     </RoleProtectedRoute>
   );

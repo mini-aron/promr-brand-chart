@@ -5,7 +5,7 @@ import { SettlementByCorpPage } from '@/views/SettlementByCorpPage';
 
 export default function SettlementRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['pharma']}>
+    <RoleProtectedRoute allowedRoles={['pharma', 'admin']}>
       <SettlementByCorpPage />
     </RoleProtectedRoute>
   );

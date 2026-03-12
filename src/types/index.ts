@@ -1,5 +1,5 @@
 /** 사용자 유형 */
-export type UserRole = 'corporation' | 'pharma';
+export type UserRole = 'corporation' | 'pharma' | 'admin';
 
 /** 제약사 정보 */
 export interface Pharma {

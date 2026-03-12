@@ -5,7 +5,7 @@ import { FeeManagePage } from '@/views/FeeManagePage';
 
 export default function FeesRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['pharma']}>
+    <RoleProtectedRoute allowedRoles={['pharma', 'admin']}>
       <FeeManagePage />
     </RoleProtectedRoute>
   );

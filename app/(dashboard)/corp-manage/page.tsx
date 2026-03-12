@@ -5,7 +5,7 @@ import { CorpManagePage } from '@/views/CorpManagePage';
 
 export default function CorpManageRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['pharma']}>
+    <RoleProtectedRoute allowedRoles={['pharma', 'admin']}>
       <CorpManagePage />
     </RoleProtectedRoute>
   );

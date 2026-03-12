@@ -5,7 +5,7 @@ import { HospitalManagePage } from '@/views/HospitalManagePage';
 
 export default function HospitalsRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['pharma']}>
+    <RoleProtectedRoute allowedRoles={['pharma', 'admin']}>
       <HospitalManagePage />
     </RoleProtectedRoute>
   );

@@ -103,7 +103,7 @@ export function HomePage() {
   }, [salesRows, corporations, hospitals, dealers, filterRequests]);
 
   const monthlySalesData = useMemo(() => {
-    const filteredSales = userRole === 'corporation' 
+    const filteredSales = userRole === 'corporation'
       ? salesRows.filter((s) => s.corporationId === currentCorporationId)
       : salesRows;
 
@@ -183,7 +183,7 @@ export function HomePage() {
         </div>
       )}
 
-      {userRole === 'pharma' && (
+      {(userRole === 'pharma' || userRole === 'admin') && (
         <div className={s.statsSection}>
           <h2 className={s.sectionTitle}>전체 현황</h2>
           <div className={s.statsGrid}>
@@ -246,7 +246,7 @@ export function HomePage() {
             </div>
           </>
         )}
-        {userRole === 'pharma' && (
+        {(userRole === 'pharma' || userRole === 'admin') && (
           <>
             <div className={s.card}>
               <h2 className={s.cardTitle}>기준정보 관리</h2>

@@ -5,7 +5,7 @@ import { DealerManagePage } from '@/views/DealerManagePage';
 
 export default function DealerManageRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['corporation']}>
+    <RoleProtectedRoute allowedRoles={['corporation', 'admin']}>
       <DealerManagePage />
     </RoleProtectedRoute>
   );

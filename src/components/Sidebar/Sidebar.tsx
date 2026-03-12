@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useApp } from '@/store/appStore';
 import { useAuthContext } from '@/context/AuthContext';
 import { useThemeMode } from '@/context/ThemeContext';
+import type { UserRole } from '@/types';
 import { HiChevronRight } from 'react-icons/hi';
 import { Button } from '@/components/Common/Button';
 import { Column } from '@/components/Common/Flex';
@@ -47,8 +48,13 @@ const pharmaNavItems: NavItem[] = [
   { to: '/dealer-view', label: '법인별 계약 조회' },
 ];
 
-function getNavItems(role: 'corporation' | 'pharma'): NavItem[] {
-  return role === 'corporation' ? corporationNavItems : pharmaNavItems;
+/** 어드민: 제약사와 동일 메뉴(전체 조회·관리) */
+const adminNavItems: NavItem[] = pharmaNavItems;
+
+function getNavItems(role: UserRole): NavItem[] {
+  if (role === 'corporation') return corporationNavItems;
+  if (role === 'admin') return adminNavItems;
+  return pharmaNavItems;
 }
 
 function isSectionActive(section: NavSection, pathname: string): boolean {
@@ -61,11 +67,11 @@ export function Sidebar() {
   const { logout } = useAuthContext();
   const { themeMode, toggleTheme } = useThemeMode();
 
-  const navItems = userRole === 'corporation' || userRole === 'pharma' ? getNavItems(userRole) : [];
+  const navItems = ['corporation', 'pharma', 'admin'].includes(userRole) ? getNavItems(userRole) : [];
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (userRole !== 'corporation' && userRole !== 'pharma') return;
+    if (!['corporation', 'pharma', 'admin'].includes(userRole)) return;
     const items = getNavItems(userRole);
     const next: Record<string, boolean> = {};
     items.forEach((item) => {
@@ -145,9 +151,10 @@ export function Sidebar() {
           options={[
             { label: '법인', value: 'corporation' },
             { label: '제약사', value: 'pharma' },
+            { label: '어드민', value: 'admin' },
           ]}
           selected={userRole}
-          onChange={(v) => setUserRole(v as 'corporation' | 'pharma')}
+          onChange={(v) => setUserRole(v as UserRole)}
           placeholder="역할 선택"
           aria-label="사용자 역할"
         />

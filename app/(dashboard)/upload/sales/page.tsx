@@ -5,7 +5,7 @@ import { SalesUploadPage } from '@/views/SalesUploadPage';
 
 export default function SalesUploadRoute() {
   return (
-    <RoleProtectedRoute allowedRoles={['corporation']}>
+    <RoleProtectedRoute allowedRoles={['corporation', 'admin']}>
       <SalesUploadPage />
     </RoleProtectedRoute>
   );
