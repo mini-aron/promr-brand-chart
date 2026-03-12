@@ -42,7 +42,7 @@ globalStyle(`${listWrap} th, ${listWrap} td`, { padding: 8, borderRight: 'none' 
 globalStyle(`${listWrap} th`, { fontSize: 13 });
 
 export const rightPanel = style({
-  width: 320,
+  width: 440,
   flexShrink: 0,
   backgroundColor: 'var(--color-surface)',
   border: '1px solid var(--color-border)',
@@ -54,6 +54,38 @@ export const rightPanel = style({
 
 export const sectionTitle = style({ fontSize: 16, marginBottom: 8 });
 export const sectionDesc = style({ fontSize: 13, color: 'var(--color-text-muted)', marginBottom: 16 });
+export const detailHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 12,
+});
+globalStyle(`${detailHeader} h3`, { marginBottom: 0 });
+export const rowSelected = style({
+  backgroundColor: 'color-mix(in srgb, var(--color-primary) 14%, transparent)',
+});
+export const formField = style({ marginBottom: 12 });
+globalStyle(`${formField} label`, {
+  display: 'block',
+  marginBottom: 4,
+  fontSize: 13,
+  fontWeight: 600,
+});
+globalStyle(`${formField} input, ${formField} select`, {
+  display: 'block',
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '8px 10px',
+  fontSize: 14,
+  borderRadius: 'var(--radius-md)',
+  border: '2px solid var(--color-border)',
+  backgroundColor: 'var(--color-surface)',
+  color: 'var(--color-text)',
+});
+globalStyle(`${formField} input:focus, ${formField} select:focus`, {
+  outline: 'none',
+  borderColor: 'var(--color-primary)',
+});
 export const addButtonFull = style({ width: '100%' });
 
 export const inviteCodeBox = style({
@@ -111,6 +143,23 @@ globalStyle(`${removeEmailBtn}:hover`, {
   color: 'var(--color-error, #dc2626)',
 });
 export const resetLink = style({ marginTop: 12, width: '100%' });
+
+export const tieredFeeTableWrap = style({
+  fontSize: 13,
+});
+globalStyle(`${tieredFeeTableWrap} table`, { tableLayout: 'fixed', width: '100%' });
+globalStyle(`${tieredFeeTableWrap} th, ${tieredFeeTableWrap} td`, {
+  padding: '6px 8px',
+  verticalAlign: 'middle',
+  whiteSpace: 'normal',
+});
+globalStyle(`${tieredFeeTableWrap} input`, {
+  width: '100%',
+  minWidth: 60,
+  padding: '4px 6px',
+  fontSize: 13,
+});
+export const tieredFeeAddBtn = style({ marginTop: 8 });
 
 const statusBase = style({
   display: 'inline-block',

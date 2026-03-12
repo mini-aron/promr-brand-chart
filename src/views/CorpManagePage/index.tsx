@@ -9,6 +9,7 @@ import * as s from "./index.css";
 import type { CorpInvitation } from "@/types";
 import { Input } from "@/components/Common/Input";
 import { Column, Row } from "@/components/Common/Flex";
+import { Tooltip } from "@/components/Common/Tooltip";
 
 type StatusStyles = { statusAccepted: string; statusPending: string };
 
@@ -47,6 +48,9 @@ export function CorpManagePage() {
   const [invitations, setInvitations] =
     useState<CorpInvitation[]>(mockCorpInvitations);
   const [mailSent, setMailSent] = useState(false);
+  const [selectedInvitationId, setSelectedInvitationId] = useState<string | null>(
+    null,
+  );
 
   const filteredInvitations = useMemo(
     () =>
@@ -54,6 +58,14 @@ export function CorpManagePage() {
         .filter((inv) => inv.pharmaId === currentPharmaId)
         .sort((a, b) => b.invitedAt.localeCompare(a.invitedAt)),
     [invitations, currentPharmaId],
+  );
+
+  const selectedInvitation = useMemo(
+    () =>
+      selectedInvitationId
+        ? filteredInvitations.find((inv) => inv.id === selectedInvitationId)
+        : null,
+    [selectedInvitationId, filteredInvitations],
   );
 
   const pendingInvitation = useMemo(
@@ -158,6 +170,10 @@ export function CorpManagePage() {
               columns={columns}
               data={filteredInvitations}
               getRowId={(r) => r.id}
+              onRowClick={(row) => setSelectedInvitationId(row.id)}
+              getRowClassName={(row) =>
+                row.id === selectedInvitationId ? s.rowSelected : undefined
+              }
               emptyMessage={
                 filteredInvitations.length === 0
                   ? "초대된 법인이 없습니다."
@@ -167,12 +183,19 @@ export function CorpManagePage() {
           </div>
         </div>
 
-        <InviteCodeForm
-          displayCode={displayCode}
-          mailSent={mailSent}
-          onGenerateCode={handleGenerateCode}
-          onSendMail={handleSendMail}
-        />
+        {selectedInvitation ? (
+          <CorpDetailForm
+            corporationId={selectedInvitation.corporationId}
+            onClose={() => setSelectedInvitationId(null)}
+          />
+        ) : (
+          <InviteCodeForm
+            displayCode={displayCode}
+            mailSent={mailSent}
+            onGenerateCode={handleGenerateCode}
+            onSendMail={handleSendMail}
+          />
+        )}
       </div>
     </div>
   );
@@ -307,11 +330,194 @@ function InviteCodeForm({
   );
 }
 
-function CorpDetailForm() {
+type TieredFeeRow = {
+  id: string;
+  minAmount: number;
+  maxAmount: number;
+  rate: number;
+};
+
+type CorpDetailFormProps = {
+  corporationId?: string;
+  onClose: () => void;
+};
+
+function CorpDetailForm({ corporationId, onClose }: CorpDetailFormProps) {
+  const corporations = mockCorporations;
+  const corp = corporations.find((c) => c.id === corporationId);
+  const [additionalFee, setAdditionalFee] = useState("");
+  const [tiers, setTiers] = useState<TieredFeeRow[]>(() =>
+    corp?.tieredFeeTiers
+      ? corp.tieredFeeTiers.map((t, i) => ({
+          id: `tier-${i}`,
+          minAmount: t.minAmount * 10000,
+          maxAmount: t.maxAmount * 10000,
+          rate: t.rate,
+        }))
+      : [{ id: "tier-1", minAmount: 10000, maxAmount: 1000000, rate: 2 }],
+  );
+
+  const updateTier = useCallback(
+    (id: string, field: keyof Omit<TieredFeeRow, "id">, value: number) => {
+      setTiers((prev) =>
+        prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+      );
+    },
+    [],
+  );
+
+  const addTier = useCallback(() => {
+    const last = tiers[tiers.length - 1];
+    setTiers((prev) => [
+      ...prev,
+      {
+        id: `tier-${Date.now()}`,
+        minAmount: last ? last.maxAmount : 10000,
+        maxAmount: last ? last.maxAmount + 1000000 : 1000000,
+        rate: 2,
+      },
+    ]);
+  }, [tiers]);
+
+  const removeTier = useCallback((id: string) => {
+    setTiers((prev) => prev.filter((row) => row.id !== id));
+  }, []);
+
+  const tierColumnHelper = createColumnHelper<TieredFeeRow>();
+  const tierColumns = useMemo(
+    () => [
+      tierColumnHelper.accessor("minAmount", {
+        header: "금액 구간 (원)",
+        size: 280,
+        cell: ({ row }) => (
+          <Row gap={4} alignItems="center" onClick={(e) => e.stopPropagation()}>
+            <Input
+              type="number"
+              value={row.original.minAmount}
+              onChange={(e) =>
+                updateTier(row.original.id, "minAmount", Number(e.target.value) || 0)
+              }
+              placeholder="최소"
+              size="compact"
+              min={0}
+            />
+            <span>~</span>
+            <Input
+              type="number"
+              value={row.original.maxAmount}
+              onChange={(e) =>
+                updateTier(row.original.id, "maxAmount", Number(e.target.value) || 0)
+              }
+              placeholder="최대"
+              size="compact"
+              min={0}
+            />
+          </Row>
+        ),
+      }),
+      tierColumnHelper.accessor("rate", {
+        header: "수수료 (%)",
+        size: 85,
+        cell: ({ row }) => (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Input
+              type="number"
+              value={row.original.rate}
+              onChange={(e) =>
+                updateTier(row.original.id, "rate", Number(e.target.value) || 0)
+              }
+              placeholder="%"
+              size="compact"
+              min={0}
+              max={100}
+              step={0.1}
+            />
+          </div>
+        ),
+      }),
+      tierColumnHelper.display({
+        id: "remove",
+        header: "",
+        size: 36,
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              removeTier(row.original.id);
+            }}
+            disabled={tiers.length <= 1}
+            aria-label="행 삭제"
+          >
+            <HiOutlineX size={16} />
+          </Button>
+        ),
+      }),
+    ],
+    [tiers.length, updateTier, removeTier],
+  );
+
   return (
     <aside className={s.rightPanel}>
-      <h3 className={s.sectionTitle}>상세</h3>
-  
+      <div className={s.detailHeader}>
+        <h3 className={s.sectionTitle}>법인 상세</h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          aria-label="닫기"
+        >
+          <HiOutlineX size={18} />
+        </Button>
+      </div>
+      <Column gap={8}>
+        <div className={s.formField}>
+          <label htmlFor="corp-name">법인명</label>
+          <Input
+            id="corp-name"
+            type="text"
+            placeholder="법인명"
+            value={corp?.name ?? "-"}
+            disabled
+          />
+        </div>
+        <div className={s.formField}>
+          <label htmlFor="corp-add-fee">추가 수수료 (%)</label>
+          <Input
+            id="corp-add-fee"
+            type="number"
+            placeholder="0"
+            value={additionalFee}
+            onChange={(e) => setAdditionalFee(e.target.value)}
+            min={-100}
+            max={100}
+            step={0.1}
+          />
+        </div>
+        <div className={s.formField}>
+          <Tooltip description="금액 구간별로 수수료율을 설정합니다. 예: 1만원~100만원 구간 2%">
+            <label>구간 수수료</label>
+          </Tooltip>
+          <DataTable<TieredFeeRow>
+            columns={tierColumns}
+            data={tiers}
+            getRowId={(r) => r.id}
+            variant="compact"
+            className={s.tieredFeeTableWrap}
+            emptyMessage="구간이 없습니다."
+          />
+          <Button
+            variant="ghost"
+            size="small"
+            onClick={addTier}
+            className={s.tieredFeeAddBtn}
+          >
+            <HiOutlinePlus size={16} />
+            구간 추가
+          </Button>
+        </div>
+      </Column>
     </aside>
-  )
+  );
 }
