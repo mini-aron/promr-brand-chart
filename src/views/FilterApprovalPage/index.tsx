@@ -88,6 +88,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const PRODUCT_FILTER_MODE_OPTIONS = [
+  { label: '미사용', value: 'none' },
   { label: '허용품목 설정', value: 'allowed' },
   { label: '금지품목 설정', value: 'prohibited' },
 ];
@@ -248,7 +249,7 @@ export function FilterApprovalPage() {
         requestMessage?: string;
         status?: FilterRequest['status'];
         additionalFeeRate?: number;
-        productFilterMode?: 'prohibited' | 'allowed';
+        productFilterMode?: 'none' | 'prohibited' | 'allowed';
         allowedProducts?: FilterRequest['allowedProducts'];
         prohibitedProducts?: FilterRequest['prohibitedProducts'];
       }
@@ -287,7 +288,7 @@ export function FilterApprovalPage() {
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
   const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
   const [addAdditionalFeeRate, setAddAdditionalFeeRate] = useState(0);
-  const [addProductFilterMode, setAddProductFilterMode] = useState<'prohibited' | 'allowed'>('allowed');
+  const [addProductFilterMode, setAddProductFilterMode] = useState<'none' | 'prohibited' | 'allowed'>('none');
   const [addAllowedProducts, setAddAllowedProducts] = useState<FilterRequestProduct[]>([]);
   const [addProhibitedProducts, setAddProhibitedProducts] = useState<FilterRequestProduct[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -497,7 +498,8 @@ export function FilterApprovalPage() {
         <div className={s.leftCard}>
           <div className={s.filterRowStyles}>
             <div className={s.filterArea} />
-            <div className={s.deadlineInline}>
+                
+              <div className={s.deadlineInline}>
               <span className={s.deadlineLabel}>마감일 관리</span>
               <div className={s.deadlineSelectWrap}>
                 <SingleSelect
@@ -626,15 +628,15 @@ export function FilterApprovalPage() {
                 />
               </div>
               <div className={s.formField}>
-                <Tooltip description="허용품목 설정 또는 금지품목 설정 중 하나만 선택합니다.">
+                <Tooltip description="미사용, 허용품목 설정, 금지품목 설정 중 하나만 선택합니다.">
                   <label htmlFor="detail-product-filter-mode">품목 설정</label>
                 </Tooltip>
                 <SingleSelect
                   id="detail-product-filter-mode"
                   options={PRODUCT_FILTER_MODE_OPTIONS}
-                  selected={selectedRequest.productFilterMode ?? 'allowed'}
+                  selected={selectedRequest.productFilterMode ?? 'none'}
                   onChange={(v) => {
-                    const mode = (v as 'prohibited' | 'allowed') ?? 'allowed';
+                    const mode = (v as 'none' | 'prohibited' | 'allowed') ?? 'none';
                     updateFilterRequest(selectedRequest.id, {
                       productFilterMode: mode,
                       allowedProducts: mode === 'allowed' ? (selectedRequest.allowedProducts ?? []) : [],
@@ -645,14 +647,14 @@ export function FilterApprovalPage() {
                   aria-label="품목 설정"
                 />
               </div>
-              {(selectedRequest.productFilterMode ?? 'allowed') === 'allowed' && (
+              {(selectedRequest.productFilterMode ?? 'none') === 'allowed' && (
                 <ProductListSection
                   title="가능품목 지정"
                   products={selectedRequest.allowedProducts ?? []}
                   onChange={(next) => updateFilterRequest(selectedRequest.id, { allowedProducts: next })}
                 />
               )}
-              {(selectedRequest.productFilterMode ?? 'allowed') === 'prohibited' && (
+              {(selectedRequest.productFilterMode ?? 'none') === 'prohibited' && (
                 <ProductListSection
                   title="불가품목 지정"
                   products={selectedRequest.prohibitedProducts ?? []}
@@ -752,7 +754,7 @@ export function FilterApprovalPage() {
           </div>
 
           <div className={s.formField}>
-            <Tooltip description="허용품목 설정 또는 금지품목 설정 중 하나만 선택합니다.">
+            <Tooltip description="미사용, 허용품목 설정, 금지품목 설정 중 하나만 선택합니다.">
               <label htmlFor="filter-add-product-filter-mode">품목 설정</label>
             </Tooltip>
             <SingleSelect
@@ -760,10 +762,14 @@ export function FilterApprovalPage() {
               options={PRODUCT_FILTER_MODE_OPTIONS}
               selected={addProductFilterMode}
               onChange={(v) => {
-                const mode = (v as 'prohibited' | 'allowed') ?? 'allowed';
+                const mode = (v as 'none' | 'prohibited' | 'allowed') ?? 'none';
                 setAddProductFilterMode(mode);
                 if (mode === 'allowed') setAddProhibitedProducts([]);
-                else setAddAllowedProducts([]);
+                else if (mode === 'prohibited') setAddAllowedProducts([]);
+                else {
+                  setAddAllowedProducts([]);
+                  setAddProhibitedProducts([]);
+                }
               }}
               placeholder="선택"
               aria-label="품목 설정"

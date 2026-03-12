@@ -142,8 +142,8 @@ export interface FilterRequest {
   representativeName?: string;
   /** 추가수수료 - 기본수수료에 추가 적용 (-100~100 %) */
   additionalFeeRate?: number;
-  /** 금지·허용 품목 설정: 금지(prohibited) | 허용(allowed) 둘 중 하나 */
-  productFilterMode?: 'prohibited' | 'allowed';
+  /** 품목 설정: 미사용(none) | 허용(allowed) | 금지(prohibited) 중 하나 */
+  productFilterMode?: 'none' | 'prohibited' | 'allowed';
   /** 가능품목 지정 목록 (허용품목 설정 시) */
   allowedProducts?: FilterRequestProduct[];
   /** 불가품목 지정 목록 (금지품목 설정 시) */
