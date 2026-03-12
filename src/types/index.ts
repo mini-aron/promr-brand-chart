@@ -13,6 +13,8 @@ export interface Corporation {
   name: string;
   /** 프로엠알에서 실적을 입력한 법인 여부 (법인별 정산 화면 뱃지·딜러 실적용) */
   isPromr?: boolean;
+  /** 구간수수료 - 금액 구간별 수수료 (minAmount: 만원, maxAmount: 만원, rate: %) */
+  tieredFeeTiers?: { minAmount: number; maxAmount: number; rate: number }[];
 }
 
 /** 병의원(거래처) 정보 */
@@ -131,6 +133,8 @@ export interface FilterRequest {
   businessNumber?: string;
   address?: string;
   representativeName?: string;
+  /** 추가수수료 - 기본수수료에 추가 적용 (-100~100 %) */
+  additionalFeeRate?: number;
 }
 
 /** 법인 초대 정보 */
