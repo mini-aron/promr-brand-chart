@@ -80,6 +80,21 @@ globalStyle(`${formField} label`, {
   fontSize: 13,
   fontWeight: 600,
 });
+globalStyle(`${formField} input, ${formField} select`, {
+  display: 'block',
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '8px 10px',
+  fontSize: 14,
+  borderRadius: 'var(--radius-md)',
+  border: '2px solid var(--color-border)',
+  backgroundColor: 'var(--color-surface)',
+  color: 'var(--color-text)',
+});
+globalStyle(`${formField} input:focus, ${formField} select:focus`, {
+  outline: 'none',
+  borderColor: 'var(--color-primary)',
+});
 
 export const statusCellBase = style({
   display: 'block',
@@ -115,4 +130,20 @@ export const statusCellRejected = style([
 export const btnGroup = style({ display: 'flex', gap: 4 });
 
 export const sectionTitle = style({ fontSize: 16, marginBottom: 12 });
+export const detailHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  marginBottom: 12,
+});
+globalStyle(`${detailHeader} ${sectionTitle}`, { marginBottom: 0 });
 export const addButtonFull = style({ width: '100%' });
+
+export const rowSelected = style({
+  backgroundColor: 'color-mix(in srgb, var(--color-primary) 14%, transparent)',
+});
+
+export const detailSection = style({ marginBottom: 16 });
+export const detailLabel = style({ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 2 });
+export const detailValue = style({ fontSize: 14, fontWeight: 500 });
+

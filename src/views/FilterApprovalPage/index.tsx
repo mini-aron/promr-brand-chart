@@ -2,7 +2,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '@/store/appStore';
 import { mockCorporations, mockFilterRequests, mockHospitals } from '@/store/mockData';
+import { HiOutlineX } from 'react-icons/hi';
 import { Button } from '@/components/Common/Button';
+import { Input } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
@@ -98,11 +100,32 @@ export function FilterApprovalPage() {
       )
     );
   }, []);
+
+  const updateFilterRequest = useCallback(
+    (id: string, updates: Partial<Pick<FilterRequest, 'corporationId' | 'hospitalId' | 'status' | 'additionalFeeRate'>>) => {
+      const now = new Date().toISOString().slice(0, 19);
+      setFilterRequests((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, ...updates, updatedAt: now, updatedBy: 'admin' } : r
+        )
+      );
+    },
+    []
+  );
   const addFilterRequest = useCallback(
-    (corporationId: string, pharmaId: string, hospitalId: string, requestMessage?: string, status?: FilterRequest['status']) => {
+    (
+      corporationId: string,
+      pharmaId: string,
+      hospitalId: string,
+      opts?: {
+        requestMessage?: string;
+        status?: FilterRequest['status'];
+        additionalFeeRate?: number;
+      }
+    ) => {
       const id = `fr-${Date.now()}`;
       const now = new Date().toISOString().slice(0, 19);
-      const newStatus = status ?? 'pending';
+      const newStatus = opts?.status ?? 'pending';
       const processedAt = newStatus !== 'pending' ? now : undefined;
       setFilterRequests((prev) => [
         ...prev,
@@ -113,12 +136,13 @@ export function FilterApprovalPage() {
           hospitalId,
           status: newStatus,
           requestedAt: now,
-          requestMessage,
+          requestMessage: opts?.requestMessage,
           processedAt,
           createdAt: now,
           updatedAt: newStatus !== 'pending' ? now : undefined,
           createdBy: 'admin',
           updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
+          additionalFeeRate: opts?.additionalFeeRate,
         },
       ]);
     },
@@ -129,6 +153,8 @@ export function FilterApprovalPage() {
   const [addCorpId, setAddCorpId] = useState<string | null>(null);
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
   const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
+  const [addAdditionalFeeRate, setAddAdditionalFeeRate] = useState(0);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const currentMonthKey = useMemo(() => getCurrentMonthKey(), []);
   const [deadlineDay, setDeadlineDay] = useState(0);
 
@@ -192,6 +218,26 @@ export function FilterApprovalPage() {
     [hospitals]
   );
 
+  const selectedRequest = useMemo(
+    () => (selectedRowId ? filterRequests.find((r) => r.id === selectedRowId) : null),
+    [selectedRowId, filterRequests]
+  );
+
+  const hospitalsForEditCorp = useMemo(() => {
+    if (!selectedRequest) return [];
+    const corpHospitals = hospitals.filter((h) => h.corporationId === selectedRequest.corporationId);
+    const hasCurrent = corpHospitals.some((h) => h.id === selectedRequest.hospitalId);
+    if (!hasCurrent) {
+      const current = hospitals.find((h) => h.id === selectedRequest.hospitalId);
+      if (current) return [current, ...corpHospitals];
+    }
+    return corpHospitals;
+  }, [selectedRequest, hospitals]);
+
+  const handleRowClick = useCallback((row: FilterRequest) => {
+    setSelectedRowId((prev) => (prev === row.id ? null : row.id));
+  }, []);
+
   const columnHelper = createColumnHelper<FilterRequest>();
   const columns = useMemo(
     () => [
@@ -216,6 +262,15 @@ export function FilterApprovalPage() {
       columnHelper.accessor('requestedAt', {
         header: '요청 일시',
         cell: (info) => formatDateTime(info.getValue()),
+      }),
+      columnHelper.display({
+        id: 'fee',
+        header: '적용수수료',
+        cell: (info) => {
+          const r = info.row.original;
+          const rate = r.additionalFeeRate ?? 0;
+          return rate !== 0 ? `${rate > 0 ? '+' : ''}${rate}% (추가)` : '-';
+        },
       }),
       columnHelper.accessor((r) => r.createdAt ?? r.requestedAt, {
         id: 'createdAt',
@@ -245,7 +300,7 @@ export function FilterApprovalPage() {
         id: 'actions',
         header: '처리',
         cell: (info) => (
-          <div className={s.btnGroup}>
+          <div className={s.btnGroup} onClick={(e) => e.stopPropagation()}>
             <Button variant="primary" size="small" onClick={() => updateFilterRequestStatus(info.row.original.id, 'approved')}>
               승인
             </Button>
@@ -259,11 +314,19 @@ export function FilterApprovalPage() {
     [getCorporation, getHospital, updateFilterRequestStatus]
   );
 
+  const getRowClassName = useCallback(
+    (row: FilterRequest) => (row.id === selectedRowId ? s.rowSelected : undefined),
+    [selectedRowId]
+  );
+
   const handleAddFilter = useCallback(() => {
     if (!addCorpId || !selectedHospitalId || !currentPharmaId) return;
-    addFilterRequest(addCorpId, currentPharmaId, selectedHospitalId, undefined, addStatus);
+    addFilterRequest(addCorpId, currentPharmaId, selectedHospitalId, {
+      status: addStatus,
+      additionalFeeRate: addAdditionalFeeRate,
+    });
     setSelectedHospitalId('');
-  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addFilterRequest]);
+  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addAdditionalFeeRate, addFilterRequest]);
 
 
   const maxDay = useMemo(() => {
@@ -312,14 +375,152 @@ export function FilterApprovalPage() {
               columns={columns}
               data={filteredRequests}
               getRowId={(r) => r.id}
+              getRowClassName={getRowClassName}
+              onRowClick={handleRowClick}
               emptyMessage={filterRequests.length === 0 ? '등록된 거래선이 없습니다.' : '조건에 맞는 항목이 없습니다.'}
             />
           </div>
         </div>
 
         <aside className={s.rightPanel}>
-          <h3 className={s.sectionTitle}>거래선 추가</h3>
-          <div className={s.formField}>
+          {selectedRequest ? (
+            <>
+              <div className={s.detailHeader}>
+                <h3 className={s.sectionTitle}>거래선 상세</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedRowId(null)}
+                  aria-label="닫기"
+                >
+                  <HiOutlineX size={18} />
+                </Button>
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-corp">법인</label>
+                <SingleSelect
+                  id="detail-corp"
+                  options={[
+                    { label: '법인 선택', value: '' },
+                    ...corporations.map((c) => ({ label: c.name, value: c.id })),
+                  ]}
+                  selected={selectedRequest.corporationId}
+                  onChange={(v) => {
+                    const corpId = v === '' ? null : String(v);
+                    if (!corpId) return;
+                    const corpHospitals = hospitals.filter((h) => h.corporationId === corpId);
+                    const newHospitalId = corpHospitals.some((h) => h.id === selectedRequest.hospitalId)
+                      ? selectedRequest.hospitalId
+                      : corpHospitals[0]?.id ?? '';
+                    updateFilterRequest(selectedRequest.id, {
+                      corporationId: corpId,
+                      hospitalId: newHospitalId || selectedRequest.hospitalId,
+                    });
+                  }}
+                  placeholder="법인 선택"
+                  aria-label="법인"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-hospital">병의원</label>
+                <SingleSelect
+                  id="detail-hospital"
+                  options={[
+                    { label: '병의원 선택', value: '' },
+                    ...hospitalsForEditCorp.map((h) => ({
+                      label: h.name,
+                      value: h.id,
+                      description: h.address || undefined,
+                    })),
+                  ]}
+                  selected={selectedRequest.hospitalId}
+                  onChange={(v) => {
+                    const hospitalId = v === '' ? selectedRequest.hospitalId : String(v);
+                    if (hospitalId) updateFilterRequest(selectedRequest.id, { hospitalId });
+                  }}
+                  placeholder="병의원 선택"
+                  enableSearch
+                  aria-label="병의원"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-status">상태</label>
+                <SingleSelect
+                  id="detail-status"
+                  options={[
+                    { label: '대기', value: 'pending' },
+                    { label: '승인', value: 'approved' },
+                    { label: '승인불가', value: 'rejected' },
+                  ]}
+                  selected={selectedRequest.status}
+                  onChange={(v) => {
+                    const status = (v as FilterRequest['status']) ?? selectedRequest.status;
+                    if (status === 'approved' || status === 'rejected') {
+                      updateFilterRequestStatus(selectedRequest.id, status);
+                    } else {
+                      updateFilterRequest(selectedRequest.id, { status });
+                    }
+                  }}
+                  placeholder="상태"
+                  aria-label="상태"
+                />
+              </div>
+              <div className={s.formField}>
+                <Tooltip description="기본수수료에 추가하여 적용됩니다.">
+                  <label>추가수수료</label>
+                </Tooltip>
+                <Input
+                  id="detail-additional-rate"
+                  type="number"
+                  min={-100}
+                  max={100}
+                  step={0.1}
+                  value={selectedRequest.additionalFeeRate ?? 0}
+                  onChange={(e) =>
+                    updateFilterRequest(selectedRequest.id, {
+                      additionalFeeRate: Number(e.target.value) || 0,
+                    })
+                  }
+                  aria-label="추가수수료율"
+                />
+              </div>
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>요청 일시</div>
+                <div className={s.detailValue}>{formatDateTime(selectedRequest.requestedAt)}</div>
+              </div>
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>생성일</div>
+                <div className={s.detailValue}>
+                  {selectedRequest.createdAt ? formatDate(selectedRequest.createdAt) : '-'}
+                </div>
+              </div>
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>생성자</div>
+                <div className={s.detailValue}>{selectedRequest.createdBy ?? '-'}</div>
+              </div>
+              {selectedRequest.status === 'pending' && (
+                <div className={s.btnGroup} style={{ marginTop: 16 }}>
+                  <Button
+                    variant="primary"
+                    size="small"
+                    onClick={() => updateFilterRequestStatus(selectedRequest.id, 'approved')}
+                  >
+                    승인
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="small"
+                    onClick={() => updateFilterRequestStatus(selectedRequest.id, 'rejected')}
+                  >
+                    승인불가
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className={s.sectionTitle}>거래선 추가</h3>
+              <div className={s.formField}>
             <label htmlFor="filter-add-corp">법인 *</label>
             <SingleSelect
               id="filter-add-corp"
@@ -378,7 +579,19 @@ export function FilterApprovalPage() {
             />
           </div>
           <div className={s.formField}>
-              <label>수수료</label>
+            <Tooltip description="기본수수료에 추가하여 적용됩니다.">
+              <label>추가수수료</label>
+            </Tooltip>
+            <Input
+              id="filter-add-additional-rate"
+              type="number"
+              min={-100}
+              max={100}
+              step={0.1}
+              value={addAdditionalFeeRate}
+              onChange={(e) => setAddAdditionalFeeRate(Number(e.target.value) || 0)}
+              aria-label="추가수수료율"
+            />
           </div>
 
           <div className={s.formField}>
@@ -394,6 +607,8 @@ export function FilterApprovalPage() {
           >
             추가
           </Button>
+            </>
+          )}
         </aside>
       </div>
     </div>
