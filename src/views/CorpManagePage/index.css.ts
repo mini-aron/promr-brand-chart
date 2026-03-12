@@ -63,10 +63,30 @@ export const inviteCodeBox = style({
   marginBottom: 12,
 });
 export const inviteCodeLabel = style({ display: 'block', fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 4 });
-export const inviteCode = style({ fontSize: 16, fontWeight: 600, letterSpacing: 1 });
+export const inviteCodeRow = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+});
+export const inviteCode = style({ flex: 1, fontSize: 16, fontWeight: 600, letterSpacing: 1 });
+export const copyIconBtn = style({
+  flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 6,
+  border: 'none',
+  borderRadius: 'var(--radius-sm)',
+  background: 'transparent',
+  color: 'var(--color-text-muted)',
+  cursor: 'pointer',
+});
+globalStyle(`${copyIconBtn}:hover`, {
+  backgroundColor: 'var(--color-background)',
+  color: 'var(--color-primary)',
+});
 
 export const inviteActions = style({ display: 'flex', flexDirection: 'column', gap: 8 });
-export const actionButton = style({ display: 'flex', alignItems: 'center', gap: 6 });
 export const mailRow = style({ display: 'flex', gap: 8, alignItems: 'center' });
 export const emailInput = style({
   flex: 1,

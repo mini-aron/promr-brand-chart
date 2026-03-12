@@ -10,6 +10,8 @@ import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
 import type { CorpInvitation } from '@/types';
 
+type StatusStyles = { statusAccepted: string; statusPending: string };
+
 function generateInviteCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let code = 'INV-';
@@ -106,7 +108,7 @@ export function CorpManagePage() {
       alert('이메일 주소를 입력하세요.');
       return;
     }
-    const mailto = `mailto:${email}?subject=${encodeURIComponent('PROPF 법인 초대코드')}&body=${encodeURIComponent(`안녕하세요.\n\n아래 초대코드로 PROPF에 가입해 주세요.\n\n초대코드: ${displayCode}`)}`;
+    const mailto = `mailto:${email}?subject=${encodeURIComponent('PROPF 법인 초대 링크')}&body=${encodeURIComponent(`안녕하세요.\n\n아래 초대 링크로 PROPF에 가입해 주세요.\n\n초대 링크: ${displayCode}`)}`;
     window.location.href = mailto;
     setMailSent(true);
   }, [displayCode, inviteEmail]);
@@ -116,11 +118,14 @@ export function CorpManagePage() {
     () => [
       columnHelper.accessor('status', {
         header: '상태',
-        cell: (info) => (
-          <span className={info.getValue() === 'accepted' ? s.statusAccepted : s.statusPending}>
-            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
-          </span>
-        ),
+        cell: (info) => {
+          const styles = s as StatusStyles;
+          return (
+            <span className={info.getValue() === 'accepted' ? styles.statusAccepted : styles.statusPending}>
+              {STATUS_LABEL[info.getValue()] ?? info.getValue()}
+            </span>
+          );
+        },
       }),
       columnHelper.accessor(
         (r) => r.corporationId && getCorpName(r.corporationId),
@@ -142,7 +147,7 @@ export function CorpManagePage() {
     <div className={s.page}>
       <header className="page-header">
         <h1>법인 관리</h1>
-        <p>초대코드를 발급하여 법인을 초대하고, 초대된 법인 목록을 조회합니다.</p>
+        <p>초대 링크를 발급하여 법인을 초대하고, 초대된 법인 목록을 조회합니다.</p>
       </header>
 
       <div className={s.layoutWrap}>
@@ -159,28 +164,30 @@ export function CorpManagePage() {
 
         <aside className={s.rightPanel}>
           <h3 className={s.sectionTitle}>법인 초대</h3>
-          <p className={s.sectionDesc}>초대코드를 생성하여 법인에 전달하세요.</p>
+          <p className={s.sectionDesc}>초대 링크를 생성하여 법인에 전달하세요.</p>
 
           {!displayCode ? (
             <Button variant="primary" className={s.addButtonFull} onClick={handleGenerateCode}>
-              초대코드 생성
+              초대 링크 생성
             </Button>
           ) : (
             <>
               <div className={s.inviteCodeBox}>
-                <span className={s.inviteCodeLabel}>초대코드</span>
-                <code className={s.inviteCode}>{displayCode}</code>
+                <span className={s.inviteCodeLabel}>초대 링크</span>
+                <div className={s.inviteCodeRow}>
+                  <code className={s.inviteCode}>{displayCode}</code>
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className={s.copyIconBtn}
+                    aria-label={copySuccess ? '복사됨' : '초대 링크 복사'}
+                    title="초대 링크 복사"
+                  >
+                    <HiOutlineClipboardCopy size={18} />
+                  </button>
+                </div>
               </div>
               <div className={s.inviteActions}>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={handleCopy}
-                  className={s.actionButton}
-                >
-                  <HiOutlineClipboardCopy size={16} />
-                  {copySuccess ? '복사됨' : '클립보드 복사'}
-                </Button>
                 <div className={s.mailRow}>
                   <input
                     type="email"
@@ -208,7 +215,7 @@ export function CorpManagePage() {
                 onClick={handleGenerateCode}
                 className={s.resetLink}
               >
-                새 초대코드 생성
+                새 초대 링크 생성
               </Button>
             </>
           )}

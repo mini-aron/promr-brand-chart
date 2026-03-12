@@ -8,6 +8,7 @@ import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
 import type { FilterRequest } from '@/types';
+import { Tooltip } from '@/components/Common/Tooltip';
 
 const DEADLINE_STORAGE_KEY = 'filter-approval-deadlines';
 
@@ -375,6 +376,15 @@ export function FilterApprovalPage() {
               placeholder="상태"
               aria-label="상태 선택"
             />
+          </div>
+          <div className={s.formField}>
+              <label>수수료</label>
+          </div>
+
+          <div className={s.formField}>
+              <Tooltip description="금지·허용 품목 설정" >
+                <label>금지·허용 품목 설정</label>
+              </Tooltip>
           </div>
           <Button
             variant="primary"
