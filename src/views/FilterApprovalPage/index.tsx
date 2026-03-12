@@ -1,119 +1,54 @@
 'use client';
-/** @jsxImportSource @emotion/react */
-import { useCallback, useMemo, useState } from 'react';
-import { css } from '@emotion/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApp } from '@/store/appStore';
 import { mockCorporations, mockFilterRequests, mockHospitals } from '@/store/mockData';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import * as s from './index.css';
 import type { FilterRequest } from '@/types';
 
-const pageStyles = css({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  minHeight: 0,
-  '& .page-header': {
-    flexShrink: 0,
-    marginBottom: theme.spacing(2),
-  },
-  '& .page-header h1': { margin: 0, fontSize: '1.25rem', fontWeight: 600 },
-  '& .page-header p': { margin: 0, fontSize: 13, color: theme.colors.textMuted },
-});
+const DEADLINE_STORAGE_KEY = 'filter-approval-deadlines';
 
-const layoutWrap = css({
-  flex: 1,
-  minHeight: 0,
-  display: 'flex',
-  gap: theme.spacing(4),
-  alignItems: 'stretch',
-});
+function getCurrentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
 
-const leftCard = css({
-  flex: 1,
-  minWidth: 320,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  boxShadow: theme.shadow.sm,
-});
+function loadDeadline(monthKey: string): number {
+  if (typeof window === 'undefined') return 0;
+  try {
+    const raw = localStorage.getItem(DEADLINE_STORAGE_KEY);
+    const data = raw ? JSON.parse(raw) : {};
+    return data[monthKey] ?? 0;
+  } catch {
+    return 0;
+  }
+}
 
-const filterRowStyles = css({
-  display: 'flex',
-  flexWrap: 'nowrap',
-  gap: theme.spacing(2),
-  alignItems: 'center',
-  padding: theme.spacing(2),
-  backgroundColor: theme.colors.background,
-  borderBottom: `1px solid ${theme.colors.border}`,
-  '& > *': { flexShrink: 0 },
-});
+function saveDeadline(monthKey: string, day: number) {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(DEADLINE_STORAGE_KEY);
+    const data = raw ? JSON.parse(raw) : {};
+    if (day <= 0) {
+      delete data[monthKey];
+    } else {
+      data[monthKey] = day;
+    }
+    localStorage.setItem(DEADLINE_STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    /* ignore */
+  }
+}
 
-const listWrap = css({
-  flex: 1,
-  minHeight: 0,
-  overflow: 'auto',
-  padding: theme.spacing(2),
-  fontSize: 14,
-  '& table': { minWidth: 680 },
-  '& th, & td': {
-    padding: theme.spacing(2),
-    borderRight: 'none',
-  },
-  '& th': { fontSize: 13 },
-});
-
-const rightPanel = css({
-  width: 360,
-  flexShrink: 0,
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
-  boxShadow: theme.shadow.sm,
-  alignSelf: 'flex-start',
-});
-
-const formField = css({
-  marginBottom: theme.spacing(3),
-  '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 },
-});
-
-const statusCellFill = (status: string) => {
-  const pad = theme.spacing(2);
-  return css({
-    display: 'block',
-    margin: -pad,
-    padding: pad,
-    minHeight: '100%',
-    boxSizing: 'content-box',
-    fontSize: 12,
-    fontWeight: 600,
-    ...(status === 'pending' && {
-      backgroundColor: 'color-mix(in srgb, var(--color-primary) 6%, transparent)',
-      color: 'var(--color-primary)',
-    }),
-    ...(status === 'approved' && {
-      backgroundColor: 'color-mix(in srgb, var(--color-success) 6%, transparent)',
-      color: 'var(--color-success)',
-    }),
-    ...(status === 'rejected' && {
-      backgroundColor: 'color-mix(in srgb, var(--color-error) 6%, transparent)',
-      color: 'var(--color-error)',
-    }),
-  });
-};
-
-const btnGroup = css({
-  display: 'flex',
-  gap: theme.spacing(1),
-});
+function getStatusCellClass(status: string): string {
+  if (status === 'pending') return s.statusCellPending;
+  if (status === 'approved') return s.statusCellApproved;
+  if (status === 'rejected') return s.statusCellRejected;
+  return s.statusCellBase;
+}
 
 function formatDateTime(iso: string): string {
   try {
@@ -193,6 +128,32 @@ export function FilterApprovalPage() {
   const [addCorpId, setAddCorpId] = useState<string | null>(null);
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
   const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
+  const currentMonthKey = useMemo(() => getCurrentMonthKey(), []);
+  const [deadlineDay, setDeadlineDay] = useState(0);
+
+  useEffect(() => {
+    setDeadlineDay(loadDeadline(currentMonthKey));
+  }, [currentMonthKey]);
+
+  const updateDeadline = useCallback(
+    (day: number) => {
+      if (day <= 0) {
+        setDeadlineDay(0);
+        saveDeadline(currentMonthKey, 0);
+      } else {
+        const maxDay = new Date(
+          parseInt(currentMonthKey.slice(0, 4), 10),
+          parseInt(currentMonthKey.slice(5, 7), 10),
+          0
+        ).getDate();
+        if (day >= 1 && day <= maxDay) {
+          setDeadlineDay(day);
+          saveDeadline(currentMonthKey, day);
+        }
+      }
+    },
+    [currentMonthKey]
+  );
 
   const filteredRequests = useMemo(() => {
     return filterRequests
@@ -238,7 +199,7 @@ export function FilterApprovalPage() {
         header: '상태',
         size: 72,
         cell: (info) => (
-          <span css={statusCellFill(info.getValue())}>
+          <span className={getStatusCellClass(info.getValue())}>
             {STATUS_LABEL[info.getValue()] ?? info.getValue()}
           </span>
         ),
@@ -283,7 +244,7 @@ export function FilterApprovalPage() {
         id: 'actions',
         header: '처리',
         cell: (info) => (
-          <div css={btnGroup}>
+          <div className={s.btnGroup}>
             <Button variant="primary" size="small" onClick={() => updateFilterRequestStatus(info.row.original.id, 'approved')}>
               승인
             </Button>
@@ -304,20 +265,48 @@ export function FilterApprovalPage() {
   }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addFilterRequest]);
 
 
+  const maxDay = useMemo(() => {
+    const [y, m] = currentMonthKey.split('-').map(Number);
+    return new Date(y, m, 0).getDate();
+  }, [currentMonthKey]);
+
+  const deadlineDayOptions = useMemo(
+    () => [
+      { label: '선택', value: '' },
+      ...Array.from({ length: maxDay }, (_, i) => ({
+        label: `${i + 1}일`,
+        value: String(i + 1),
+      })),
+    ],
+    [maxDay]
+  );
+
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <header className="page-header">
         <h1>거래선 관리</h1>
         <p>법인·병의원별 거래 허용 여부를 등록하고 승인·승인불가 처리합니다.</p>
       </header>
 
-      <div css={layoutWrap}>
-        <div css={leftCard}>
-          <div css={filterRowStyles}>
-            
+      <div className={s.layoutWrap}>
+        <div className={s.leftCard}>
+          <div className={s.filterRowStyles}>
+            <div className={s.filterArea} />
+            <div className={s.deadlineInline}>
+              <span className={s.deadlineLabel}>마감일 관리</span>
+              <div className={s.deadlineSelectWrap}>
+                <SingleSelect
+                  options={deadlineDayOptions}
+                  selected={deadlineDay ? String(deadlineDay) : ''}
+                  onChange={(v) => updateDeadline(v === '' ? 0 : parseInt(String(v), 10))}
+                  placeholder="선택"
+                  aria-label={`${currentMonthKey} 당월 마감일`}
+                />
+              </div>
+            </div>
           </div>
 
-          <div css={listWrap}>
+          <div className={s.listWrap}>
             <DataTable<FilterRequest>
               columns={columns}
               data={filteredRequests}
@@ -327,9 +316,9 @@ export function FilterApprovalPage() {
           </div>
         </div>
 
-        <aside css={rightPanel}>
-          <h3 css={css({ fontSize: 16, marginBottom: theme.spacing(3) })}>거래선 추가</h3>
-          <div css={formField}>
+        <aside className={s.rightPanel}>
+          <h3 className={s.sectionTitle}>거래선 추가</h3>
+          <div className={s.formField}>
             <label htmlFor="filter-add-corp">법인 *</label>
             <SingleSelect
               id="filter-add-corp"
@@ -346,7 +335,7 @@ export function FilterApprovalPage() {
               aria-label="법인 선택"
             />
           </div>
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="filter-add-hospital">병의원 *</label>
             <SingleSelect
               id="filter-add-hospital"
@@ -372,7 +361,7 @@ export function FilterApprovalPage() {
               aria-label="병의원 선택"
             />
           </div>
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="filter-add-status">상태</label>
             <SingleSelect
               id="filter-add-status"
@@ -391,7 +380,7 @@ export function FilterApprovalPage() {
             variant="primary"
             onClick={handleAddFilter}
             disabled={!addCorpId || !selectedHospitalId}
-            css={css({ width: '100%' })}
+            className={s.addButtonFull}
           >
             추가
           </Button>
