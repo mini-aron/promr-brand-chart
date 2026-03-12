@@ -5,10 +5,19 @@ const base = style({
   cursor: 'pointer',
   fontWeight: 600,
   fontFamily: 'var(--font-family)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  transition: 'background-color 0.15s, border-color 0.15s, box-shadow 0.15s, opacity 0.15s, transform 0.1s',
   selectors: {
     '&:disabled': {
       opacity: 0.6,
       cursor: 'not-allowed',
+    },
+    '&:focus-visible': {
+      outline: '2px solid var(--color-primary)',
+      outlineOffset: 2,
     },
   },
 });
@@ -18,8 +27,16 @@ export const baseStyle = base;
 export const variantPrimary = style({
   backgroundColor: 'var(--color-primary)',
   color: 'var(--color-button-text)',
+  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
   selectors: {
-    '&:hover:not(:disabled)': { backgroundColor: 'var(--color-primary-hover)' },
+    '&:hover:not(:disabled)': {
+      backgroundColor: 'var(--color-primary-hover)',
+      boxShadow: '0 2px 4px rgba(59, 130, 246, 0.25)',
+    },
+    '&:active:not(:disabled)': {
+      transform: 'translateY(1px)',
+      boxShadow: 'none',
+    },
   },
 });
 
@@ -28,24 +45,37 @@ export const variantSecondary = style({
   backgroundColor: 'var(--color-surface)',
   color: 'var(--color-text)',
   selectors: {
-    '&:hover:not(:disabled)': { backgroundColor: 'var(--color-background)' },
+    '&:hover:not(:disabled)': {
+      backgroundColor: 'var(--color-background)',
+      borderColor: 'var(--color-text-muted)',
+    },
+    '&:active:not(:disabled)': {
+      backgroundColor: 'var(--color-border)',
+    },
   },
 });
 
 export const variantGhost = style({
-  backgroundColor: 'var(--color-background)',
+  backgroundColor: 'transparent',
   color: 'var(--color-text)',
   selectors: {
-    '&:hover:not(:disabled)': { backgroundColor: 'var(--color-border)' },
+    '&:hover:not(:disabled)': { backgroundColor: 'var(--color-background)' },
+    '&:active:not(:disabled)': { backgroundColor: 'var(--color-border)' },
   },
 });
 
 export const variantDanger = style({
-  border: '1px solid #dc2626',
+  border: '1px solid var(--color-error)',
   backgroundColor: 'var(--color-surface)',
-  color: '#dc2626',
+  color: 'var(--color-error)',
   selectors: {
-    '&:hover:not(:disabled)': { backgroundColor: '#fee2e2', borderColor: '#b91c1c' },
+    '&:hover:not(:disabled)': {
+      backgroundColor: 'color-mix(in srgb, var(--color-error) 10%, transparent)',
+      borderColor: 'var(--color-error)',
+    },
+    '&:active:not(:disabled)': {
+      backgroundColor: 'color-mix(in srgb, var(--color-error) 18%, transparent)',
+    },
   },
 });
 
