@@ -1,7 +1,5 @@
-/** @jsxImportSource @emotion/react */
 import type { ReactNode, HTMLAttributes, CSSProperties } from 'react';
 import { clsx } from 'clsx';
-import type { SerializedStyles } from '@emotion/react';
 import * as s from './Flex.css';
 
 const gapToCss = (gap: string | number) =>
@@ -16,8 +14,6 @@ export type FlexProps = {
   /** flex shorthand (e.g. 1 for flex: 1) */
   flex?: number | string;
   children: ReactNode;
-  /** @deprecated VE 마이그레이션 후 className 사용 */
-  css?: SerializedStyles | Array<SerializedStyles | false | undefined>;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'css'>;
 
 export function Flex({
@@ -29,7 +25,6 @@ export function Flex({
   flex: flexProp,
   children,
   className,
-  css: cssProp,
   style,
   ...rest
 }: FlexProps) {
@@ -46,7 +41,6 @@ export function Flex({
   return (
     <div
       className={clsx(s.flex, className)}
-      css={cssProp}
       style={computedStyle}
       {...rest}
     >

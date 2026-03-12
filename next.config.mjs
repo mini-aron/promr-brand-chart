@@ -2,9 +2,6 @@ import { createVanillaExtractPlugin } from '@vanilla-extract/next-plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  compiler: {
-    emotion: true,
-  },
   reactStrictMode: true,
 };
 

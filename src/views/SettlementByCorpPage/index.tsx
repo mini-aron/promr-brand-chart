@@ -1,10 +1,7 @@
 'use client';
-/** @jsxImportSource @emotion/react */
 import { useMemo } from 'react';
-import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
 import { mockCorporations, mockHospitals, mockSalesRows } from '@/store/mockData';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { formatAmount } from '@/utils/formatNumber';
 import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
@@ -14,125 +11,6 @@ import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
 import type { Corporation, Hospital } from '@/types';
 import type { SettlementDisplayRow, SettlementTotals } from '@/hooks/useSettlementByCorp';
-
-// --- Styles ---
-
-const pageStyles = css({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  minHeight: 0,
-  '& .page-header': {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'baseline',
-    gap: theme.spacing(2),
-    marginBottom: theme.spacing(1),
-  },
-  '& .page-header h1': {
-    margin: 0,
-    fontSize: '1.25rem',
-    fontWeight: 600,
-  },
-  '& .page-header p': {
-    margin: 0,
-    fontSize: 13,
-  },
-});
-
-const layoutWrap = css({
-  display: 'flex',
-  gap: theme.spacing(4),
-  flex: 1,
-  minHeight: 0,
-  alignItems: 'stretch',
-});
-
-const mainArea = css({
-  flex: 1,
-  minWidth: 0,
-  minHeight: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  overflow: 'hidden',
-});
-
-const corpListSidebar = css({
-  width: 260,
-  flexShrink: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: 0,
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  boxShadow: theme.shadow.sm,
-  '& .corp-search': {
-    flexShrink: 0,
-    padding: theme.spacing(2),
-    '& input': {
-      width: '100%',
-      minHeight: 44,
-      padding: `0 ${theme.spacing(2)}px`,
-      fontSize: 14,
-      borderRadius: theme.radius.md,
-      border: `2px solid ${theme.colors.border}`,
-      '&:focus': {
-        outline: 'none',
-        borderColor: theme.colors.primary,
-        boxShadow: `0 0 0 2px ${theme.colors.primary}20`,
-      },
-      '&::placeholder': { color: theme.colors.textMuted },
-    },
-  },
-  '& .corp-list': {
-    flex: 1,
-    minHeight: 0,
-    overflow: 'auto',
-    padding: theme.spacing(2),
-    paddingTop: 0,
-  },
-  '& button': {
-    display: 'block',
-    width: '100%',
-    padding: theme.spacing(2),
-    marginBottom: theme.spacing(1),
-    textAlign: 'left',
-    border: 'none',
-    borderRadius: theme.radius.md,
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    fontSize: 14,
-    fontWeight: 500,
-    color: theme.colors.text,
-    '&:hover': { backgroundColor: theme.colors.background },
-  },
-  '& button[data-active="true"]': {
-    backgroundColor: `${theme.colors.primary}14`,
-    color: theme.colors.primary,
-    fontWeight: 600,
-  },
-});
-
-const promrBadge = css({
-  display: 'inline-block',
-  marginLeft: theme.spacing(1),
-  padding: '2px 8px',
-  fontSize: 11,
-  fontWeight: 600,
-  color: theme.colors.primary,
-  backgroundColor: `${theme.colors.primary}18`,
-  borderRadius: theme.radius.sm,
-});
-
-const sortIcon = css({ marginLeft: 4, opacity: 0.6, fontSize: 10 });
-
-const filterRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-});
 
 // --- Helpers ---
 
@@ -162,7 +40,7 @@ function CorpListSidebar({
   onCorpSearchChange,
 }: CorpListSidebarProps) {
   return (
-    <aside css={corpListSidebar}>
+    <aside className={s.corpListSidebar}>
       <div className="corp-search">
         <input
           type="search"
@@ -182,7 +60,7 @@ function CorpListSidebar({
             onClick={() => onSelectCorp(c.id)}
           >
             {c.name}
-            {c.isPromr && <span css={promrBadge}>프로엠알</span>}
+            {c.isPromr && <span className={s.promrBadge}>프로엠알</span>}
           </Button>
         ))}
       </div>
@@ -242,11 +120,11 @@ function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방
         header: '원내',
         columns: [
           columnHelper.accessor('inHouseItemCount', {
-            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>품목수 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             meta: { className: 'col-inout' },
           }),
           columnHelper.accessor('inHouseAmount', {
-            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>처방액 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             cell: (info) => formatAmount(info.getValue()),
             meta: { className: 'col-inout' },
           }),
@@ -257,11 +135,11 @@ function SettlementTable({ rows, totals, getHospital, isPromr, 정산월, 처방
         header: '원외',
         columns: [
           columnHelper.accessor('outHouseItemCount', {
-            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>품목수 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             meta: { className: 'col-inout' },
           }),
           columnHelper.accessor('outHouseAmount', {
-            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>처방액 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             cell: (info) => formatAmount(info.getValue()),
             meta: { className: 'col-inout' },
           }),
@@ -320,20 +198,20 @@ export function SettlementByCorpPage() {
 
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <header className="page-header">
         <h1>법인별 정산확인</h1>
         <p>우측에서 법인 선택 시 해당 법인 실적이 표시됩니다.</p>
       </header>
 
-      <div css={layoutWrap}>
-        <main css={mainArea}>
+      <div className={s.layoutWrap}>
+        <main className={s.mainArea}>
           {selectedCorp ? (
             <>
-              <p css={css({ marginBottom: theme.spacing(1), fontSize: 13, color: theme.colors.textMuted })}>
-                <strong css={css({ color: theme.colors.text })}>{selectedCorp.name}</strong> 실적
+              <p className={s.corpDesc}>
+                <strong className={s.corpDescStrong}>{selectedCorp.name}</strong> 실적
               </p>
-              <div css={filterRowStyles}>
+              <div className={s.filterRowStyles}>
                 {selectedCorp.isPromr && (
                   <FilterInput
                     type="search"
@@ -341,7 +219,7 @@ export function SettlementByCorpPage() {
                     value={salespersonSearch}
                     onChange={(e) => setSalespersonSearch(e.target.value)}
                     aria-label="영업사원명 검색"
-                    css={css({ maxWidth: 280, minWidth: 140 })}
+                    className={s.filterInputWrap}
                   />
                 )}
                 <FilterInput
@@ -350,7 +228,7 @@ export function SettlementByCorpPage() {
                   value={hospitalSearch}
                   onChange={(e) => setHospitalSearch(e.target.value)}
                   aria-label="거래처 검색"
-                  css={css({ maxWidth: 280, minWidth: 140 })}
+                  className={s.filterInputWrap}
                 />
               </div>
               <SettlementTable
@@ -362,13 +240,13 @@ export function SettlementByCorpPage() {
                 처방월={처방월}
               />
               {filteredDisplayRows.length === 0 && (
-                <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
+                <p className={s.emptyMessage}>
                   해당 법인의 정산 실적이 없습니다.
                 </p>
               )}
             </>
           ) : (
-            <p css={css({ color: theme.colors.textMuted, padding: theme.spacing(4) })}>우측에서 법인을 선택하세요.</p>
+            <p className={s.selectCorpHint}>우측에서 법인을 선택하세요.</p>
           )}
         </main>
 

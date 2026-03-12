@@ -1,9 +1,8 @@
 'use client';
-/** @jsxImportSource @emotion/react */
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { css } from '@emotion/react';
 import {
   createColumnHelper,
   flexRender,
@@ -14,7 +13,6 @@ import { useApp } from '@/store/appStore';
 import { mockHospitals, mockPharmas, mockProductFees, mockSalesRows } from '@/store/mockData';
 import type { SalesRow } from '@/types';
 import { HiOutlineX } from 'react-icons/hi';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
@@ -27,101 +25,6 @@ import * as s from './index.css';
 const EXCEL_TEMPLATE_HEADERS = ['병원', '사업자번호', '제품명', '제품코드', '수량', '금액'];
 const VALID_PRODUCT_CODES = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009'];
 const INVALID_PRODUCT_CODES = ['P999', 'INVALID', 'X001', 'BAD123'];
-
-const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const dropzoneStyles = (isDrag: boolean) =>
-  css({
-    border: `2px dashed ${isDrag ? theme.colors.primary : theme.colors.border}`,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing(8),
-    textAlign: 'center',
-    backgroundColor: isDrag ? `${theme.colors.primary}08` : theme.colors.surface,
-    cursor: 'pointer',
-    transition: 'background-color 0.2s, border-color 0.2s',
-    '&:hover': { borderColor: theme.colors.primary, backgroundColor: `${theme.colors.primary}08` },
-  });
-
-const separatorRowStyles = css({
-  '& td': {
-    borderBottom: `2px solid ${theme.colors.border}`,
-    padding: theme.spacing(1),
-    backgroundColor: theme.colors.background,
-  },
-});
-
-const fileSumRowStyles = css({
-  '& td': {
-    borderBottom: `2px solid ${theme.colors.border}`,
-    padding: theme.spacing(2),
-    backgroundColor: theme.colors.background,
-    fontWeight: 600,
-    fontSize: 13,
-  },
-  '& .col-num': { textAlign: 'right' },
-});
-
-const uploadedFilesWrap = css({
-  marginTop: theme.spacing(2),
-  '& .file-chip': {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    fontSize: 13,
-    backgroundColor: theme.colors.background,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.md,
-    maxWidth: 220,
-    '& .name': { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-    '& button': {
-      flexShrink: 0,
-      width: 22,
-      height: 22,
-      padding: 0,
-      border: 'none',
-      borderRadius: '50%',
-      backgroundColor: theme.colors.border,
-      color: theme.colors.text,
-      cursor: 'pointer',
-      fontSize: 14,
-      lineHeight: 1,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      '&:hover': { backgroundColor: theme.colors.error, color: theme.colors.buttonText },
-    },
-  },
-});
-
-const successStyles = css({
-  marginTop: theme.spacing(2),
-  padding: theme.spacing(2),
-  backgroundColor: `${theme.colors.success}14`,
-  color: theme.colors.success,
-  borderRadius: theme.radius.md,
-});
-
-const errorStyles = css({
-  marginTop: theme.spacing(2),
-  padding: theme.spacing(2),
-  backgroundColor: `${theme.colors.error}14`,
-  color: theme.colors.error,
-  borderRadius: theme.radius.md,
-});
-
-const downloadRowWrap = css({
-  marginBottom: theme.spacing(4),
-  '& button': {
-    padding: `${theme.buttonPadding.y}px ${theme.buttonPadding.x}px`,
-    border: `1px solid ${theme.colors.border}`,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surface,
-    cursor: 'pointer',
-    fontWeight: 500,
-    '&:hover': { backgroundColor: theme.colors.background },
-  },
-});
 
 /** 업로드 미리보기 테이블 행: 데이터 / 파일합계 / 구분선 */
 type PreviewTableRow =
@@ -290,7 +193,7 @@ export function SalesUploadPage() {
         header: '#',
         cell: ({ row }) =>
           row.original.type === 'data' ? (
-            <span css={css({ display: 'block', textAlign: 'center', color: theme.colors.textMuted, fontSize: 11 })}>
+            <span className={s.indexCell}>
               {(row.original.index as number) + 1}
             </span>
           ) : null,
@@ -536,17 +439,17 @@ export function SalesUploadPage() {
   if (shouldRedirect) return null;
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <p>
-        <Link href="/upload" css={css({ color: theme.colors.primary, fontWeight: 600 })}>
+        <Link href="/upload" className={s.backLink}>
           ← 실적 등록으로 돌아가기
         </Link>
       </p>
       <h1>실적 업로드</h1>
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다.</p>
 
-      <Row wrap="wrap" gap={theme.spacing(3)} alignItems="flex-end" css={css({ marginBottom: theme.spacing(4) })}>
-        <div css={css({ '& label': { display: 'block', marginBottom: theme.spacing(1), fontSize: 13, fontWeight: 600 } })}>
+      <Row wrap="wrap" gap={12} alignItems="flex-end" className={s.rowMarginBottom}>
+        <div className={s.monthSelectWrap}>
           <label htmlFor="settlement-month">적용 월</label>
           <SingleSelect
             id="settlement-month"
@@ -562,7 +465,7 @@ export function SalesUploadPage() {
         </Button>
       </Row>
 
-      <Row wrap="wrap" gap={theme.spacing(2)} css={downloadRowWrap}>
+      <Row wrap="wrap" gap={8} className={s.downloadRowWrap}>
         <Button variant="secondary" onClick={handleDownloadExcelTemplate}>
           엑셀 양식 다운로드
         </Button>
@@ -577,11 +480,11 @@ export function SalesUploadPage() {
         </Button>
       </Row>
 
-      <h2 css={css({ fontSize: 16, marginBottom: theme.spacing(2), color: theme.colors.text })}>
+      <h2 className={s.sectionTitle1}>
         1. 엑셀 업로드
       </h2>
       <div
-        css={dropzoneStyles(isDrag)}
+        className={clsx(s.dropzoneBase, isDrag && s.dropzoneDrag)}
         onDragOver={(e) => { e.preventDefault(); setIsDrag(true); }}
         onDragLeave={() => setIsDrag(false)}
         onDrop={onDrop}
@@ -593,14 +496,14 @@ export function SalesUploadPage() {
           accept=".xlsx,.xls"
           multiple
           onChange={onFileInput}
-          css={css({ display: 'none' })}
+          className={s.fileInputHidden}
         />
         엑셀 파일을 여기에 놓거나 클릭하여 선택하세요 (.xlsx, .xls) — 여러 개 선택 가능
       </div>
 
       {uploadedFiles.length > 0 && (
-        <Row wrap="wrap" gap={theme.spacing(2)} alignItems="center" css={uploadedFilesWrap}>
-          <span css={css({ fontSize: 13, color: theme.colors.textMuted, marginRight: theme.spacing(1) })}>
+        <Row wrap="wrap" gap={8} alignItems="center" className={s.uploadedFilesWrap}>
+          <span className={s.uploadedFilesLabel}>
             업로드된 파일:
           </span>
           {uploadedFiles.map((f, i) => (
@@ -620,37 +523,22 @@ export function SalesUploadPage() {
       )}
 
       {message && (
-        <div css={message.type === 'success' ? successStyles : errorStyles}>{message.text}</div>
+        <div className={message.type === 'success' ? s.successMsg : s.errorMsg}>{message.text}</div>
       )}
 
       {preview.length > 0 && (
         <div
           ref={previewSectionRef}
-          css={css({
-            marginTop: theme.spacing(4),
-            padding: theme.spacing(4),
-            backgroundColor: theme.colors.surface,
-            border: `2px solid ${theme.colors.primary}30`,
-            borderRadius: theme.radius.lg,
-            boxShadow: theme.shadow.md,
-          })}
+          className={s.previewSection}
         >
-          <h2 css={css({ fontSize: 18, marginBottom: theme.spacing(1), color: theme.colors.text })}>
+          <h2 className={s.previewSectionTitle}>
             2. 업로드 결과 확인
           </h2>
-          <p css={css({ color: theme.colors.textMuted, marginBottom: theme.spacing(3), fontSize: 14 })}>
+          <p className={s.previewSectionDesc}>
             아래 표의 데이터가 맞는지 확인한 뒤 <strong>실적 등록</strong> 버튼을 클릭하세요.
           </p>
           {(invalidHospitalCount > 0 || invalidProductCodeCount > 0) && (
-            <div css={css({
-              padding: theme.spacing(2),
-              marginBottom: theme.spacing(3),
-              backgroundColor: `${theme.colors.error}14`,
-              color: theme.colors.error,
-              borderRadius: theme.radius.md,
-              fontSize: 14,
-              fontWeight: 500,
-            })}>
+            <div className={s.invalidWarning}>
               ⚠
               {invalidHospitalCount > 0 && ` ${invalidHospitalCount}건의 병의원 사업자번호가 등록된 거래처와 일치하지 않습니다. 병의원 셀을 확인하세요.`}
               {invalidProductCodeCount > 0 && ` ${invalidProductCodeCount}건의 제품코드가 품목 마스터에 없습니다. 제품코드 셀을 확인하세요.`}
@@ -689,7 +577,7 @@ export function SalesUploadPage() {
                   const raw = row.original;
                   if (raw.type === 'sum') {
                     return (
-                      <tr key={row.id} css={fileSumRowStyles}>
+                      <tr key={row.id} className={s.fileSumRow}>
                         <td colSpan={5}>{raw.fileName} 합계</td>
                         <td className="col-num">{raw.totalQuantity.toLocaleString()}</td>
                         <td className="col-num">{raw.totalAmount.toLocaleString()}</td>
@@ -698,7 +586,7 @@ export function SalesUploadPage() {
                   }
                   if (raw.type === 'separator') {
                     return (
-                      <tr key={row.id} css={separatorRowStyles}>
+                      <tr key={row.id} className={s.separatorRow}>
                         <td colSpan={7} />
                       </tr>
                     );
@@ -735,14 +623,14 @@ export function SalesUploadPage() {
             </table>
           </div>
           <Row
-            gap={theme.spacing(2)}
+            gap={8}
             alignItems="center"
-            css={css({ marginTop: theme.spacing(4) })}
+            className={s.rowMarginTop}
           >
             <Button variant="primary" onClick={openConfirmModal}>
               실적 등록
             </Button>
-            <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>
+            <span className={s.totalCountText}>
               전체 {preview.length}건
             </span>
           </Row>
@@ -754,28 +642,17 @@ export function SalesUploadPage() {
           direction="row"
           alignItems="center"
           justifyContent="center"
-          css={css({
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: theme.colors.overlay,
-            zIndex: 1000,
-          })}
+          className={s.confirmModalOverlay}
           onClick={() => setShowConfirmModal(false)}
         >
           <div
-            css={css({
-              backgroundColor: theme.colors.surface,
-              padding: theme.spacing(4),
-              borderRadius: theme.radius.lg,
-              boxShadow: theme.shadow.md,
-              minWidth: 320,
-            })}
+            className={s.confirmModalBox}
             onClick={(e) => e.stopPropagation()}
           >
-            <p id="confirm-title" css={css({ marginBottom: theme.spacing(3), fontWeight: 600, color: theme.colors.text })}>
+            <p id="confirm-title" className={s.confirmModalTitle}>
               정말로 등록하시겠습니까?
             </p>
-            <Row gap={theme.spacing(2)} justifyContent="flex-end">
+            <Row gap={8} justifyContent="flex-end">
               <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
                 아니오
               </Button>

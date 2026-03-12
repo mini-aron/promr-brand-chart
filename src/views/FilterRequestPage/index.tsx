@@ -1,10 +1,8 @@
 'use client';
-/** @jsxImportSource @emotion/react */
+
 import { useCallback, useMemo, useState } from 'react';
-import { css } from '@emotion/react';
 import { useApp } from '@/store/appStore';
 import { mockFilterRequests, mockHospitals, mockPharmas } from '@/store/mockData';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { FilterInput } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
@@ -12,160 +10,6 @@ import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { FilterRequest } from '@/types';
 import * as s from './index.css';
-
-const pageStyles = css({
-  width: '100%',
-  minWidth: 0,
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const twoColLayout = css({
-  display: 'grid',
-  gridTemplateColumns: '1fr 400px',
-  gap: theme.spacing(4),
-  alignItems: 'start',
-  '@media (max-width: 900px)': { gridTemplateColumns: '1fr' },
-});
-
-const cardStyles = css({
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
-  marginBottom: theme.spacing(4),
-  boxShadow: theme.shadow.sm,
-});
-
-const sectionTitle = css({
-  fontSize: 16,
-  fontWeight: 600,
-  marginBottom: theme.spacing(3),
-  color: theme.colors.text,
-});
-
-const inputStyles = css({
-  width: '100%',
-  minHeight: 44,
-  padding: `0 ${theme.spacing(2)}px`,
-  fontSize: 14,
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  '&:focus': { outline: 'none', borderColor: theme.colors.primary, boxShadow: `0 0 0 2px ${theme.colors.primary}20` },
-  '&::placeholder': { color: theme.colors.textMuted },
-});
-
-const labelStyles = css({
-  display: 'block',
-  marginBottom: theme.spacing(1),
-  fontSize: 14,
-  fontWeight: 600,
-  color: theme.colors.text,
-});
-
-const fieldStyles = css({
-  marginBottom: theme.spacing(3),
-  '& label': labelStyles,
-  '& input': inputStyles,
-  '& textarea': {
-    ...inputStyles,
-    minHeight: 88,
-    padding: theme.spacing(2),
-    resize: 'vertical',
-  },
-});
-
-const hospitalListStyles = css({
-  maxHeight: 240,
-  overflow: 'auto',
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  marginBottom: theme.spacing(3),
-  '& button': {
-    display: 'block',
-    width: '100%',
-    padding: theme.spacing(2),
-    textAlign: 'left',
-    border: 'none',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    backgroundColor: 'transparent',
-    cursor: 'pointer',
-    fontSize: 14,
-    color: theme.colors.text,
-    '&:hover': { backgroundColor: theme.colors.background },
-    '&:last-of-type': { borderBottom: 'none' },
-  },
-  '& button[data-selected="true"]': {
-    backgroundColor: `${theme.colors.primary}14`,
-    color: theme.colors.primary,
-    fontWeight: 600,
-  },
-});
-
-const successMsg = css({
-  marginTop: theme.spacing(2),
-  padding: theme.spacing(2),
-  backgroundColor: `${theme.colors.success}14`,
-  color: theme.colors.success,
-  borderRadius: theme.radius.md,
-});
-
-const modalOverlay = css({
-  position: 'fixed',
-  inset: 0,
-  backgroundColor: theme.colors.overlay,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1000,
-});
-
-const modalContent = css({
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
-  maxWidth: 440,
-  width: '100%',
-  maxHeight: '90vh',
-  overflow: 'auto',
-  boxShadow: theme.shadow.md,
-});
-
-const modalTitle = css({
-  margin: 0,
-  marginBottom: theme.spacing(3),
-  fontSize: 18,
-  fontWeight: 600,
-  color: theme.colors.text,
-});
-
-const modalActions = css({
-  display: 'flex',
-  gap: theme.spacing(2),
-  justifyContent: 'flex-end',
-  marginTop: theme.spacing(3),
-});
-
-const filterRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: theme.spacing(2),
-  marginBottom: theme.spacing(3),
-  '& > *': { minWidth: 140 },
-});
-
-const statusBadge = (status: string) =>
-  css({
-    display: 'inline-block',
-    padding: '4px 10px',
-    borderRadius: 4,
-    fontSize: 12,
-    fontWeight: 600,
-    ...(status === 'pending' && { backgroundColor: `${theme.colors.primary}18`, color: theme.colors.primary }),
-    ...(status === 'approved' && { backgroundColor: `${theme.colors.success}18`, color: theme.colors.success }),
-    ...(status === 'rejected' && { backgroundColor: `${theme.colors.error}18`, color: theme.colors.error }),
-  });
 
 const STATUS_LABEL = {
   pending: '대기',
@@ -336,11 +180,17 @@ export function FilterRequestPage() {
       ),
       columnHelper.accessor('status', {
         header: '승인상태',
-        cell: (info) => (
-          <span css={statusBadge(info.getValue())}>
-            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
-          </span>
-        ),
+        cell: (info) => {
+          const status = info.getValue();
+          const badgeClass = (status === 'pending' || status === 'approved' || status === 'rejected')
+            ? s.statusBadge[status]
+            : s.statusBadge.pending;
+          return (
+            <span className={badgeClass}>
+              {STATUS_LABEL[status] ?? status}
+            </span>
+          );
+        },
       }),
       columnHelper.accessor('requestedAt', {
         header: '요청일시',
@@ -391,23 +241,23 @@ export function FilterRequestPage() {
 
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <h1>필터링 요청</h1>
       <p>거래 허용이 필요한 병의원을 검색해 요청하세요. 제출 대상 제약사는 좌측 사이드바에서 선택합니다.</p>
 
-      <div css={twoColLayout}>
-        <section css={cardStyles}>
-          <h2 css={sectionTitle}>내 필터링 요청 현황</h2>
-          <div css={filterRowStyles}>
+      <div className={s.twoColLayout}>
+        <section className={s.card}>
+          <h2 className={s.sectionTitle}>내 필터링 요청 현황</h2>
+          <div className={s.filterRow}>
             <FilterInput
               type="search"
               placeholder="병의원명"
               value={filterHospitalName}
               onChange={(e) => setFilterHospitalName(e.target.value)}
               aria-label="병의원명 필터"
-              css={css({ maxWidth: 200 })}
+              className={s.filterInputMaxWidth}
             />
-            <div css={css({ width: 180 })}>
+            <div className={s.filterPharmaWidth}>
               <SingleSelect
                 id="filter-pharma"
                 options={[
@@ -421,7 +271,7 @@ export function FilterRequestPage() {
                 aria-label="제약사 필터"
               />
             </div>
-            <div css={css({ width: 130 })}>
+            <div className={s.filterStatusWidth}>
               <SingleSelect
                 id="filter-status"
                 options={[
@@ -447,9 +297,9 @@ export function FilterRequestPage() {
           />
         </section>
 
-        <section css={cardStyles}>
-          <h2 css={sectionTitle}>거래선 추가</h2>
-          <div css={fieldStyles}>
+        <section className={s.card}>
+          <h2 className={s.sectionTitle}>거래선 추가</h2>
+          <div className={s.field}>
             <label htmlFor="hospital-search">병의원 검색</label>
             <input
               id="hospital-search"
@@ -460,10 +310,10 @@ export function FilterRequestPage() {
               aria-label="병의원 검색"
             />
           </div>
-          <div css={hospitalListStyles}>
+          <div className={s.hospitalList}>
             {hospitalSearchResult.length === 0 ? (
-              <div css={css({ padding: theme.spacing(2) })}>
-                <p css={css({ color: theme.colors.textMuted, fontSize: 14, marginBottom: theme.spacing(2) })}>
+              <div className={s.hospitalListEmpty}>
+                <p>
                   {hospitalSearch.trim() ? '검색 결과가 없습니다.' : '병의원명·거래처코드·사업자번호로 검색하세요.'}
                 </p>
                 {hospitalSearch.trim() && (
@@ -480,16 +330,16 @@ export function FilterRequestPage() {
                   data-selected={selectedHospitalId === h.id}
                   onClick={() => setSelectedHospitalId(h.id)}
                 >
-                  <span css={css({ display: 'block' })}>
+                  <span className={s.hospitalName}>
                     {h.name}
                     {h.accountCode && (
-                      <span css={css({ marginLeft: 8, fontSize: 13, color: theme.colors.textMuted })}>
+                      <span className={s.hospitalAccountCode}>
                         {h.accountCode}
                       </span>
                     )}
                   </span>
                   {h.address && (
-                    <span css={css({ display: 'block', marginTop: 4, fontSize: 12, color: theme.colors.textMuted })}>
+                    <span className={s.hospitalAddress}>
                       {h.address}
                     </span>
                   )}
@@ -498,7 +348,7 @@ export function FilterRequestPage() {
             )}
           </div>
           {selectedHospitalId && (
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="request-message">요청 문의 (선택)</label>
               <textarea
                 id="request-message"
@@ -515,21 +365,21 @@ export function FilterRequestPage() {
         </section>
       </div>
 
-      {successText && <div css={successMsg}>{successText}</div>}
+      {successText && <div className={s.successMsg}>{successText}</div>}
 
       {showNewHospitalModal && (
         <div
-          css={modalOverlay}
+          className={s.modalOverlay}
           onClick={() => setShowNewHospitalModal(false)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="new-hospital-modal-title"
         >
-          <div css={modalContent} onClick={(e) => e.stopPropagation()}>
-            <h2 id="new-hospital-modal-title" css={modalTitle}>
+          <div className={s.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 id="new-hospital-modal-title" className={s.modalTitle}>
               존재하지 않는 병의원 추가 요청
             </h2>
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="modal-hospital-name">병의원명 *</label>
               <input
                 id="modal-hospital-name"
@@ -539,7 +389,7 @@ export function FilterRequestPage() {
                 onChange={(e) => setNewHospitalName(e.target.value)}
               />
             </div>
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="modal-business-number">사업자번호 *</label>
               <input
                 id="modal-business-number"
@@ -549,7 +399,7 @@ export function FilterRequestPage() {
                 onChange={(e) => setNewBusinessNumber(e.target.value)}
               />
             </div>
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="modal-address">주소 *</label>
               <input
                 id="modal-address"
@@ -559,7 +409,7 @@ export function FilterRequestPage() {
                 onChange={(e) => setNewAddress(e.target.value)}
               />
             </div>
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="modal-representative">대표자명 *</label>
               <input
                 id="modal-representative"
@@ -569,7 +419,7 @@ export function FilterRequestPage() {
                 onChange={(e) => setNewRepresentativeName(e.target.value)}
               />
             </div>
-            <div css={fieldStyles}>
+            <div className={s.field}>
               <label htmlFor="modal-request-message">요청 문의 (선택)</label>
               <textarea
                 id="modal-request-message"
@@ -579,7 +429,7 @@ export function FilterRequestPage() {
                 rows={2}
               />
             </div>
-            <div css={modalActions}>
+            <div className={s.modalActions}>
               <Button variant="secondary" onClick={() => setShowNewHospitalModal(false)}>
                 취소
               </Button>

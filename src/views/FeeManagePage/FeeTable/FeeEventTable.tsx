@@ -1,6 +1,5 @@
-/** @jsxImportSource @emotion/react */
 import { useMemo } from 'react';
-import { css } from '@emotion/react';
+import { clsx } from 'clsx';
 import {
   createColumnHelper,
   flexRender,
@@ -10,6 +9,7 @@ import {
 import type { FeeEvent } from '@/types';
 import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
+import * as s from './ProductFeeTable.css';
 
 export type ScopeForCompute =
   | { type: 'item' }
@@ -33,22 +33,11 @@ export interface FeeEventTableProps {
     scope: ScopeForCompute
   ) => number;
   onDeleteEvent: (eventId: string) => void;
-  eventTableWrap: ReturnType<typeof css>;
-  eventFeeRateBadgeBase: ReturnType<typeof css>;
-  finalFeeResultWrap: ReturnType<typeof css>;
-  finalFeeResultRow: ReturnType<typeof css>;
+  eventTableWrap: string;
+  eventFeeRateBadgeBase: string;
+  finalFeeResultWrap: string;
+  finalFeeResultRow: string;
 }
-
-const cellBorder = css({
-  padding: theme.spacing(0.75),
-  borderBottom: `1px solid ${theme.colors.border}`,
-  borderRight: `1px solid ${theme.colors.border}`,
-});
-
-const metaCell = css([
-  cellBorder,
-  { fontSize: 12, color: theme.colors.textMuted, textAlign: 'center' },
-]);
 
 export function FeeEventTable({
   events,
@@ -88,7 +77,7 @@ export function FeeEventTable({
           const e = row.original;
           const applicable = isEventApplicable(e);
           return (
-            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' })}>
+            <div className={s.filterRowInner}>
               <strong>{e.name}</strong>
               <span style={{ fontSize: 11, color: applicable ? theme.colors.success : theme.colors.textMuted }}>
                 {applicable ? '적용 가능' : '적용 불가'}
@@ -118,14 +107,11 @@ export function FeeEventTable({
           const inScope = isEventInFilterScope(e, scopeOverride);
           return (
             <span
-              css={[
-                eventFeeRateBadgeBase,
-                css({
-                  color: applicable ? getEventFeeRateColor(e) : theme.colors.textMuted,
-                  opacity: applicable ? 1 : 0.6,
-                }),
-              ]}
-              style={!inScope ? { opacity: 0.5 } : undefined}
+              className={eventFeeRateBadgeBase}
+              style={{
+                color: applicable ? getEventFeeRateColor(e) : theme.colors.textMuted,
+                opacity: applicable ? (inScope ? 1 : 0.5) : 0.6,
+              }}
             >
               {formatEventFeeRate(e)}
             </span>
@@ -169,7 +155,7 @@ export function FeeEventTable({
   const scope = scopeOverride ?? feeScopeForCompute ?? { type: 'item' as const };
 
   return (
-    <table css={eventTableWrap}>
+    <table className={eventTableWrap}>
       <colgroup>
         {leafColumns.map((col) => (
           <col key={col.id} style={{ width: col.getSize() }} />
@@ -181,14 +167,13 @@ export function FeeEventTable({
             {hg.headers.map((h) => (
               <th
                 key={h.id}
-                css={[
-                  cellBorder,
-                  css({ fontWeight: 600, fontSize: 11 }),
-                  h.id === 'delete' && css({ width: 52, minWidth: 52 }),
-                  ['생성자', '업데이트'].includes(String(h.column.columnDef.header)) && css({
-                    textAlign: 'center' as const,
-                  }),
-                ]}
+                className={clsx(s.cellBorder, h.id === 'delete' && s.feeEventDeleteTh)}
+                style={{
+                  fontWeight: 600,
+                  fontSize: 11,
+                  ...(h.id === 'delete' && { width: 52, minWidth: 52 }),
+                  ...(['생성자', '업데이트'].includes(String(h.column.columnDef.header)) && { textAlign: 'center' as const }),
+                }}
               >
                 {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
               </th>
@@ -208,12 +193,12 @@ export function FeeEventTable({
                 return (
                   <td
                     key={cell.id}
-                    css={[
-                      cell.column.id === 'delete' && css({ padding: theme.spacing(0.5), width: 52 }),
-                      cell.column.id !== 'delete' && cellBorder,
-                      isMeta && metaCell,
-                      isLast && css({ borderRight: 'none' }),
-                    ]}
+                    className={clsx(
+                      cell.column.id === 'delete' && s.feeEventDeleteTd,
+                      cell.column.id !== 'delete' && s.cellBorder,
+                      isMeta && s.metaCellCenter,
+                      isLast && s.cellBorderLast
+                    )}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -224,8 +209,8 @@ export function FeeEventTable({
         })}
       </tbody>
       {showResultRow && (
-        <tbody css={finalFeeResultWrap}>
-          <tr css={finalFeeResultRow}>
+        <tbody className={finalFeeResultWrap}>
+          <tr className={finalFeeResultRow}>
             <td />
             <td
               style={{
@@ -239,7 +224,7 @@ export function FeeEventTable({
             <td />
             <td />
             <td style={{ padding: theme.spacing(0.5), paddingRight: theme.spacing(2), verticalAlign: 'middle', textAlign: 'right' }}>
-              <span className="final-fee-rate" css={[eventFeeRateBadgeBase, css({ color: theme.colors.text })]}>
+              <span className={clsx('final-fee-rate', eventFeeRateBadgeBase)} style={{ color: theme.colors.text }}>
                 {computeFinalFeeForScope(baseFeeRate, events, scope)}%
               </span>
             </td>

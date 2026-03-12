@@ -1,5 +1,5 @@
 'use client';
-/** @jsxImportSource @emotion/react */
+
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthContext } from '@/context/AuthContext';

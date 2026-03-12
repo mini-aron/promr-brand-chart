@@ -1,68 +1,14 @@
 'use client';
-/** @jsxImportSource @emotion/react */
+
 import { useEffect, useMemo, useState } from 'react';
-import { css } from '@emotion/react';
 import { HiChevronDown } from 'react-icons/hi';
 import { useApp } from '@/store/appStore';
 import { mockCorporations, mockHospitals, mockSalesRows } from '@/store/mockData';
-import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
-
-const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const filterCard = css({
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
-  marginBottom: theme.spacing(4),
-  boxShadow: theme.shadow.sm,
-});
-
-const filterRow = css({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-  gap: theme.spacing(4),
-  alignItems: 'flex-end',
-  '& label': {
-    display: 'block',
-    marginBottom: theme.spacing(2),
-    fontSize: 15,
-    fontWeight: 600,
-    color: theme.colors.text,
-  },
-  '& select': {
-    display: 'block',
-    width: '100%',
-    minHeight: 48,
-    padding: `0 ${theme.spacing(3)}px`,
-    paddingRight: 40,
-    fontSize: 15,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    cursor: 'pointer',
-    appearance: 'none',
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
-    backgroundRepeat: 'no-repeat',
-    backgroundPosition: 'right 12px center',
-    '&:hover': { borderColor: theme.colors.primary },
-    '&:focus': {
-      outline: 'none',
-      borderColor: theme.colors.primary,
-      boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
-    },
-    '&:disabled': { opacity: 0.8, cursor: 'not-allowed' },
-  },
-});
 
 type AggregateRow = {
   hospitalId: string;
@@ -72,8 +18,6 @@ type AggregateRow = {
   outHouseItemCount: number;
   outHouseAmount: number;
 };
-
-const sortIcon = css({ marginLeft: 4, opacity: 0.6, fontSize: 10 });
 
 function formatAmount(n: number): string {
   return n.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -212,12 +156,12 @@ export function AggregatePage() {
         header: '원내',
         columns: [
           columnHelper.accessor('inHouseItemCount', {
-            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>품목수 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             size: 70,
             meta: { className: 'col-inout' },
           }),
           columnHelper.accessor('inHouseAmount', {
-            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>처방액 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             size: 90,
             cell: (info) => formatAmount(info.getValue()),
             meta: { className: 'col-inout' },
@@ -229,12 +173,12 @@ export function AggregatePage() {
         header: '원외',
         columns: [
           columnHelper.accessor('outHouseItemCount', {
-            header: () => <>품목수 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>품목수 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             size: 70,
             meta: { className: 'col-inout' },
           }),
           columnHelper.accessor('outHouseAmount', {
-            header: () => <>처방액 <span css={sortIcon}><HiChevronDown size={12} /></span></>,
+            header: () => <>처방액 <span className={s.sortIcon}><HiChevronDown size={12} /></span></>,
             size: 90,
             cell: (info) => formatAmount(info.getValue()),
             meta: { className: 'col-inout' },
@@ -246,7 +190,7 @@ export function AggregatePage() {
   );
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <h1>법인 정산 확인</h1>
       <p>
         {isCorporation
@@ -254,8 +198,8 @@ export function AggregatePage() {
           : '법인별 실적을 확인하고 정산합니다. 법인·병의원 필터와 품목 검색을 사용할 수 있습니다.'}
       </p>
 
-      <div css={filterCard}>
-        <div css={filterRow}>
+      <div className={s.filterCard}>
+        <div className={s.filterRow}>
           {!isCorporation && (
             <div>
               <label htmlFor="aggregate-corporation">법인</label>
@@ -293,12 +237,7 @@ export function AggregatePage() {
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
               aria-label="품목 검색"
-              css={css({
-                minHeight: 32,
-                padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-                fontSize: 13,
-                borderRadius: theme.radius.sm,
-              })}
+              className={s.productSearchInput}
             />
           </div>
         </div>
@@ -320,7 +259,7 @@ export function AggregatePage() {
         )}
       />
       {settlementRows.length === 0 && (
-        <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
+        <p className={s.emptyMessage}>
           조건에 맞는 정산 실적이 없습니다.
         </p>
       )}

@@ -1,6 +1,5 @@
-/** @jsxImportSource @emotion/react */
 import React, { useMemo } from 'react';
-import { css, type CSSObject } from '@emotion/react';
+import { clsx } from 'clsx';
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import {
   createColumnHelper,
@@ -9,14 +8,19 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import type { ProductFee, FeeEvent } from '@/types';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { FeeEventTable } from './FeeEventTable';
+import * as s from './ProductFeeTable.css';
 
 type ScopeForCompute =
   | { type: 'item' }
   | { type: 'corporation'; corporationId: string }
   | { type: 'corporation_hospital'; corporationId: string; hospitalId: string };
+
+type ColumnMeta = {
+  thStyle?: React.CSSProperties;
+  tdStyle?: React.CSSProperties;
+};
 
 export interface ProductFeeTableSectionProps {
   data: ProductFee[];
@@ -48,36 +52,22 @@ export interface ProductFeeTableSectionProps {
   onDeleteEvent: (eventId: string) => void;
   onSwitchToEventMode: (productCode: string) => void;
   tableWrapClassName: string;
-  finalFeeDivider: ReturnType<typeof css>;
-  expandCell: ReturnType<typeof css>;
-  expandCellCount: ReturnType<typeof css>;
-  feeInputStyles: ReturnType<typeof css>;
-  productCodeInputStyles: ReturnType<typeof css>;
-  feeInputCell: ReturnType<typeof css>;
-  thBase: ReturnType<typeof css>;
-  eventSubRow: (isExpanded: boolean) => ReturnType<typeof css>;
-  eventExpandWrap: (isExpanded: boolean) => ReturnType<typeof css>;
-  eventTableWrap: ReturnType<typeof css>;
-  eventFeeRateBadgeBase: ReturnType<typeof css>;
-  finalFeeResultWrap: ReturnType<typeof css>;
-  finalFeeResultRow: ReturnType<typeof css>;
+  finalFeeDivider: string;
+  expandCell: string;
+  expandCellCount: string;
+  feeInputStyles: string;
+  productCodeInputStyles: string;
+  feeInputCell: string;
+  thBase: string;
+  eventSubRow: string;
+  eventSubRowCollapsed: string;
+  eventExpandWrap: string;
+  eventExpandWrapCollapsed: string;
+  eventTableWrap: string;
+  eventFeeRateBadgeBase: string;
+  finalFeeResultWrap: string;
+  finalFeeResultRow: string;
 }
-
-const cellBorder = css({
-  padding: theme.spacing(0.75),
-  borderBottom: `1px solid ${theme.colors.border}`,
-  borderRight: `1px solid ${theme.colors.border}`,
-});
-
-const metaCell = css([
-  cellBorder,
-  { fontSize: 12, color: theme.colors.textMuted },
-]);
-
-type ColumnMeta = {
-  thCss?: CSSObject;
-  tdCss?: CSSObject;
-};
 
 export function ProductFeeTableSection({
   data,
@@ -113,7 +103,9 @@ export function ProductFeeTableSection({
   feeInputCell,
   thBase,
   eventSubRow,
+  eventSubRowCollapsed,
   eventExpandWrap,
+  eventExpandWrapCollapsed,
   eventTableWrap,
   eventFeeRateBadgeBase,
   finalFeeResultWrap,
@@ -126,7 +118,7 @@ export function ProductFeeTableSection({
       columnHelper.display({
         id: 'expand',
         size: 36,
-        meta: { thCss: { textAlign: 'center', width: 36 }, tdCss: {} } as ColumnMeta,
+        meta: { thStyle: { textAlign: 'center', width: 36 }, tdStyle: {} } as ColumnMeta,
         header: () => null,
         cell: ({ row }) => {
           const p = row.original;
@@ -136,7 +128,7 @@ export function ProductFeeTableSection({
           return hasEvents ? (
             <>
               {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-              <span css={expandCellCount}>{productEvents.length}</span>
+              <span className={expandCellCount}>{productEvents.length}</span>
             </>
           ) : null;
         },
@@ -145,8 +137,8 @@ export function ProductFeeTableSection({
         header: '품목코드',
         size: 220,
         meta: {
-          thCss: { width: 220, minWidth: 220, maxWidth: 220 },
-          tdCss: { padding: 0, verticalAlign: 'middle' },
+          thStyle: { width: 220, minWidth: 220, maxWidth: 220 },
+          tdStyle: { padding: 0, verticalAlign: 'middle' },
         } as ColumnMeta,
         cell: ({ row }) => {
           const p = row.original;
@@ -154,7 +146,7 @@ export function ProductFeeTableSection({
           return (
             <input
               type="text"
-              css={productCodeInputStyles}
+              className={productCodeInputStyles}
               value={p.productCode}
               onChange={(e) => onUpdateProductCode(originalIdx, e.target.value)}
               aria-label={`${p.productName} 품목코드`}
@@ -171,13 +163,13 @@ export function ProductFeeTableSection({
         header: '기본 수수료 (%)',
         size: 100,
         meta: {
-          thCss: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
-          tdCss: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
+          thStyle: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
+          tdStyle: { textAlign: 'right', fontVariantNumeric: 'tabular-nums' },
         } as ColumnMeta,
         cell: ({ row }) => (
-          <span css={feeInputCell}>
+          <span className={feeInputCell}>
             <input
-              css={feeInputStyles}
+              className={feeInputStyles}
               type="number"
               min={0}
               max={100}
@@ -199,11 +191,11 @@ export function ProductFeeTableSection({
           header: '최종수수료 (%)',
           size: 100,
           meta: {
-            thCss: { textAlign: 'right', fontVariantNumeric: 'tabular-nums', paddingRight: theme.spacing(2) },
-            tdCss: { textAlign: 'right', fontVariantNumeric: 'tabular-nums', paddingRight: theme.spacing(2) },
+            thStyle: { textAlign: 'right', fontVariantNumeric: 'tabular-nums', paddingRight: 8 },
+            tdStyle: { textAlign: 'right', fontVariantNumeric: 'tabular-nums', paddingRight: 8 },
           } as ColumnMeta,
           cell: ({ row }) => (
-            <span css={feeInputCell}>
+            <span className={feeInputCell}>
               {getFinalFeeForRow(row.original, scopeOverride)}%
             </span>
           ),
@@ -212,8 +204,8 @@ export function ProductFeeTableSection({
     }
 
     const metaColumnCss: ColumnMeta = {
-      thCss: { textAlign: 'center', fontSize: 12 },
-      tdCss: { textAlign: 'center' },
+      thStyle: { textAlign: 'center', fontSize: 12 },
+      tdStyle: { textAlign: 'center' },
     };
     base.push(
       columnHelper.accessor('createdAt', {
@@ -237,7 +229,7 @@ export function ProductFeeTableSection({
       columnHelper.accessor('updatedBy', {
         header: '업데이트',
         size: 80,
-        meta: { ...metaColumnCss, thCss: { ...metaColumnCss.thCss, borderRight: 'none' }, tdCss: { ...metaColumnCss.tdCss, borderRight: 'none' } },
+        meta: { ...metaColumnCss, thStyle: { ...metaColumnCss.thStyle, borderRight: 'none' }, tdStyle: { ...metaColumnCss.tdStyle, borderRight: 'none' } },
         cell: (info) => info.getValue() ?? '-',
       })
     );
@@ -282,11 +274,8 @@ export function ProductFeeTableSection({
                 return (
                   <th
                     key={h.id}
-                    css={[
-                      thBase,
-                      meta?.thCss && css(meta.thCss),
-                      h.id === 'finalFee' && finalFeeDivider,
-                    ]}
+                    className={clsx(thBase, h.id === 'finalFee' && finalFeeDivider)}
+                    style={meta?.thStyle}
                   >
                     {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
                   </th>
@@ -315,7 +304,7 @@ export function ProductFeeTableSection({
                       return (
                         <td
                           key={cell.id}
-                          css={[expandCell, cellBorder]}
+                          className={clsx(expandCell, s.cellBorder)}
                           onClick={(e) => {
                             e.stopPropagation();
                             hasEvents && onToggleExpand(p.productCode);
@@ -326,7 +315,7 @@ export function ProductFeeTableSection({
                           {hasEvents ? (
                             <>
                               {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
-                              <span css={expandCellCount}>{productEvents.length}</span>
+                              <span className={expandCellCount}>{productEvents.length}</span>
                             </>
                           ) : null}
                         </td>
@@ -337,11 +326,11 @@ export function ProductFeeTableSection({
                     return (
                       <td
                         key={cell.id}
-                        css={[
-                          meta?.tdCss && css(meta.tdCss),
-                          !(cell.column.id === 'productCode') && cellBorder,
-                          isMeta && metaCell,
-                        ]}
+                        className={clsx(
+                          !(cell.column.id === 'productCode') && s.cellBorder,
+                          isMeta && s.metaCell
+                        )}
+                        style={meta?.tdStyle}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
@@ -349,35 +338,20 @@ export function ProductFeeTableSection({
                   })}
                 </tr>
                 {hasEvents && (
-                  <tr css={eventSubRow(isExpanded)}>
+                  <tr className={isExpanded ? eventSubRow : eventSubRowCollapsed}>
                     <td colSpan={colCount}>
-                      <div css={eventExpandWrap(isExpanded)}>
+                      <div className={isExpanded ? eventExpandWrap : eventExpandWrapCollapsed}>
                         {isExpanded && productEvents.length > 0 && (
                           <>
-                            <div
-                              css={css({
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                marginBottom: theme.spacing(1),
-                                paddingLeft: theme.spacing(1.5),
-                                paddingRight: theme.spacing(1.5),
-                              })}
-                            >
-                              <p style={{ margin: 0, fontSize: 11, color: theme.colors.textMuted }}>
+                            <div className={s.eventHeaderRow}>
+                              <p style={{ margin: 0, fontSize: 11, color: 'var(--color-text-muted)' }}>
                                 아래로 갈수록 우선순위 높음. 가장 아래(최우선)가 고정이면 해당 고정수수료 적용.
                               </p>
                               <Button
                                 variant="ghost"
                                 size="small"
                                 onClick={() => onSwitchToEventMode(p.productCode)}
-                                css={css({
-                                  padding: theme.spacing(0.5),
-                                  minHeight: 0,
-                                  backgroundColor: theme.colors.border,
-                                  borderRadius: theme.radius.sm,
-                                  '&:hover': { backgroundColor: `${theme.colors.primary}30` },
-                                })}
+                                className={s.eventAddBtn}
                                 aria-label="이벤트 추가"
                               >
                                 <Plus size={18} />

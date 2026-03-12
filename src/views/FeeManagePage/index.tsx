@@ -1,17 +1,15 @@
 'use client';
-/** @jsxImportSource @emotion/react */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { css } from '@emotion/react';
 import { Download, Upload } from 'lucide-react';
 import { mockProductFees, mockFeeEvents, mockCorporations, mockHospitals } from '@/store/mockData';
 import type { ProductFee, FeeEvent, FeeEventType } from '@/types';
-import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Button } from '@/components/Common/Button';
 import { Checkbox } from '@/components/Common/Checkbox';
 import { FilterInput } from '@/components/Common/Input';
 import { ProductFeeTable } from './FeeTable';
 import { Row } from '@/components/Common/Flex';
+import * as s from './index.css';
 
 type EventFormState = {
   productCode: string;
@@ -60,133 +58,6 @@ const INITIAL_ADD_PRODUCT_FORM: AddProductFormState = {
   error: null,
   excelFileName: null,
 };
-
-const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const layoutWrap = css({
-  display: 'flex',
-  gap: theme.spacing(4),
-  alignItems: 'flex-start',
-  flexWrap: 'wrap',
-});
-
-const leftCard = css({
-  flex: 1,
-  minWidth: 320,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 0,
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  overflow: 'hidden',
-  boxShadow: theme.shadow.sm,
-});
-
-const filterRow = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(2),
-  padding: theme.spacing(2),
-  flexWrap: 'wrap',
-  backgroundColor: theme.colors.background,
-  borderBottom: `1px solid ${theme.colors.border}`,
-});
-
-const tableWrap = css({
-  flex: 1,
-  minHeight: 0,
-  padding: theme.spacing(2),
-  overflow: 'auto',
-});
-
-const rightPanel = css({
-  width: 360,
-  flexShrink: 0,
-  backgroundColor: theme.colors.surface,
-  border: `1px solid ${theme.colors.border}`,
-  borderRadius: theme.radius.lg,
-  padding: theme.spacing(4),
-  boxShadow: theme.shadow.sm,
-  position: 'sticky',
-  top: theme.spacing(4),
-});
-
-const feeInputStyles = css({
-  width: 72,
-  minHeight: 28,
-  padding: `0 ${theme.spacing(1.5)}px`,
-  fontSize: 13,
-  fontWeight: 500,
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  textAlign: 'right',
-  '&:focus': {
-    outline: 'none',
-    borderColor: theme.colors.primary,
-    boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
-  },
-  '&::placeholder': { color: theme.colors.textMuted },
-});
-
-const formField = css({
-  '& label': { display: 'block', marginBottom: theme.spacing(1), fontWeight: 600, fontSize: 13 },
-  '& input, & select, & textarea': {
-    width: '100%',
-    minHeight: 40,
-    padding: `0 ${theme.spacing(2)}px`,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    boxSizing: 'border-box',
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary },
-  },
-  '& textarea': { minHeight: 72, padding: theme.spacing(2), resize: 'vertical' },
-  marginBottom: theme.spacing(3),
-});
-
-const excelUploadZone = css({
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: theme.spacing(1.5),
-  minHeight: 88,
-  padding: theme.spacing(2),
-  border: `2px dashed ${theme.colors.border}`,
-  borderRadius: theme.radius.md,
-  backgroundColor: theme.colors.background,
-  cursor: 'pointer',
-  transition: 'border-color 0.2s, background-color 0.2s',
-  '&:hover': {
-    borderColor: theme.colors.primary,
-    backgroundColor: `${theme.colors.primary}08`,
-  },
-  '& input[type="file"]': {
-    position: 'absolute',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0,
-    cursor: 'pointer',
-  },
-  '& .upload-icon': { color: theme.colors.textMuted },
-  '& .upload-text': { fontSize: 13, color: theme.colors.textMuted },
-  '& .upload-hint': { fontSize: 11, color: theme.colors.textMuted, opacity: 0.8 },
-  '&[data-has-file="true"]': {
-    borderColor: theme.colors.primary,
-    backgroundColor: `${theme.colors.primary}0c`,
-    '& .upload-icon': { color: theme.colors.primary },
-    '& .upload-text': { color: theme.colors.text },
-  },
-});
-
 
 function getMonthOptions(count: number): { value: string; label: string }[] {
   const list: { value: string; label: string }[] = [];
@@ -492,15 +363,15 @@ export function FeeManagePage() {
   );
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <h1>수수료관리</h1>
       <p>월별·품목별 수수료율(%)을 설정하고, 품목별 이벤트를 등록합니다.</p>
 
-      <div css={layoutWrap}>
-        <div css={leftCard}>
-          <div css={filterRow}>
-            <Row alignItems="center" gap={theme.spacing(1)}>
-              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>적용 월</span>
+      <div className={s.layoutWrap}>
+        <div className={s.leftCard}>
+          <div className={s.filterRow}>
+            <Row alignItems="center" gap={4}>
+              <span className={s.filterLabel}>적용 월</span>
               <SingleSelect
                 id="fee-month"
                 options={MONTH_OPTIONS.map((o) => ({ label: o.label, value: o.value }))}
@@ -510,8 +381,8 @@ export function FeeManagePage() {
                 aria-label="적용 월"
               />
             </Row>
-            <Row alignItems="center" gap={theme.spacing(1)}>
-              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>품목 검색</span>
+            <Row alignItems="center" gap={4}>
+              <span className={s.filterLabel}>품목 검색</span>
               <FilterInput
                 id="table-product-search"
                 type="search"
@@ -519,11 +390,11 @@ export function FeeManagePage() {
                 value={tableProductSearch}
                 onChange={(e) => setTableProductSearch(e.target.value)}
                 aria-label="품목명 검색"
-                css={css({ minHeight: 36, width: 160, fontSize: 13, padding: `0 ${theme.spacing(2)}px` })}
+                className={s.productSearchInput}
               />
             </Row>
-            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1) })}>
-              <span css={css({ fontSize: 12, fontWeight: 600, color: theme.colors.textMuted, whiteSpace: 'nowrap' })}>최종수수료 기준</span>
+            <div className={s.filterRowInner}>
+              <span className={s.filterLabel}>최종수수료 기준</span>
               <SingleSelect
                 id="table-corporation"
                 options={[
@@ -559,7 +430,7 @@ export function FeeManagePage() {
                 저장 ({modifiedCount}건)
               </Button>
             )}
-            <div css={css({ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: 'auto' })}>
+            <div className={s.filterRowRight}>
               <Button
                 variant={tableCriteria === 'product' ? 'primary' : 'secondary'}
                 size="small"
@@ -584,7 +455,7 @@ export function FeeManagePage() {
             </div>
           </div>
 
-          <div css={tableWrap}>
+          <div className={s.tableWrap}>
           <ProductFeeTable
             filteredFees={filteredFees}
             currentFees={currentFees}
@@ -605,8 +476,8 @@ export function FeeManagePage() {
           </div>
         </div>
 
-        <aside css={rightPanel}>
-          <div css={css({ display: 'flex', gap: theme.spacing(1), marginBottom: theme.spacing(3) })}>
+        <aside className={s.rightPanel}>
+          <div className={s.filterRowInner} style={{ marginBottom: 12 }}>
             <Button
               variant={rightPanelMode === 'product' ? 'primary' : 'secondary'}
               size="small"
@@ -625,9 +496,9 @@ export function FeeManagePage() {
 
           {rightPanelMode === 'product' ? (
             <>
-              <h3 css={css({ fontSize: 16, marginBottom: theme.spacing(3) })}>수수료 추가</h3>
+              <h3 className={s.sectionTitle}>수수료 추가</h3>
 
-              <div css={formField}>
+              <div className={s.formField}>
                 <label htmlFor="product-search">품목명 검색</label>
                 <input
                   id="product-search"
@@ -638,7 +509,7 @@ export function FeeManagePage() {
                   aria-label="품목명 검색"
                 />
               </div>
-              <div css={formField}>
+              <div className={s.formField}>
                 <label htmlFor="product-select">품목 선택 *</label>
                 <SingleSelect
                   id="product-select"
@@ -658,11 +529,11 @@ export function FeeManagePage() {
                   aria-label="추가할 품목 선택"
                 />
               </div>
-              <div css={formField}>
+              <div className={s.formField}>
                 <label htmlFor="new-fee-rate">기본 수수료 (%)</label>
-                <div css={css({ display: 'flex', alignItems: 'center', gap: 4 })}>
+                <div className={s.filterRowInner}>
                   <input
-                    css={feeInputStyles}
+                    className={s.feeInputStyles}
                     id="new-fee-rate"
                     type="number"
                     min={0}
@@ -673,16 +544,16 @@ export function FeeManagePage() {
                     placeholder="0"
                     aria-label="수수료율 입력"
                   />
-                  <span css={css({ fontSize: 14, color: theme.colors.textMuted })}>%</span>
+                  <span className={s.feePercent}>%</span>
                 </div>
               </div>
-              <Button variant="primary" onClick={addProduct} css={css({ width: '100%' })}>
+              <Button variant="primary" onClick={addProduct} className={s.addButtonFull}>
                 수수료 추가
               </Button>
-              <div css={formField}>
+              <div className={s.formField}>
                 <label>수수료 엑셀 업로드</label>
                 <label
-                  css={excelUploadZone}
+                  className={s.excelUploadZone}
                   data-has-file={!!addProductForm.excelFileName}
                   htmlFor="fee-excel-upload"
                 >
@@ -707,34 +578,34 @@ export function FeeManagePage() {
                 variant="secondary"
                 size="small"
                 onClick={() => {}}
-                css={css({ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: theme.spacing(1) })}
+                className={s.excelDownloadBtn}
               >
                 <Download size={16} />
                 엑셀 양식 다운로드
               </Button>
               {addProductForm.error && (
-                <p css={css({ marginTop: theme.spacing(2), fontSize: 13, color: theme.colors.error })}>
+                <p className={s.addError}>
                   {addProductForm.error}
                 </p>
               )}
             </>
           ) : (
             <>
-          <h3 css={css({ fontSize: 16, marginBottom: theme.spacing(3) })}>이벤트 추가</h3>
-          <div css={formField}>
+          <h3 className={s.sectionTitle}>이벤트 추가</h3>
+          <div className={s.formField}>
             <label>품목</label>
-            <div css={css({ padding: theme.spacing(1.5), backgroundColor: theme.colors.background, borderRadius: theme.radius.md, fontSize: 14 })}>
+            <div className={s.eventProductBox}>
               {eventForm.productCode ? (
                 <span>
                   {currentFees.find((x) => x.productCode === eventForm.productCode)?.productName ?? eventForm.productCode}{' '}
-                  <span css={css({ color: theme.colors.textMuted, fontSize: 13 })}>({eventForm.productCode})</span>
+                  <span className={s.eventProductMuted}>({eventForm.productCode})</span>
                 </span>
               ) : (
-                <span css={css({ color: theme.colors.textMuted })}>좌측 표에서 품목을 선택하세요</span>
+                <span className={s.eventProductHint}>좌측 표에서 품목을 선택하세요</span>
               )}
             </div>
           </div>
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="event-type">이벤트 종류</label>
             <SingleSelect
               id="event-type"
@@ -749,7 +620,7 @@ export function FeeManagePage() {
           </div>
           {eventForm.type !== 'item' && (
             <>
-              <div css={formField}>
+              <div className={s.formField}>
                 <label htmlFor="event-corp">법인 *</label>
                 <SingleSelect
                   id="event-corp"
@@ -759,7 +630,7 @@ export function FeeManagePage() {
                 />
               </div>
               {eventForm.type === 'corporation_hospital' && (
-                <div css={formField}>
+                <div className={s.formField}>
                   <label htmlFor="event-hospital">병의원 *</label>
                   <SingleSelect
                     id="event-hospital"
@@ -771,7 +642,7 @@ export function FeeManagePage() {
               )}
             </>
           )}
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="event-name">이벤트 이름 *</label>
             <input
               id="event-name"
@@ -781,7 +652,7 @@ export function FeeManagePage() {
               placeholder="이벤트 이름"
             />
           </div>
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="event-priority">우선순위 (숫자 높을수록 최우선 적용)</label>
             <input
               id="event-priority"
@@ -791,8 +662,8 @@ export function FeeManagePage() {
               onChange={(e) => updateEventForm({ priority: Math.max(1, Number(e.target.value) || 1) })}
             />
           </div>
-          <div css={css({ display: 'flex', gap: theme.spacing(2), marginBottom: theme.spacing(3) })}>
-            <div css={[formField, css({ flex: 1 })]}>
+          <div className={s.dateRow}>
+            <div className={`${s.formField} ${s.formFieldFlex}`}>
               <label htmlFor="event-start">시작일 *</label>
               <input
                 id="event-start"
@@ -801,7 +672,7 @@ export function FeeManagePage() {
                 onChange={(e) => updateEventForm({ startDate: e.target.value })}
               />
             </div>
-            <div css={[formField, css({ flex: 1 })]}>
+            <div className={`${s.formField} ${s.formFieldFlex}`}>
               <label htmlFor="event-end">종료일 *</label>
               <input
                 id="event-end"
@@ -811,7 +682,7 @@ export function FeeManagePage() {
               />
             </div>
           </div>
-          <div css={formField}>
+          <div className={s.formField}>
             <Checkbox
               id="event-fixed-fee"
               checked={eventForm.isFixedFee}
@@ -827,7 +698,7 @@ export function FeeManagePage() {
             />
           </div>
           {eventForm.isFixedFee ? (
-            <div css={formField}>
+            <div className={s.formField}>
               <label htmlFor="event-fixed-rate">고정수수료율 (1~100)% *</label>
               <input
                 id="event-fixed-rate"
@@ -839,7 +710,7 @@ export function FeeManagePage() {
               />
             </div>
           ) : (
-            <div css={formField}>
+            <div className={s.formField}>
               <label htmlFor="event-add-rate">추가수수료율 (-100~100)% *</label>
               <input
                 id="event-add-rate"
@@ -852,7 +723,7 @@ export function FeeManagePage() {
               />
             </div>
           )}
-          <div css={formField}>
+          <div className={s.formField}>
             <label htmlFor="event-note">비고 (설명)</label>
             <textarea
               id="event-note"
@@ -861,8 +732,8 @@ export function FeeManagePage() {
               placeholder="설명"
             />
           </div>
-          <div css={css({ display: 'flex', gap: theme.spacing(2), marginTop: theme.spacing(1) })}>
-            <Button variant="primary" onClick={handleAddEvent} css={css({ flex: 1 })}>
+          <div className={s.eventActionsRow}>
+            <Button variant="primary" onClick={handleAddEvent} className={s.addEventBtnFlex}>
               이벤트 추가
             </Button>
             <Button variant="secondary" onClick={resetEventForm}>
@@ -870,7 +741,7 @@ export function FeeManagePage() {
             </Button>
           </div>
           {eventForm.error && (
-            <p css={css({ marginTop: theme.spacing(2), fontSize: 13, color: theme.colors.error })}>
+            <p className={s.addError}>
               {eventForm.error}
             </p>
           )}

@@ -1,5 +1,5 @@
 'use client';
-/** @jsxImportSource @emotion/react */
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/store/appStore';

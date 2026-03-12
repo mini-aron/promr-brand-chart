@@ -1,185 +1,14 @@
 'use client';
-/** @jsxImportSource @emotion/react */
 import { useCallback, useMemo, useState } from 'react';
-import { css } from '@emotion/react';
 import { HiOutlineX } from 'react-icons/hi';
 import { useApp } from '@/store/appStore';
 import { mockDealers } from '@/store/mockData';
 import type { Dealer } from '@/types';
-import { theme } from '@/theme';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
-
-const pageStyles = css({
-  '& h1': { marginBottom: theme.spacing(2) },
-  '& p': { marginBottom: theme.spacing(4) },
-});
-
-const headerRowWrap = css({
-  marginBottom: theme.spacing(4),
-});
-
-const modalOverlay = css({
-  position: 'fixed',
-  inset: 0,
-  backgroundColor: theme.colors.overlay,
-  zIndex: 1000,
-});
-
-const modalBox = css({
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  boxShadow: theme.shadow.md,
-  width: '100%',
-  maxWidth: 640,
-  maxHeight: '90vh',
-  overflow: 'auto',
-  padding: theme.spacing(4),
-  position: 'relative',
-});
-
-const modalHeaderWrap = css({
-  marginBottom: theme.spacing(4),
-  '& h2': { margin: 0, fontSize: 18, fontWeight: 600 },
-});
-
-const formSection = css({
-  '& label': {
-    display: 'block',
-    marginBottom: theme.spacing(1),
-    fontSize: 14,
-    fontWeight: 600,
-    color: theme.colors.text,
-  },
-  '& input[type="text"], & input[type="tel"], & input[type="email"]': {
-    width: '100%',
-    minHeight: 48,
-    padding: `0 ${theme.spacing(3)}px`,
-    fontSize: 14,
-    borderRadius: theme.radius.md,
-    border: `2px solid ${theme.colors.border}`,
-    marginBottom: theme.spacing(3),
-    '&:focus': { outline: 'none', borderColor: theme.colors.primary, boxShadow: `0 0 0 2px ${theme.colors.primary}20` },
-  },
-});
-
-const fileInputWrapper = css({
-  marginBottom: theme.spacing(3),
-});
-
-const fileInputLabel = css({
-  display: 'block',
-  marginBottom: theme.spacing(1),
-  fontSize: 14,
-  fontWeight: 600,
-  color: theme.colors.text,
-});
-
-const fileInput = css({
-  display: 'block',
-  width: '100%',
-  fontSize: 14,
-  padding: theme.spacing(2),
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  cursor: 'pointer',
-  '&:hover': {
-    borderColor: theme.colors.primary,
-  },
-  '&::file-selector-button': {
-    padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-    marginRight: theme.spacing(2),
-    border: 'none',
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.primary,
-    color: theme.colors.buttonText,
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: 'pointer',
-    '&:hover': {
-      backgroundColor: theme.colors.primaryHover,
-    },
-  },
-});
-
-const fileNameDisplay = css({
-  fontSize: 13,
-  color: theme.colors.textMuted,
-  marginTop: theme.spacing(0.5),
-});
-
-const modalActionsWrap = css({
-  marginTop: theme.spacing(4),
-  paddingTop: theme.spacing(3),
-  borderTop: `1px solid ${theme.colors.border}`,
-});
-
-const linkStyles = css({
-  color: theme.colors.primary,
-  textDecoration: 'none',
-  '&:hover': { textDecoration: 'underline' },
-});
-
-const fileActionGroup = css({
-  display: 'flex',
-  gap: theme.spacing(1),
-  alignItems: 'center',
-});
-
-const previewModalBox = css({
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  boxShadow: theme.shadow.md,
-  width: '90vw',
-  maxWidth: 1200,
-  maxHeight: '90vh',
-  overflow: 'auto',
-  padding: theme.spacing(4),
-  position: 'relative',
-});
-
-const previewContent = css({
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: 400,
-  '& img': {
-    maxWidth: '100%',
-    maxHeight: '70vh',
-    objectFit: 'contain',
-  },
-  '& iframe': {
-    width: '100%',
-    height: '70vh',
-    border: 'none',
-    borderRadius: theme.radius.md,
-  },
-});
-
-const linkButton = css({
-  color: theme.colors.primary,
-  background: 'none',
-  border: 'none',
-  padding: 0,
-  fontSize: 'inherit',
-  textDecoration: 'none',
-  cursor: 'pointer',
-  '&:hover': { textDecoration: 'underline' },
-});
-
-const confirmModalBox = css({
-  backgroundColor: theme.colors.surface,
-  borderRadius: theme.radius.lg,
-  boxShadow: theme.shadow.md,
-  width: '100%',
-  maxWidth: 480,
-  padding: theme.spacing(4),
-  position: 'relative',
-});
 
 export function DealerManagePage() {
   const { currentCorporationId } = useApp();
@@ -312,12 +141,12 @@ export function DealerManagePage() {
     ) => {
       if (url) {
         return (
-          <div css={fileActionGroup}>
-            <Button variant="ghost" size="small" css={linkButton} onClick={() => handlePreview(url, title)}>
+          <div className={s.fileActionGroup}>
+            <Button variant="ghost" size="small" className={s.linkButton} onClick={() => handlePreview(url, title)}>
               미리보기
             </Button>
-            <span css={css({ color: theme.colors.textMuted })}>|</span>
-            <a href={url} download css={linkStyles}>다운로드</a>
+            <span className={s.separator}>|</span>
+            <a href={url} download className={s.linkStyles}>다운로드</a>
           </div>
         );
       }
@@ -365,11 +194,11 @@ export function DealerManagePage() {
 
 
   return (
-    <div css={pageStyles}>
+    <div className={s.page}>
       <h1>계약관리</h1>
       <p>딜러(영업사원) 정보를 관리합니다.</p>
 
-      <Row justifyContent="space-between" alignItems="center" css={headerRowWrap}>
+      <Row justifyContent="space-between" alignItems="center" className={s.headerRowWrap}>
         <div />
         <Button variant="primary" onClick={() => setShowAddModal(true)}>
           딜러 추가
@@ -377,14 +206,14 @@ export function DealerManagePage() {
       </Row>
 
       {showAddModal && (
-        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={closeAddModal}>
-          <div css={modalBox} onClick={(e) => e.stopPropagation()}>
-            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
+        <Flex direction="row" alignItems="center" justifyContent="center" className={s.modalOverlay} onClick={closeAddModal}>
+          <div className={s.modalBox} onClick={(e) => e.stopPropagation()}>
+            <Row alignItems="center" justifyContent="space-between" className={s.modalHeaderWrap}>
               <h2 id="add-modal-title">딜러 추가</h2>
               <Button variant="ghost" size="icon" onClick={closeAddModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </Row>
 
-            <div css={formSection}>
+            <div className={s.formSection}>
               <label htmlFor="new-salesperson-name">영업사원명 *</label>
               <input
                 id="new-salesperson-name"
@@ -412,70 +241,70 @@ export function DealerManagePage() {
                 onChange={(e) => setNewEmail(e.target.value)}
               />
 
-              <div css={fileInputWrapper}>
-                <label htmlFor="new-report-cert" css={fileInputLabel}>신고필증</label>
+              <div className={s.fileInputWrapper}>
+                <label htmlFor="new-report-cert" className={s.fileInputLabel}>신고필증</label>
                 <input
                   id="new-report-cert"
                   type="file"
                   accept="image/*,.pdf"
-                  css={fileInput}
+                  className={s.fileInput}
                   onChange={(e) => setNewReportCertFile(e.target.files?.[0] || null)}
                 />
                 {newReportCertFile && (
-                  <div css={fileNameDisplay}>선택된 파일: {newReportCertFile.name}</div>
+                  <div className={s.fileNameDisplay}>선택된 파일: {newReportCertFile.name}</div>
                 )}
               </div>
 
-              <div css={fileInputWrapper}>
-                <label htmlFor="new-contract" css={fileInputLabel}>계약서</label>
+              <div className={s.fileInputWrapper}>
+                <label htmlFor="new-contract" className={s.fileInputLabel}>계약서</label>
                 <input
                   id="new-contract"
                   type="file"
                   accept="image/*,.pdf"
-                  css={fileInput}
+                  className={s.fileInput}
                   onChange={(e) => setNewContractFile(e.target.files?.[0] || null)}
                 />
                 {newContractFile && (
-                  <div css={fileNameDisplay}>선택된 파일: {newContractFile.name}</div>
+                  <div className={s.fileNameDisplay}>선택된 파일: {newContractFile.name}</div>
                 )}
               </div>
 
-              <div css={fileInputWrapper}>
-                <label htmlFor="new-subcontract-contract" css={fileInputLabel}>재위탁계약서</label>
+              <div className={s.fileInputWrapper}>
+                <label htmlFor="new-subcontract-contract" className={s.fileInputLabel}>재위탁계약서</label>
                 <input
                   id="new-subcontract-contract"
                   type="file"
                   accept="image/*,.pdf"
-                  css={fileInput}
+                  className={s.fileInput}
                   onChange={(e) => setNewSubcontractContractFile(e.target.files?.[0] || null)}
                 />
                 {newSubcontractContractFile && (
-                  <div css={fileNameDisplay}>선택된 파일: {newSubcontractContractFile.name}</div>
+                  <div className={s.fileNameDisplay}>선택된 파일: {newSubcontractContractFile.name}</div>
                 )}
               </div>
 
-              <div css={fileInputWrapper}>
-                <label htmlFor="new-business-license" css={fileInputLabel}>사업자 등록증</label>
+              <div className={s.fileInputWrapper}>
+                <label htmlFor="new-business-license" className={s.fileInputLabel}>사업자 등록증</label>
                 <input
                   id="new-business-license"
                   type="file"
                   accept="image/*,.pdf"
-                  css={fileInput}
+                  className={s.fileInput}
                   onChange={(e) => setNewBusinessLicenseFile(e.target.files?.[0] || null)}
                 />
                 {newBusinessLicenseFile && (
-                  <div css={fileNameDisplay}>선택된 파일: {newBusinessLicenseFile.name}</div>
+                  <div className={s.fileNameDisplay}>선택된 파일: {newBusinessLicenseFile.name}</div>
                 )}
               </div>
             </div>
 
             {addError && (
-              <p css={css({ marginTop: theme.spacing(2), fontSize: 14, color: theme.colors.error })}>
+              <p className={s.addError}>
                 {addError}
               </p>
             )}
 
-            <Row gap={theme.spacing(2)} justifyContent="flex-end" css={modalActionsWrap}>
+            <Row gap={8} justifyContent="flex-end" className={s.modalActionsWrap}>
               <Button variant="secondary" onClick={closeAddModal}>취소</Button>
               <Button variant="primary" onClick={handleAdd}>추가</Button>
             </Row>
@@ -484,13 +313,13 @@ export function DealerManagePage() {
       )}
 
       {previewUrl && (
-        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={closePreviewModal}>
-          <div css={previewModalBox} onClick={(e) => e.stopPropagation()}>
-            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
+        <Flex direction="row" alignItems="center" justifyContent="center" className={s.modalOverlay} onClick={closePreviewModal}>
+          <div className={s.previewModalBox} onClick={(e) => e.stopPropagation()}>
+            <Row alignItems="center" justifyContent="space-between" className={s.modalHeaderWrap}>
               <h2 id="preview-modal-title">{previewTitle}</h2>
               <Button variant="ghost" size="icon" onClick={closePreviewModal} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </Row>
-            <div css={previewContent}>
+            <div className={s.previewContent}>
               <img src={previewUrl} alt={previewTitle} />
             </div>
           </div>
@@ -498,19 +327,19 @@ export function DealerManagePage() {
       )}
 
       {deleteConfirmDealer && (
-        <Flex direction="row" alignItems="center" justifyContent="center" css={modalOverlay} onClick={handleDeleteCancel}>
-          <div css={confirmModalBox} onClick={(e) => e.stopPropagation()}>
-            <Row alignItems="center" justifyContent="space-between" css={modalHeaderWrap}>
+        <Flex direction="row" alignItems="center" justifyContent="center" className={s.modalOverlay} onClick={handleDeleteCancel}>
+          <div className={s.confirmModalBox} onClick={(e) => e.stopPropagation()}>
+            <Row alignItems="center" justifyContent="space-between" className={s.modalHeaderWrap}>
               <h2 id="delete-modal-title">딜러 삭제</h2>
               <Button variant="ghost" size="icon" onClick={handleDeleteCancel} aria-label="닫기"><HiOutlineX size={18} /></Button>
             </Row>
-            <p css={css({ marginBottom: theme.spacing(3), color: theme.colors.text })}>
+            <p className={s.deleteConfirmText}>
               <strong>{deleteConfirmDealer.salespersonName}</strong> 딜러를 삭제하시겠습니까?
             </p>
-            <p css={css({ fontSize: 14, color: theme.colors.textMuted, marginBottom: theme.spacing(4) })}>
+            <p className={s.deleteConfirmTextMuted}>
               이 작업은 되돌릴 수 없습니다.
             </p>
-            <Row gap={theme.spacing(2)} justifyContent="flex-end" css={modalActionsWrap}>
+            <Row gap={8} justifyContent="flex-end" className={s.modalActionsWrap}>
               <Button variant="secondary" onClick={handleDeleteCancel}>취소</Button>
               <Button variant="danger" onClick={handleDeleteConfirm}>삭제</Button>
             </Row>
@@ -525,7 +354,7 @@ export function DealerManagePage() {
         className={s.dealerTableWrap}
       />
       {filteredDealers.length === 0 && (
-        <p css={css({ marginTop: theme.spacing(2), color: theme.colors.textMuted })}>
+        <p className={s.emptyMessage}>
           등록된 딜러가 없습니다.
         </p>
       )}

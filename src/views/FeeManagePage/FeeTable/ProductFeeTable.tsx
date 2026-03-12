@@ -1,6 +1,4 @@
-/** @jsxImportSource @emotion/react */
 import React, { useCallback, useMemo } from 'react';
-import { css } from '@emotion/react';
 import { clsx } from 'clsx';
 import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { ProductFee, FeeEvent } from '@/types';
@@ -8,161 +6,6 @@ import { theme } from '@/theme';
 import * as tableStyles from '@/style/TableStyles.css';
 import { ProductFeeTableSection } from './ProductFeeTableSection';
 import * as s from './ProductFeeTable.css';
-
-const finalFeeDivider = css({
-  borderRight: `2px solid ${theme.colors.text} !important`,
-});
-
-const expandCell = css({
-  width: 36,
-  minWidth: 36,
-  height: 28,
-  minHeight: 28,
-  padding: theme.spacing(0.5),
-  verticalAlign: 'middle',
-  cursor: 'pointer',
-  textAlign: 'center',
-  lineHeight: 1,
-  '&:hover': { backgroundColor: `${theme.colors.primary}08` },
-});
-
-const expandCellCount = css({
-  display: 'inline-block',
-  minWidth: '1.5em',
-  fontSize: 10,
-  fontVariantNumeric: 'tabular-nums',
-  textAlign: 'center',
-  color: theme.colors.textMuted,
-  marginTop: 1,
-});
-
-const feeInputStyles = css({
-  width: 72,
-  minHeight: 28,
-  padding: `0 ${theme.spacing(1.5)}px`,
-  fontSize: 13,
-  fontWeight: 500,
-  borderRadius: theme.radius.md,
-  border: `2px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.surface,
-  color: theme.colors.text,
-  textAlign: 'right',
-  '&:focus': {
-    outline: 'none',
-    borderColor: theme.colors.primary,
-    boxShadow: `0 0 0 3px ${theme.colors.primary}20`,
-  },
-  '&::placeholder': { color: theme.colors.textMuted },
-});
-
-const productCodeInputStyles = css({
-  width: '100%',
-  minHeight: 28,
-  padding: theme.spacing(0.75),
-  fontSize: 13,
-  borderRadius: 0,
-  border: 'none',
-  backgroundColor: 'transparent',
-  color: theme.colors.text,
-  boxSizing: 'border-box',
-  display: 'block',
-  '&:focus': {
-    outline: 'none',
-    boxShadow: 'inset 0 0 0 2px ' + theme.colors.primary,
-  },
-});
-
-const feeInputCell = css({
-  '& .fee-suffix': {
-    marginLeft: 4,
-    fontSize: 13,
-    color: theme.colors.textMuted,
-  },
-});
-
-const eventSubRow = (isExpanded: boolean) =>
-  css({
-    backgroundColor: theme.colors.background,
-    '& td': {
-      padding: 0,
-      borderBottom: isExpanded ? `1px solid ${theme.colors.border}` : 'none',
-      borderTop: 'none',
-      verticalAlign: 'top',
-      ...(isExpanded && { overflow: 'visible' }),
-      ...(!isExpanded && { lineHeight: 0, fontSize: 0 }),
-    },
-  });
-
-const eventExpandWrap = (isExpanded: boolean) =>
-  css({
-    overflow: isExpanded ? 'visible' : 'hidden',
-    maxHeight: isExpanded ? 1500 : 0,
-    opacity: isExpanded ? 1 : 0,
-    transition: 'max-height 0.35s ease-out, opacity 0.25s ease-out',
-    ...(isExpanded && { padding: theme.spacing(1.5), paddingTop: theme.spacing(1) }),
-    ...(!isExpanded && { margin: 0, padding: 0, minHeight: 0 }),
-  });
-
-const eventTableWrap = css({
-  width: '100%',
-  tableLayout: 'fixed',
-  borderCollapse: 'collapse',
-  fontSize: 12,
-  '& th, & td': {
-    padding: theme.spacing(1),
-    paddingLeft: theme.spacing(1.5),
-    textAlign: 'left',
-    borderBottom: `1px solid ${theme.colors.border}`,
-    verticalAlign: 'middle',
-  },
-  '& th:nth-of-type(3), & td:nth-of-type(3), & th:nth-of-type(6), & td:nth-of-type(6), & th:nth-of-type(7), & td:nth-of-type(7), & th:nth-of-type(8), & td:nth-of-type(8), & th:nth-of-type(9), & td:nth-of-type(9)': {
-    textAlign: 'center',
-  },
-  '& th:nth-of-type(5), & td:nth-of-type(5)': {
-    textAlign: 'right',
-    fontVariantNumeric: 'tabular-nums',
-    borderRight: `2px solid ${theme.colors.text}`,
-  },
-  '& th': {
-    backgroundColor: theme.colors.background,
-    fontWeight: 600,
-    color: theme.colors.textMuted,
-    fontSize: 11,
-  },
-  '& tbody tr:last-child td': { borderBottom: 'none' },
-});
-
-const eventFeeRateBadgeBase = css({ fontSize: 12, fontWeight: 600 });
-
-const finalFeeResultWrap = css({
-  backgroundColor: theme.colors.surface,
-  '& tr td': { borderTop: `1px solid ${theme.colors.border}` },
-});
-
-const finalFeeResultRow = css({
-  fontSize: 13,
-  '& td': { borderBottom: 'none' },
-  '& .final-fee-title': { fontWeight: 600 },
-  '& .final-fee-rate': { fontWeight: 600, fontVariantNumeric: 'tabular-nums', fontSize: 14 },
-});
-
-const thBase = css({
-  padding: theme.spacing(0.75),
-  borderBottom: `1px solid ${theme.colors.border}`,
-  borderRight: `1px solid ${theme.colors.border}`,
-  backgroundColor: theme.colors.background,
-  fontWeight: 600,
-});
-
-const corpSectionHeader = css({
-  padding: theme.spacing(2),
-  paddingBottom: theme.spacing(1),
-  fontSize: 15,
-  fontWeight: 700,
-  color: theme.colors.text,
-  borderBottom: `2px solid ${theme.colors.border}`,
-  marginBottom: 0,
-});
 
 export interface ProductFeeTableProps {
   filteredFees: ProductFee[];
@@ -403,19 +246,21 @@ export function ProductFeeTable({
       onDeleteEvent,
       onSwitchToEventMode,
       tableWrapClassName,
-      finalFeeDivider,
-      expandCell,
-      expandCellCount,
-      feeInputStyles,
-      productCodeInputStyles,
-      feeInputCell,
-      thBase,
-      eventSubRow,
-      eventExpandWrap,
-      eventTableWrap,
-      eventFeeRateBadgeBase,
-      finalFeeResultWrap,
-      finalFeeResultRow,
+      finalFeeDivider: s.finalFeeDivider,
+      expandCell: s.expandCell,
+      expandCellCount: s.expandCellCount,
+      feeInputStyles: s.feeInputStyles,
+      productCodeInputStyles: s.productCodeInputStyles,
+      feeInputCell: s.feeInputCell,
+      thBase: s.thBase,
+      eventSubRow: s.eventSubRow,
+      eventSubRowCollapsed: s.eventSubRowCollapsed,
+      eventExpandWrap: s.eventExpandWrap,
+      eventExpandWrapCollapsed: s.eventExpandWrapCollapsed,
+      eventTableWrap: s.eventTableWrap,
+      eventFeeRateBadgeBase: s.eventFeeRateBadgeBase,
+      finalFeeResultWrap: s.finalFeeResultWrap,
+      finalFeeResultRow: s.finalFeeResultRow,
     }),
     [
       currentFees,
@@ -446,9 +291,9 @@ export function ProductFeeTable({
   if (tableCriteria === 'corporation') {
     const corpsToShow = mockCorporations.filter((c) => productsByCorporation.has(c.id));
     return (
-      <div css={css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) })}>
+      <div className={s.corpSectionWrap}>
         {corpsToShow.length === 0 ? (
-          <p css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
+          <p className={s.emptyMessage}>
             법인 이벤트가 있는 항목이 없습니다.
           </p>
         ) : (
@@ -457,7 +302,7 @@ export function ProductFeeTable({
           const productCodes = productsByCorporation.get(corp.id)!;
           return (
             <div key={corp.id}>
-              <h3 css={corpSectionHeader}>{corp.name}</h3>
+              <h3 className={s.corpSectionHeader}>{corp.name}</h3>
               <ProductFeeTableSection
                 data={filteredFees.filter((p) => productCodes.has(p.productCode))}
                 scopeOverride={scope}
@@ -480,9 +325,9 @@ export function ProductFeeTable({
       if (corp && hosp) hospitalSections.push({ corp, hospital: hosp, productCodes });
     });
     return (
-      <div css={css({ display: 'flex', flexDirection: 'column', gap: theme.spacing(3) })}>
+      <div className={s.corpSectionWrap}>
         {hospitalSections.length === 0 ? (
-          <p css={css({ padding: theme.spacing(4), textAlign: 'center', color: theme.colors.textMuted })}>
+          <p className={s.emptyMessage}>
             병원 이벤트가 있는 항목이 없습니다.
           </p>
         ) : (
@@ -490,7 +335,7 @@ export function ProductFeeTable({
           const scope: ScopeForCompute = { type: 'corporation_hospital', corporationId: corp.id, hospitalId: hospital.id };
           return (
             <div key={`${corp.id}-${hospital.id}`}>
-              <h3 css={corpSectionHeader}>{corp.name} / {hospital.name}</h3>
+              <h3 className={s.corpSectionHeader}>{corp.name} / {hospital.name}</h3>
               <ProductFeeTableSection
                 data={filteredFees.filter((p) => productCodes.has(p.productCode))}
                 scopeOverride={scope}
