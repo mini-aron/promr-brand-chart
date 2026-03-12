@@ -87,6 +87,11 @@ const STATUS_LABEL: Record<string, string> = {
   rejected: '승인불가',
 };
 
+const PRODUCT_FILTER_MODE_OPTIONS = [
+  { label: '허용품목 설정', value: 'allowed' },
+  { label: '금지품목 설정', value: 'prohibited' },
+];
+
 export function FilterApprovalPage() {
   const { currentPharmaId } = useApp();
   const corporations = mockCorporations;
@@ -102,7 +107,7 @@ export function FilterApprovalPage() {
   }, []);
 
   const updateFilterRequest = useCallback(
-    (id: string, updates: Partial<Pick<FilterRequest, 'corporationId' | 'hospitalId' | 'status' | 'additionalFeeRate'>>) => {
+    (id: string, updates: Partial<Pick<FilterRequest, 'corporationId' | 'hospitalId' | 'status' | 'additionalFeeRate' | 'productFilterMode'>>) => {
       const now = new Date().toISOString().slice(0, 19);
       setFilterRequests((prev) =>
         prev.map((r) =>
@@ -121,6 +126,7 @@ export function FilterApprovalPage() {
         requestMessage?: string;
         status?: FilterRequest['status'];
         additionalFeeRate?: number;
+        productFilterMode?: 'prohibited' | 'allowed';
       }
     ) => {
       const id = `fr-${Date.now()}`;
@@ -143,6 +149,7 @@ export function FilterApprovalPage() {
           createdBy: 'admin',
           updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
           additionalFeeRate: opts?.additionalFeeRate,
+          productFilterMode: opts?.productFilterMode,
         },
       ]);
     },
@@ -154,6 +161,7 @@ export function FilterApprovalPage() {
   const [selectedHospitalId, setSelectedHospitalId] = useState('');
   const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
   const [addAdditionalFeeRate, setAddAdditionalFeeRate] = useState(0);
+  const [addProductFilterMode, setAddProductFilterMode] = useState<'prohibited' | 'allowed'>('allowed');
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const currentMonthKey = useMemo(() => getCurrentMonthKey(), []);
   const [deadlineDay, setDeadlineDay] = useState(0);
@@ -324,9 +332,10 @@ export function FilterApprovalPage() {
     addFilterRequest(addCorpId, currentPharmaId, selectedHospitalId, {
       status: addStatus,
       additionalFeeRate: addAdditionalFeeRate,
+      productFilterMode: addProductFilterMode,
     });
     setSelectedHospitalId('');
-  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addAdditionalFeeRate, addFilterRequest]);
+  }, [addCorpId, selectedHospitalId, currentPharmaId, addStatus, addAdditionalFeeRate, addProductFilterMode, addFilterRequest]);
 
 
   const maxDay = useMemo(() => {
@@ -484,6 +493,23 @@ export function FilterApprovalPage() {
                   aria-label="추가수수료율"
                 />
               </div>
+              <div className={s.formField}>
+                <Tooltip description="허용품목 설정 또는 금지품목 설정 중 하나만 선택합니다.">
+                  <label htmlFor="detail-product-filter-mode">품목 설정</label>
+                </Tooltip>
+                <SingleSelect
+                  id="detail-product-filter-mode"
+                  options={PRODUCT_FILTER_MODE_OPTIONS}
+                  selected={selectedRequest.productFilterMode ?? 'allowed'}
+                  onChange={(v) =>
+                    updateFilterRequest(selectedRequest.id, {
+                      productFilterMode: (v as 'prohibited' | 'allowed') ?? 'allowed',
+                    })
+                  }
+                  placeholder="선택"
+                  aria-label="품목 설정"
+                />
+              </div>
               <div className={s.detailSection}>
                 <div className={s.detailLabel}>요청 일시</div>
                 <div className={s.detailValue}>{formatDateTime(selectedRequest.requestedAt)}</div>
@@ -577,9 +603,17 @@ export function FilterApprovalPage() {
           </div>
 
           <div className={s.formField}>
-              <Tooltip description="금지·허용 품목 설정" >
-                <label>금지·허용 품목 설정</label>
-              </Tooltip>
+            <Tooltip description="허용품목 설정 또는 금지품목 설정 중 하나만 선택합니다.">
+              <label htmlFor="filter-add-product-filter-mode">품목 설정</label>
+            </Tooltip>
+            <SingleSelect
+              id="filter-add-product-filter-mode"
+              options={PRODUCT_FILTER_MODE_OPTIONS}
+              selected={addProductFilterMode}
+              onChange={(v) => setAddProductFilterMode((v as 'prohibited' | 'allowed') ?? 'allowed')}
+              placeholder="선택"
+              aria-label="품목 설정"
+            />
           </div>
           <Button
             variant="primary"

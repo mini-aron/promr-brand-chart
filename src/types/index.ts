@@ -135,6 +135,8 @@ export interface FilterRequest {
   representativeName?: string;
   /** 추가수수료 - 기본수수료에 추가 적용 (-100~100 %) */
   additionalFeeRate?: number;
+  /** 금지·허용 품목 설정: 금지(prohibited) | 허용(allowed) 둘 중 하나 */
+  productFilterMode?: 'prohibited' | 'allowed';
 }
 
 /** 법인 초대 정보 */
