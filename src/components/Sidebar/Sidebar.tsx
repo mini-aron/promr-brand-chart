@@ -38,6 +38,7 @@ const pharmaNavItems: NavItem[] = [
     children: [
       { to: '/hospitals', label: '병의원 관리' },
       { to: '/fees', label: '수수료관리' },
+      { to: '/corp-manage', label: '법인 관리' },
     ],
   },
   { to: '/aggregate', label: '정산확인' },

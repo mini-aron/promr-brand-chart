@@ -1,4 +1,4 @@
-import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest, Dealer, Pharma, FeeEvent } from '@/types';
+import type { Corporation, Hospital, SalesRow, PrescriptionUpload, ProductFee, FilterRequest, Dealer, Pharma, FeeEvent, CorpInvitation } from '@/types';
 
 /** ========== 더미: 제약사 ========== */
 export const mockPharmas: Pharma[] = [
@@ -140,6 +140,14 @@ export const mockFilterRequests: FilterRequest[] = [
   { id: 'fr-3', corporationId: 'corp-2', hospitalId: 'h-2', status: 'pending', requestedAt: '2026-02-23T14:00:00', createdAt: '2026-02-23T14:00:00', createdBy: MOCK_USER },
   { id: 'fr-4', corporationId: 'corp-2', hospitalId: 'h-6', status: 'approved', requestedAt: '2026-02-22T10:00:00', processedAt: '2026-02-23T09:00:00', createdAt: '2026-02-22T10:00:00', updatedAt: '2026-02-23T09:00:00', createdBy: MOCK_USER, updatedBy: MOCK_USER },
   { id: 'fr-5', corporationId: 'corp-3', hospitalId: 'h-3', status: 'rejected', requestedAt: '2026-02-21T16:00:00', processedAt: '2026-02-22T11:00:00', createdAt: '2026-02-21T16:00:00', updatedAt: '2026-02-22T11:00:00', createdBy: MOCK_USER, updatedBy: MOCK_USER },
+];
+
+/** ========== 더미: 법인 초대 ========== */
+export const mockCorpInvitations: CorpInvitation[] = [
+  { id: 'inv-1', pharmaId: 'pharma-1', inviteCode: 'INV-A1B2C3D4', status: 'accepted', corporationId: 'corp-1', invitedAt: '2026-01-05T10:00:00', invitedEmail: 'admin@corp1.com' },
+  { id: 'inv-2', pharmaId: 'pharma-1', inviteCode: 'INV-E5F6G7H8', status: 'accepted', corporationId: 'corp-2', invitedAt: '2026-01-10T14:00:00', invitedEmail: 'admin@corp2.com' },
+  { id: 'inv-3', pharmaId: 'pharma-1', inviteCode: 'INV-I9J0K1L2', status: 'accepted', corporationId: 'corp-3', invitedAt: '2026-01-15T09:00:00' },
+  { id: 'inv-4', pharmaId: 'pharma-1', inviteCode: 'INV-M3N4O5P6', status: 'pending', invitedAt: '2026-01-20T11:00:00', invitedEmail: 'admin@newcorp.com' },
 ];
 
 /** ========== 더미: 딜러(영업사원) ========== */

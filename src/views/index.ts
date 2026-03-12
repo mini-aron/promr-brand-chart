@@ -13,3 +13,4 @@ export { AggregatePage } from './AggregatePage';
 export { SettlementByCorpPage } from './SettlementByCorpPage';
 export { FilterRequestPage } from './FilterRequestPage';
 export { FilterApprovalPage } from './FilterApprovalPage';
+export { CorpManagePage } from './CorpManagePage';

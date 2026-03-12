@@ -133,6 +133,20 @@ export interface FilterRequest {
   representativeName?: string;
 }
 
+/** 법인 초대 정보 */
+export interface CorpInvitation {
+  id: string;
+  pharmaId: string;
+  inviteCode: string;
+  /** pending: 초대됨, accepted: 가입 완료 */
+  status: 'pending' | 'accepted';
+  invitedAt: string;
+  /** 가입 완료 시 연결된 법인 ID */
+  corporationId?: string;
+  /** 초대 메일 발송 대상 (선택) */
+  invitedEmail?: string;
+}
+
 /** 딜러(영업사원) 정보 */
 export interface Dealer {
   id: string;
