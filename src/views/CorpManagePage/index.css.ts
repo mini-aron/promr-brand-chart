@@ -67,21 +67,20 @@ export const inviteCode = style({ fontSize: 16, fontWeight: 600, letterSpacing: 
 
 export const inviteActions = style({ display: 'flex', flexDirection: 'column', gap: 8 });
 export const actionButton = style({ display: 'flex', alignItems: 'center', gap: 6 });
-export const mailRow = style({ display: 'flex', flexDirection: 'column', gap: 8 });
+export const mailRow = style({ display: 'flex', gap: 8, alignItems: 'center' });
 export const emailInput = style({
-  width: '100%',
-  minHeight: 64,
+  flex: 1,
+  minWidth: 0,
   padding: '8px 10px',
   fontSize: 14,
   borderRadius: 'var(--radius-md)',
   border: '2px solid var(--color-border)',
-  resize: 'vertical',
 });
 globalStyle(`${emailInput}:focus`, {
   outline: 'none',
   borderColor: 'var(--color-primary)',
 });
-export const mailButton = style({ display: 'flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start' });
+export const mailButton = style({ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 });
 export const resetLink = style({ marginTop: 12, width: '100%' });
 
 const statusBase = style({

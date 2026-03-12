@@ -101,16 +101,12 @@ export function CorpManagePage() {
 
   const handleSendMail = useCallback(() => {
     if (!displayCode) return;
-    const emails = inviteEmail
-      .split(/[\s,;\n]+/)
-      .map((e) => e.trim())
-      .filter((e) => e.length > 0);
-    if (emails.length === 0) {
+    const email = inviteEmail.trim();
+    if (!email) {
       alert('이메일 주소를 입력하세요.');
       return;
     }
-    const to = emails.join(',');
-    const mailto = `mailto:${to}?subject=${encodeURIComponent('PROPF 법인 초대코드')}&body=${encodeURIComponent(`안녕하세요.\n\n아래 초대코드로 PROPF에 가입해 주세요.\n\n초대코드: ${displayCode}`)}`;
+    const mailto = `mailto:${email}?subject=${encodeURIComponent('PROPF 법인 초대코드')}&body=${encodeURIComponent(`안녕하세요.\n\n아래 초대코드로 PROPF에 가입해 주세요.\n\n초대코드: ${displayCode}`)}`;
     window.location.href = mailto;
     setMailSent(true);
   }, [displayCode, inviteEmail]);
@@ -186,12 +182,12 @@ export function CorpManagePage() {
                   {copySuccess ? '복사됨' : '클립보드 복사'}
                 </Button>
                 <div className={s.mailRow}>
-                  <textarea
-                    placeholder="이메일 주소 (쉼표, 줄바꿈으로 여러 개 입력)"
+                  <input
+                    type="email"
+                    placeholder="이메일 주소"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
                     className={s.emailInput}
-                    rows={3}
                     aria-label="초대 이메일"
                   />
                   <Button
