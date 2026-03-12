@@ -11,8 +11,6 @@ import { Input } from "@/components/Common/Input";
 import { Column, Row } from "@/components/Common/Flex";
 import { Tooltip } from "@/components/Common/Tooltip";
 
-type StatusStyles = { statusAccepted: string; statusPending: string };
-
 function generateInviteCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "INV-";
@@ -36,11 +34,6 @@ function formatDateTime(iso: string): string {
     return iso;
   }
 }
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "대기",
-  accepted: "가입완료",
-};
 
 export function CorpManagePage() {
   const { currentPharmaId } = useApp();
@@ -117,23 +110,6 @@ export function CorpManagePage() {
   const columnHelper = createColumnHelper<CorpInvitation>();
   const columns = useMemo(
     () => [
-      columnHelper.accessor("status", {
-        header: "상태",
-        cell: (info) => {
-          const styles = s as StatusStyles;
-          return (
-            <span
-              className={
-                info.getValue() === "accepted"
-                  ? styles.statusAccepted
-                  : styles.statusPending
-              }
-            >
-              {STATUS_LABEL[info.getValue()] ?? info.getValue()}
-            </span>
-          );
-        },
-      }),
       columnHelper.accessor(
         (r) => r.corporationId && getCorpName(r.corporationId),
         {
