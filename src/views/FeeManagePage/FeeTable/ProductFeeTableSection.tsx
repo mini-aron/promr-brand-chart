@@ -60,9 +60,7 @@ export interface ProductFeeTableSectionProps {
   feeInputCell: string;
   thBase: string;
   eventSubRow: string;
-  eventSubRowCollapsed: string;
   eventExpandWrap: string;
-  eventExpandWrapCollapsed: string;
   eventTableWrap: string;
   eventFeeRateBadgeBase: string;
   finalFeeResultWrap: string;
@@ -103,9 +101,7 @@ export function ProductFeeTableSection({
   feeInputCell,
   thBase,
   eventSubRow,
-  eventSubRowCollapsed,
   eventExpandWrap,
-  eventExpandWrapCollapsed,
   eventTableWrap,
   eventFeeRateBadgeBase,
   finalFeeResultWrap,
@@ -337,11 +333,11 @@ export function ProductFeeTableSection({
                     );
                   })}
                 </tr>
-                {hasEvents && (
-                  <tr className={isExpanded ? eventSubRow : eventSubRowCollapsed}>
+                {hasEvents && isExpanded && (
+                  <tr className={eventSubRow}>
                     <td colSpan={colCount}>
-                      <div className={isExpanded ? eventExpandWrap : eventExpandWrapCollapsed}>
-                        {isExpanded && productEvents.length > 0 && (
+                      <div className={eventExpandWrap}>
+                        {productEvents.length > 0 && (
                           <>
                             <div className={s.eventHeaderRow}>
                               <p style={{ margin: 0, fontSize: 11, color: 'var(--color-text-muted)' }}>

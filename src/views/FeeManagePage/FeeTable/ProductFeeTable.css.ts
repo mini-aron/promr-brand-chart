@@ -81,17 +81,6 @@ globalStyle(`${eventSubRow} td`, {
   verticalAlign: 'top',
   overflow: 'visible',
 });
-export const eventSubRowCollapsed = style({
-  backgroundColor: 'var(--color-background)',
-});
-globalStyle(`${eventSubRowCollapsed} td`, {
-  padding: 0,
-  borderBottom: 'none',
-  borderTop: 'none',
-  verticalAlign: 'top',
-  lineHeight: 0,
-  fontSize: 0,
-});
 export const eventExpandWrap = style({
   overflow: 'visible',
   maxHeight: 1500,
@@ -99,15 +88,6 @@ export const eventExpandWrap = style({
   transition: 'max-height 0.35s ease-out, opacity 0.25s ease-out',
   padding: 6,
   paddingTop: 4,
-});
-export const eventExpandWrapCollapsed = style({
-  overflow: 'hidden',
-  maxHeight: 0,
-  opacity: 0,
-  transition: 'max-height 0.35s ease-out, opacity 0.25s ease-out',
-  margin: 0,
-  padding: 0,
-  minHeight: 0,
 });
 
 export const eventTableWrap = style({
