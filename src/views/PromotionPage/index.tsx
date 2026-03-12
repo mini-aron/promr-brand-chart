@@ -30,8 +30,7 @@ export function PromotionPage() {
     <div className={s.page}>
       <header className={s.header}>
         <Link href="/promotion" className={s.logo} aria-label="PROPF 홈">
-          <span className={s.logoPro}>PRO</span>
-          <span className={s.logoPf}>PF</span>
+          <img src="/logo.svg" alt="PROPF" width={122} height={56} className={s.logoImg} />
         </Link>
         <Link href="/login">
           <Button variant="primary" size="default" className={s.headerLoginButton}>

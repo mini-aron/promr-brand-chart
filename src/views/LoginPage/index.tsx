@@ -35,10 +35,7 @@ export function LoginPage() {
   return (
     <div className={s.page}>
       <div className={s.card}>
-        <span className={s.logo}>
-          <span className={s.logoPro}>PRO</span>
-          <span className={s.logoPf}>PF</span>
-        </span>
+        <img src="/logo.svg" alt="PROPF" width={122} height={56} className={s.logo} />
         <h1 className={s.title}>로그인</h1>
         <p className={s.subtitle}>
           Promr Brand Chart에 오신 것을 환영합니다

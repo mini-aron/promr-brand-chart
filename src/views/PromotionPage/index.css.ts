@@ -21,14 +21,14 @@ export const header = style({
 export const logo = style({
   display: 'flex',
   alignItems: 'center',
-  fontSize: 26,
-  fontWeight: 700,
-  letterSpacing: '-0.02em',
   textDecoration: 'none',
-  color: 'var(--color-text)',
 });
-export const logoPro = style({ color: 'var(--color-primary)' });
-export const logoPf = style({ color: 'var(--color-text)' });
+
+export const logoImg = style({
+  display: 'block',
+  height: 48,
+  width: 'auto',
+});
 
 export const hero = style({
   flex: 1,

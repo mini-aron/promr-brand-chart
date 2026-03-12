@@ -86,8 +86,7 @@ export function Sidebar() {
   return (
     <aside className={s.aside}>
       <Link href="/home" className={s.logo} aria-label="PROPF 홈">
-        <span className={s.logoPro}>PRO</span>
-        <span className={s.logoPf}>PF</span>
+        <img src="/logo.svg" alt="PROPF" width={122} height={56} className={s.logoImg} />
       </Link>
       <nav>
         <Column gap={4} className={s.navLinks}>

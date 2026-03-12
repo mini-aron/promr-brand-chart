@@ -22,15 +22,10 @@ export const card = style({
 
 export const logo = style({
   display: 'block',
-  textAlign: 'center',
-  fontSize: 36,
-  fontWeight: 700,
-  letterSpacing: '-0.02em',
-  marginBottom: 12,
+  margin: '0 auto 12px',
+  height: 64,
+  width: 'auto',
 });
-
-export const logoPro = style({ color: 'var(--color-primary)' });
-export const logoPf = style({ color: 'var(--color-text)' });
 
 export const title = style({
   fontSize: 24,

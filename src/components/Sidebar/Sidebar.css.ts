@@ -15,21 +15,15 @@ export const aside = style({
 });
 
 export const logo = style({
-  fontFamily: 'var(--font-family)',
   display: 'block',
-  fontSize: 24,
-  fontWeight: 700,
-  letterSpacing: '-0.02em',
   textDecoration: 'none',
   marginBottom: 8,
 });
 
-export const logoPro = style({
-  color: 'var(--color-primary)',
-});
-
-export const logoPf = style({
-  color: 'var(--color-text)',
+export const logoImg = style({
+  display: 'block',
+  height: 48,
+  width: 'auto',
 });
 
 export const navLinks = style({
