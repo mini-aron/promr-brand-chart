@@ -498,24 +498,6 @@ export function FilterApprovalPage() {
                 <div className={s.detailLabel}>생성자</div>
                 <div className={s.detailValue}>{selectedRequest.createdBy ?? '-'}</div>
               </div>
-              {selectedRequest.status === 'pending' && (
-                <div className={s.btnGroup} style={{ marginTop: 16 }}>
-                  <Button
-                    variant="primary"
-                    size="small"
-                    onClick={() => updateFilterRequestStatus(selectedRequest.id, 'approved')}
-                  >
-                    승인
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="small"
-                    onClick={() => updateFilterRequestStatus(selectedRequest.id, 'rejected')}
-                  >
-                    승인불가
-                  </Button>
-                </div>
-              )}
             </>
           ) : (
             <>
