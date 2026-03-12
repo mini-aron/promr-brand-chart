@@ -42,10 +42,16 @@ const pharmaNavItems: NavItem[] = [
       { to: '/corp-manage', label: '법인 관리' },
     ],
   },
-  { to: '/aggregate', label: '정산확인' },
-  { to: '/settlement', label: '법인별 정산확인' },
+  {
+    label: '정산',
+    children: [
+      { to: '/aggregate', label: '정산확인' },
+      { to: '/settlement', label: '법인별 정산확인' },
+    ],
+  },
   { to: '/filter-approval', label: '거래선 관리' },
   { to: '/dealer-view', label: '법인별 계약 조회' },
+  { to: '/absorption', label: '흡수율' },
 ];
 
 /** 어드민: 제약사와 동일 메뉴(전체 조회·관리) */

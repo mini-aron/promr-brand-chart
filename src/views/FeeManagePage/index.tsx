@@ -1,4 +1,3 @@
-'use client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { mockProductFees, mockFeeEvents, mockCorporations, mockHospitals } from '@/store/mockData';

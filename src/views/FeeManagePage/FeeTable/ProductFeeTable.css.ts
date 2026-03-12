@@ -178,8 +178,8 @@ export const feeTableWrapOverrides = style({
 
 globalStyle(`${feeTableWrapOverrides} table`, { minWidth: 400 });
 globalStyle(`${feeTableWrapOverrides} th, ${feeTableWrapOverrides} td`, {
-  padding: 6,
-  fontSize: 13,
+  padding: '2px 6px',
+  fontSize: 12,
 });
 
 export const selectedRow = style({

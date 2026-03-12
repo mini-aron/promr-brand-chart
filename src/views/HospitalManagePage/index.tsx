@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { HiOutlineX } from 'react-icons/hi';
+import { useApp } from '@/store/appStore';
 import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { Hospital } from '@/types';
 import { Button } from '@/components/Common/Button';
@@ -11,6 +12,8 @@ import * as tableStyles from '@/style/TableStyles.css';
 import * as s from './index.css';
 
 export function HospitalManagePage() {
+  const { userRole } = useApp();
+  const isAdmin = userRole === 'admin';
   const corporations = mockCorporations;
   const [hospitals, setHospitals] = useState<Hospital[]>(mockHospitals);
   const addHospital = useCallback((hospital: Hospital) => {
@@ -171,7 +174,7 @@ export function HospitalManagePage() {
   return (
     <div className={s.page}>
       <h1>병의원 관리</h1>
-      <p>병의원 목록을 조회하고 사업자번호로 병의원을 추가합니다.</p>
+      <p>{isAdmin ? '병의원 목록을 조회하고 사업자번호로 병의원을 추가합니다.' : '병의원 목록을 조회합니다.'}</p>
 
       <div className={s.headerRow}>
         <div className={s.searchRow}>
@@ -183,12 +186,14 @@ export function HospitalManagePage() {
             aria-label="병의원 검색"
           />
         </div>
-        <Button variant="primary" onClick={() => setShowAddModal(true)}>
-          병의원 추가
-        </Button>
+        {isAdmin && (
+          <Button variant="primary" onClick={() => setShowAddModal(true)}>
+            병의원 추가
+          </Button>
+        )}
       </div>
 
-      {showAddModal && (
+      {isAdmin && showAddModal && (
         <div
           role="dialog"
           aria-modal="true"
