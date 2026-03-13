@@ -145,14 +145,18 @@ globalStyle(`${accountCodeInput}:focus`, {
 });
 
 export const saveBar = style({
+  position: 'sticky',
+  top: 0,
+  zIndex: 10,
   display: 'flex',
   alignItems: 'center',
   gap: 8,
   marginBottom: 8,
   padding: 8,
-  backgroundColor: 'color-mix(in srgb, var(--color-primary) 6%, transparent)',
+  backgroundColor: 'var(--color-surface)',
   borderRadius: 'var(--radius-md)',
   border: '1px solid color-mix(in srgb, var(--color-primary) 18%, transparent)',
+  boxShadow: '0 2px 8px color-mix(in srgb, var(--color-text) 8%, transparent)',
 });
 
 export const saveBarText = style({
