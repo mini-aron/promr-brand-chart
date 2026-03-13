@@ -7,6 +7,7 @@ import { mockPharmas } from '@/store/mockData';
 import { theme } from '@/theme';
 import { SingleSelect } from '@/components/Common/Select';
 import { Column } from '@/components/Common/Flex';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 const NOTICE_PREVIEW: { title: string; date: string }[] = [
@@ -23,7 +24,7 @@ export function SalesRegisterPage() {
 
   return (
     <div className={s.page}>
-      <h1>실적 등록</h1>
+      <PageTitle title="실적 등록" />
       <p>제출할 제약사를 고른 뒤 아래 메뉴를 이용하세요.</p>
 
       <div className={s.pharmaCard}>
@@ -52,9 +53,9 @@ export function SalesRegisterPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/upload/notice">공지사항 보기 →</Link>
+              <Link href="/corporation/upload/notice">공지사항 보기 →</Link>
             </div>
-            <Link href="/upload/sales" className={s.menuCard}>
+            <Link href="/corporation/upload/sales" className={s.menuCard}>
               <span className="icon" aria-hidden>
                 <HiDocumentText size={24} />
               </span>
@@ -63,7 +64,7 @@ export function SalesRegisterPage() {
                 <span className={s.menuCardDesc}>엑셀(.xlsx, .xls) 파일로 업로드</span>
               </span>
             </Link>
-            <Link href="/upload/prescription" className={s.menuCard}>
+            <Link href="/corporation/upload/prescription" className={s.menuCard}>
               <span className="icon" aria-hidden>
                 <HiPhotograph size={24} />
               </span>

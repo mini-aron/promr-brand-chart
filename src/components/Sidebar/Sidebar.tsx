@@ -27,35 +27,35 @@ function isNavSection(item: NavItem): item is NavSection {
 }
 
 const corporationNavItems: NavItem[] = [
-  { to: '/upload', label: '실적 등록' },
-  { to: '/dealer-manage', label: '계약관리' },
-  { to: '/aggregate', label: '법인 실적 조회' },
-  { to: '/filter-request', label: '필터링 요청' },
+  { to: '/corporation/upload', label: '실적 등록' },
+  { to: '/corporation/dealer-manage', label: '계약관리' },
+  { to: '/corporation/aggregate', label: '법인 실적 조회' },
+  { to: '/corporation/filter-request', label: '필터링 요청' },
 ];
 
 const pharmaNavItems: NavItem[] = [
   {
     label: '기준정보 관리',
     children: [
-      { to: '/hospitals', label: '병의원 관리' },
-      { to: '/fees', label: '수수료관리' },
-      { to: '/corp-manage', label: '법인 관리' },
+      { to: '/pharma/hospitals', label: '병의원 관리' },
+      { to: '/pharma/fees', label: '수수료관리' },
+      { to: '/pharma/corp-manage', label: '법인 관리' },
     ],
   },
   {
     label: '정산',
     children: [
-      { to: '/aggregate', label: '정산확인' },
-      { to: '/settlement', label: '법인별 정산확인' },
+      { to: '/pharma/aggregate', label: '정산확인' },
+      { to: '/pharma/settlement', label: '법인별 정산확인' },
     ],
   },
-  { to: '/filter-approval', label: '거래선 관리' },
-  { to: '/dealer-view', label: '법인별 계약 조회' },
-  { to: '/absorption', label: '흡수율' },
+  { to: '/pharma/filter-approval', label: '거래선 관리' },
+  { to: '/pharma/dealer-view', label: '법인별 계약 조회' },
+  { to: '/pharma/absorption', label: '흡수율' },
 ];
 
-/** 어드민: 제약사와 동일 메뉴(전체 조회·관리) */
-const adminNavItems: NavItem[] = pharmaNavItems;
+/** 어드민: 병의원 관리만 노출 */
+const adminNavItems: NavItem[] = [{ to: '/admin/hospitals', label: '병의원 관리' }];
 
 function getNavItems(role: UserRole): NavItem[] {
   if (role === 'corporation') return corporationNavItems;
@@ -93,7 +93,7 @@ export function Sidebar() {
   };
 
   const isActive = (path: string) =>
-    pathname === path || (path === '/upload' && pathname.startsWith('/upload'));
+    pathname === path || pathname.startsWith(path + '/');
 
   return (
     <aside className={s.aside}>

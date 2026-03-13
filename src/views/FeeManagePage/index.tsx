@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/Common/Checkbox';
 import { FilterInput } from '@/components/Common/Input';
 import { ProductFeeTable } from './FeeTable';
 import { Row } from '@/components/Common/Flex';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 type EventFormState = {
@@ -363,7 +364,7 @@ export function FeeManagePage() {
 
   return (
     <div className={s.page}>
-      <h1>수수료관리</h1>
+      <PageTitle title="수수료관리" />
       <p>월별·품목별 수수료율(%)을 설정하고, 품목별 이벤트를 등록합니다.</p>
 
       <div className={s.layoutWrap}>

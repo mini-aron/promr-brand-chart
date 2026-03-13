@@ -14,6 +14,7 @@ import {
 } from '@/store/mockData';
 import { clsx } from 'clsx';
 import { theme } from '@/theme';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 /** 금액을 천 단위 구분 포맷(예: 1,234,567)으로 반환 */
@@ -133,7 +134,7 @@ export function HomePage() {
 
   return (
     <div className={s.page}>
-      <h1 className={s.pageTitle}>Promr Brand Chart</h1>
+      <PageTitle title="Promr Brand Chart" />
       <p className={s.pageDesc}>법인 실적·처방사진 업로드 및 제약사 법인 정산 확인</p>
 
       {userRole === 'corporation' && (
@@ -237,12 +238,12 @@ export function HomePage() {
             <div className={s.card}>
               <h2 className={s.cardTitle}>실적 등록</h2>
               <p className={s.cardDesc}>실적 업로드(엑셀)와 처방사진 업로드를 진행합니다.</p>
-              <Link href="/upload/sales" className={clsx(s.cardLink, s.cardLinkHover)}>실적 등록 페이지로 →</Link>
+              <Link href="/corporation/upload/sales" className={clsx(s.cardLink, s.cardLinkHover)}>실적 등록 페이지로 →</Link>
             </div>
             <div className={s.card}>
               <h2 className={s.cardTitle}>계약관리</h2>
               <p className={s.cardDesc}>딜러(영업사원) 정보를 관리합니다.</p>
-              <Link href="/dealer-manage" className={clsx(s.cardLink, s.cardLinkHover)}>계약관리 페이지로 →</Link>
+              <Link href="/corporation/dealer-manage" className={clsx(s.cardLink, s.cardLinkHover)}>계약관리 페이지로 →</Link>
             </div>
           </>
         )}
@@ -251,22 +252,22 @@ export function HomePage() {
             <div className={s.card}>
               <h2 className={s.cardTitle}>기준정보 관리</h2>
               <p className={s.cardDesc}>병의원, 수수료를 관리합니다.</p>
-              <Link href="/hospitals" className={clsx(s.cardLink, s.cardLinkHover)}>기준정보 관리 페이지로 →</Link>
+              <Link href={userRole === 'admin' ? '/admin/hospitals' : '/pharma/hospitals'} className={clsx(s.cardLink, s.cardLinkHover)}>기준정보 관리 페이지로 →</Link>
             </div>
             <div className={s.card}>
               <h2 className={s.cardTitle}>정산확인</h2>
               <p className={s.cardDesc}>전체 법인·병의원 실적을 필터로 조회하고 정산합니다.</p>
-              <Link href="/aggregate" className={clsx(s.cardLink, s.cardLinkHover)}>정산확인 페이지로 →</Link>
+              <Link href="/pharma/aggregate" className={clsx(s.cardLink, s.cardLinkHover)}>정산확인 페이지로 →</Link>
             </div>
             <div className={s.card}>
               <h2 className={s.cardTitle}>법인별 정산확인</h2>
               <p className={s.cardDesc}>법인을 선택하여 해당 법인의 실적 표를 확인합니다.</p>
-              <Link href="/settlement" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 정산확인 페이지로 →</Link>
+              <Link href="/pharma/settlement" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 정산확인 페이지로 →</Link>
             </div>
             <div className={s.card}>
               <h2 className={s.cardTitle}>법인별 계약 조회</h2>
               <p className={s.cardDesc}>법인별 딜러 계약 정보를 조회합니다.</p>
-              <Link href="/dealer-view" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 계약 조회 페이지로 →</Link>
+              <Link href="/pharma/dealer-view" className={clsx(s.cardLink, s.cardLinkHover)}>법인별 계약 조회 페이지로 →</Link>
             </div>
           </>
         )}

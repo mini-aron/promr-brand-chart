@@ -7,6 +7,7 @@ import type { Dealer } from '@/types';
 import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { DataTable } from '@/components/Common/DataTable';
+import { PageTitle } from '@/components/Common/Text';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
 
@@ -195,7 +196,7 @@ export function DealerManagePage() {
 
   return (
     <div className={s.page}>
-      <h1>계약관리</h1>
+      <PageTitle title="계약관리" />
       <p>딜러(영업사원) 정보를 관리합니다.</p>
 
       <Row justifyContent="space-between" alignItems="center" className={s.headerRowWrap}>

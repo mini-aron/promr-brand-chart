@@ -8,6 +8,7 @@ import { Button } from '@/components/Common/Button';
 import { Flex, Row } from '@/components/Common/Flex';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 export function AccountManagePage() {
@@ -124,7 +125,7 @@ export function AccountManagePage() {
 
   return (
     <div className={s.page}>
-      <h1>거래처관리</h1>
+      <PageTitle title="거래처관리" />
       <p>거래처(병의원) 목록을 검색하고 확인합니다.</p>
 
       <div className={s.searchRow}>

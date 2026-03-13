@@ -5,6 +5,7 @@ import { mockCorporations, mockCorpInvitations } from "@/store/mockData";
 import { Button } from "@/components/Common/Button";
 import { DataTable } from "@/components/Common/DataTable";
 import { createColumnHelper } from "@tanstack/react-table";
+import { PageTitle } from "@/components/Common/Text";
 import * as s from "./index.css";
 import type { CorpInvitation } from "@/types";
 import { Input } from "@/components/Common/Input";
@@ -133,7 +134,7 @@ export function CorpManagePage() {
   return (
     <div className={s.page}>
       <header className="page-header">
-        <h1>법인 관리</h1>
+        <PageTitle title="법인 관리" />
         <p>
           초대 링크를 발급하여 법인을 초대하고, 초대된 법인 목록을 조회합니다.
         </p>

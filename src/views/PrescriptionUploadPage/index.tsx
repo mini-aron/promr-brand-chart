@@ -7,6 +7,7 @@ import { useApp } from '@/store/appStore';
 import { mockHospitals, mockPrescriptionUploads, mockSalesRows } from '@/store/mockData';
 import type { PrescriptionUpload } from '@/types';
 import { Button } from '@/components/Common/Button';
+import { PageTitle } from '@/components/Common/Text';
 import { clsx } from 'clsx';
 import * as s from './index.css';
 
@@ -113,11 +114,11 @@ export function PrescriptionUploadPage() {
   return (
     <div className={s.page}>
       <p>
-        <Link href="/upload" className={s.backLink}>
+        <Link href="/corporation/upload" className={s.backLink}>
           ← 실적 등록으로 돌아가기
         </Link>
       </p>
-      <h1>처방사진 업로드</h1>
+      <PageTitle title="처방사진 업로드" />
       <p>대상(월 · 병의원)을 선택한 뒤, 해당 실적에 대한 처방 사진을 업로드합니다.</p>
 
       <section className={s.selectCard}>

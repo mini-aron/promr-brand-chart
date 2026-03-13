@@ -19,6 +19,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { parseExcelToSalesRows } from '@/utils/salesUploadExcelParser';
 import { downloadRowsAsExcel } from '@/utils/salesUploadExcelDownload';
 import { clsx } from 'clsx';
+import { PageTitle } from '@/components/Common/Text';
 import * as tableStyles from '@/style/TableStyles.css';
 import * as s from './index.css';
 
@@ -434,18 +435,18 @@ export function SalesUploadPage() {
 
   const shouldRedirect = userRole === 'corporation' && pharmas.length > 0 && !currentPharmaId;
   useEffect(() => {
-    if (shouldRedirect) router.replace('/upload');
+    if (shouldRedirect) router.replace('/corporation/upload');
   }, [shouldRedirect, router]);
   if (shouldRedirect) return null;
 
   return (
     <div className={s.page}>
       <p>
-        <Link href="/upload" className={s.backLink}>
+        <Link href="/corporation/upload" className={s.backLink}>
           ← 실적 등록으로 돌아가기
         </Link>
       </p>
-      <h1>실적 업로드</h1>
+      <PageTitle title="실적 업로드" />
       <p>엑셀 파일을 업로드하여 판매 실적을 등록합니다.</p>
 
       <Row wrap="wrap" gap={12} alignItems="flex-end" className={s.rowMarginBottom}>

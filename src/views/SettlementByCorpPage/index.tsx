@@ -7,6 +7,7 @@ import { formatAmount } from '@/utils/formatNumber';
 import { useSettlementByCorp } from '@/hooks/useSettlementByCorp';
 import { FilterInput } from '@/components/Common/Input';
 import { DataTable } from '@/components/Common/DataTable';
+import { PageTitle } from '@/components/Common/Text';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as s from './index.css';
 import type { Corporation, Hospital } from '@/types';
@@ -200,7 +201,7 @@ export function SettlementByCorpPage() {
   return (
     <div className={s.page}>
       <header className="page-header">
-        <h1>법인별 정산확인</h1>
+        <PageTitle title="법인별 정산확인" />
         <p>우측에서 법인 선택 시 해당 법인 실적이 표시됩니다.</p>
       </header>
 

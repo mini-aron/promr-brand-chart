@@ -7,6 +7,7 @@ import { mockCorporations, mockHospitals } from '@/store/mockData';
 import type { Hospital } from '@/types';
 import { Button } from '@/components/Common/Button';
 import { DataTable } from '@/components/Common/DataTable';
+import { PageTitle } from '@/components/Common/Text';
 import { createColumnHelper } from '@tanstack/react-table';
 import * as tableStyles from '@/style/TableStyles.css';
 import * as s from './index.css';
@@ -173,7 +174,7 @@ export function HospitalManagePage() {
 
   return (
     <div className={s.page}>
-      <h1>병의원 관리</h1>
+      <PageTitle title="병의원 관리" />
       <p>{isAdmin ? '병의원 목록을 조회하고 사업자번호로 병의원을 추가합니다.' : '병의원 목록을 조회합니다.'}</p>
 
       <div className={s.headerRow}>

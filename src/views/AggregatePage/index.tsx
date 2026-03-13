@@ -8,6 +8,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { FilterInput } from '@/components/Common/Input';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 type AggregateRow = {
@@ -191,7 +192,7 @@ export function AggregatePage() {
 
   return (
     <div className={s.page}>
-      <h1>법인 정산 확인</h1>
+      <PageTitle title="법인 정산 확인" />
       <p>
         {isCorporation
           ? '본인 법인 실적을 확인하고 정산합니다. 병의원 필터와 품목 검색을 사용할 수 있습니다.'

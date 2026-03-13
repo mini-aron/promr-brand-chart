@@ -9,6 +9,7 @@ import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
 import type { FilterRequest } from '@/types';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 
 const STATUS_LABEL = {
@@ -242,7 +243,7 @@ export function FilterRequestPage() {
 
   return (
     <div className={s.page}>
-      <h1>필터링 요청</h1>
+      <PageTitle title="필터링 요청" />
       <p>거래 허용이 필요한 병의원을 검색해 요청하세요. 제출 대상 제약사는 좌측 사이드바에서 선택합니다.</p>
 
       <div className={s.twoColLayout}>

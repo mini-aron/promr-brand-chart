@@ -8,6 +8,7 @@ import { Input } from '@/components/Common/Input';
 import { SingleSelect } from '@/components/Common/Select';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
+import { PageTitle } from '@/components/Common/Text';
 import * as s from './index.css';
 import type { FilterRequest, FilterRequestProduct } from '@/types';
 import { Tooltip } from '@/components/Common/Tooltip';
@@ -490,7 +491,7 @@ export function FilterApprovalPage() {
   return (
     <div className={s.page}>
       <header className="page-header">
-        <h1>거래선 관리</h1>
+        <PageTitle title="거래선 관리" />
         <p>법인·병의원별 거래 허용 여부를 등록하고 승인·승인불가 처리합니다.</p>
       </header>
 
