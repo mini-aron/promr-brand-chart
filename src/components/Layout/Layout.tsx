@@ -1,6 +1,6 @@
 'use client';
 import { Flex } from '@/components/Common/Flex';
-import { Sidebar } from '@/components/Sidebar';
+import { Sidebar } from './Sidebar';
 import * as s from './Layout.css';
 
 export function Layout({ children }: { children: React.ReactNode }) {

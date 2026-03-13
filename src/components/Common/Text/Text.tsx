@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import * as s from './Text.css';
 
 function PageTitle({ title }: { title: string }) {
@@ -12,4 +13,8 @@ function Subtitle({ subtitle }: { subtitle: string }) {
   return <h2 className={s.subtitle}>{subtitle}</h2>;
 }
 
-export { Title, Subtitle, PageTitle };
+function PageDesc({ children }: { children: ReactNode }) {
+  return <p className={s.pageDesc}>{children}</p>;
+}
+
+export { Title, Subtitle, PageTitle, PageDesc };

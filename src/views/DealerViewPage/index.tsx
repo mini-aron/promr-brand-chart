@@ -6,7 +6,7 @@ import type { Dealer } from '@/types';
 import { Button } from '@/components/Common/Button';
 import { DataTable } from '@/components/Common/DataTable';
 import { createColumnHelper } from '@tanstack/react-table';
-import { PageTitle } from '@/components/Common/Text';
+import { PageHeader } from '@/components/Layout';
 import * as s from './index.css';
 
 export function DealerViewPage() {
@@ -105,10 +105,10 @@ export function DealerViewPage() {
 
   return (
     <div className={s.page}>
-      <div className="page-header">
-        <PageTitle title="법인별 계약 조회" />
-        <p>법인별 딜러(영업사원) 계약 정보를 조회합니다.</p>
-      </div>
+      <PageHeader
+        title="법인별 계약 조회"
+        description="법인별 딜러(영업사원) 계약 정보를 조회합니다."
+      />
 
       <div className={s.layoutWrap}>
         <aside className={s.corpListSidebar}>

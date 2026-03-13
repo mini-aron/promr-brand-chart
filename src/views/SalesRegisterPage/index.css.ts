@@ -1,9 +1,6 @@
 import { style, globalStyle } from '@vanilla-extract/css';
 
-export const page = style({});
-
-globalStyle(`${page} h1`, { marginBottom: 8, color: 'var(--color-text)' });
-globalStyle(`${page} p`, { color: 'var(--color-text-muted)', marginBottom: 16 });
+export { page } from '@/style/PageStyles.css';
 
 export const pharmaCard = style({
   padding: 12,

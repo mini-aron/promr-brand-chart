@@ -14,7 +14,7 @@ import {
 } from '@/store/mockData';
 import { clsx } from 'clsx';
 import { theme } from '@/theme';
-import { PageTitle } from '@/components/Common/Text';
+import { PageTitle, PageDesc } from '@/components/Common/Text';
 import * as s from './index.css';
 
 /** 금액을 천 단위 구분 포맷(예: 1,234,567)으로 반환 */
@@ -135,7 +135,7 @@ export function HomePage() {
   return (
     <div className={s.page}>
       <PageTitle title="Promr Brand Chart" />
-      <p className={s.pageDesc}>법인 실적·처방사진 업로드 및 제약사 법인 정산 확인</p>
+      <PageDesc>법인 실적·처방사진 업로드 및 제약사 법인 정산 확인</PageDesc>
 
       {userRole === 'corporation' && (
         <div className={s.statsSection}>

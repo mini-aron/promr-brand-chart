@@ -1,14 +1,6 @@
 import { style, globalStyle } from '@vanilla-extract/css';
 
-export const page = style({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  minHeight: 0,
-});
-globalStyle(`${page} .page-header`, { flexShrink: 0, marginBottom: 4 });
-globalStyle(`${page} .page-header h1`, { margin: 0, fontSize: '1.25rem', fontWeight: 600 });
-globalStyle(`${page} .page-header p`, { margin: 0, fontSize: 13 });
+export { page } from '@/style/PageStyles.css';
 
 export const layoutWrap = style({
   display: 'flex',

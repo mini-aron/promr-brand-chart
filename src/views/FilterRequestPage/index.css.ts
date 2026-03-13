@@ -1,12 +1,6 @@
 import { style, globalStyle, styleVariants } from '@vanilla-extract/css';
 
-export const page = style({
-  width: '100%',
-  minWidth: 0,
-});
-
-globalStyle(`${page} h1`, { marginBottom: 8 });
-globalStyle(`${page} p`, { marginBottom: 16 });
+export { page } from '@/style/PageStyles.css';
 
 export const twoColLayout = style({
   display: 'grid',
