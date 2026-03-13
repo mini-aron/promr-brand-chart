@@ -1,1 +1,3 @@
-export { Title, Subtitle } from './Text';
+export { Title, Subtitle, PageTitle } from './Text';
+
+
