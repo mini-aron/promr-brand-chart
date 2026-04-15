@@ -24,15 +24,19 @@ interface UseSettlementByCorpParams {
   salesRows: SalesRow[];
 }
 
-export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseSettlementByCorpParams) {
+export function useSettlementByCorp({
+  corporations,
+  hospitals,
+  salesRows,
+}: UseSettlementByCorpParams) {
   const [selectedCorpId, setSelectedCorpId] = useState<string | null>(null);
   const [corpSearch, setCorpSearch] = useState('');
   const [salespersonSearch, setSalespersonSearch] = useState('');
-  const [hospitalSearch, setHospitalSearch] = useState('');
+  const [filterHospitalId, setFilterHospitalId] = useState<string | null>(null);
 
   useEffect(() => {
     setSalespersonSearch('');
-    setHospitalSearch('');
+    setFilterHospitalId(null);
   }, [selectedCorpId]);
 
   const corporationsFiltered = useMemo(() => {
@@ -90,8 +94,10 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
           outHouseAmount: agg.amount,
         };
       })
-      .sort((a, b) =>
-        a.hospitalId.localeCompare(b.hospitalId) || a.salespersonName.localeCompare(b.salespersonName)
+      .sort(
+        (a, b) =>
+          a.hospitalId.localeCompare(b.hospitalId) ||
+          a.salespersonName.localeCompare(b.salespersonName),
       );
   }, [filtered]);
 
@@ -102,7 +108,7 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
       totalOutHouseItems: settlementRows.reduce((s, r) => s + r.outHouseItemCount, 0),
       totalOutHouseAmount: settlementRows.reduce((s, r) => s + r.outHouseAmount, 0),
     }),
-    [settlementRows]
+    [settlementRows],
   );
 
   const dealerTotals = useMemo(
@@ -112,7 +118,7 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
       totalOutHouseItems: dealerSettlementRows.reduce((s, r) => s + r.outHouseItemCount, 0),
       totalOutHouseAmount: dealerSettlementRows.reduce((s, r) => s + r.outHouseAmount, 0),
     }),
-    [dealerSettlementRows]
+    [dealerSettlementRows],
   );
 
   const getHospital = useCallback((id: string) => hospitals.find((h) => h.id === id), [hospitals]);
@@ -132,18 +138,14 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
       const q = salespersonSearch.trim().toLowerCase();
       if (q) rows = rows.filter((r) => r.salespersonLabel?.toLowerCase().includes(q));
     }
-    const hq = hospitalSearch.trim().toLowerCase();
-    if (hq) {
-      rows = rows.filter((r) => {
-        const name = getHospital(r.hospitalId)?.name ?? r.hospitalId;
-        return name.toLowerCase().includes(hq);
-      });
+    if (filterHospitalId) {
+      rows = rows.filter((r) => r.hospitalId === filterHospitalId);
     }
     return rows;
-  }, [selectedCorp?.isPromr, displayRows, salespersonSearch, hospitalSearch, getHospital]);
+  }, [selectedCorp?.isPromr, displayRows, salespersonSearch, filterHospitalId]);
 
   const displayTotals = useMemo((): SettlementTotals => {
-    const hasFilter = salespersonSearch.trim() || hospitalSearch.trim();
+    const hasFilter = salespersonSearch.trim() || filterHospitalId;
     if (!hasFilter && !selectedCorp?.isPromr) return totals;
     if (!hasFilter && selectedCorp?.isPromr) return dealerTotals;
     return {
@@ -152,7 +154,14 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
       totalOutHouseItems: filteredDisplayRows.reduce((s, r) => s + r.outHouseItemCount, 0),
       totalOutHouseAmount: filteredDisplayRows.reduce((s, r) => s + r.outHouseAmount, 0),
     };
-  }, [selectedCorp?.isPromr, totals, dealerTotals, salespersonSearch, hospitalSearch, filteredDisplayRows]);
+  }, [
+    selectedCorp?.isPromr,
+    totals,
+    dealerTotals,
+    salespersonSearch,
+    filterHospitalId,
+    filteredDisplayRows,
+  ]);
 
   return {
     selectedCorpId,
@@ -161,8 +170,8 @@ export function useSettlementByCorp({ corporations, hospitals, salesRows }: UseS
     setCorpSearch,
     salespersonSearch,
     setSalespersonSearch,
-    hospitalSearch,
-    setHospitalSearch,
+    filterHospitalId,
+    setFilterHospitalId,
     corporationsFiltered,
     selectedCorp,
     filteredDisplayRows,

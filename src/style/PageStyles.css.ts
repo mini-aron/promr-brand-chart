@@ -6,6 +6,8 @@ export const page = style({
   flexDirection: 'column',
   height: '100%',
   minHeight: 0,
+  minWidth: 0,
+  overflowX: 'hidden',
 });
 
 /** 제목/본문을 컴포넌트(PageTitle, PageDesc, PageHeader)로 쓰지 않을 때만 적용 */

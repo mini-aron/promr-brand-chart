@@ -1,0 +1,853 @@
+'use client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useApp } from '@/store/appStore';
+import { useDemoPlayStore } from '@/store/demoPlayStore';
+import { Trash2, X } from 'lucide-react';
+import { Button } from '@/shared/components/ui/Button';
+import { Input } from '@/shared/components/ui/Input';
+import { SingleSelect } from '@/shared/components/ui/Select';
+import { DataTable } from '@/shared/components/ui/DataTable';
+import { createColumnHelper } from '@tanstack/react-table';
+import { PageHeader } from '@/shared/components/layout';
+import CardWrapper from '@/shared/components/layout/CardWrapper/CardWrapper';
+import * as s from './index.css';
+import type { FilterRequest, FilterRequestProduct } from '@/types';
+import { Tooltip } from '@/shared/components/ui/Tooltip';
+import { Row } from '@/shared/components/ui/Flex';
+import * as tableStyles from '@/style/TableStyles.css';
+
+function getCurrentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function getStatusCellClass(status: string): string {
+  if (status === 'pending') return s.statusCellPending;
+  if (status === 'approved') return s.statusCellApproved;
+  if (status === 'rejected') return s.statusCellRejected;
+  return s.statusCellBase;
+}
+
+function formatDateTime(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  } catch {
+    return iso.slice(0, 10);
+  }
+}
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: '대기',
+  approved: '승인',
+  rejected: '불가',
+};
+
+const PRODUCT_FILTER_MODE_OPTIONS = [
+  { label: '미사용', value: 'none' },
+  { label: '허용품목 설정', value: 'allowed' },
+  { label: '금지품목 설정', value: 'prohibited' },
+];
+
+type ProductListSectionProps = {
+  title: string;
+  products: FilterRequestProduct[];
+  onChange: (next: FilterRequestProduct[]) => void;
+  productPool: FilterRequestProduct[];
+};
+
+function ProductListSection({ title, products, onChange, productPool }: ProductListSectionProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const inList = new Set(products.map((p) => p.productCode));
+    return productPool.filter(
+      (p) => !inList.has(p.productCode) && p.productName.toLowerCase().includes(q),
+    );
+  }, [searchQuery, products, productPool]);
+
+  const addProduct = useCallback(
+    (p: FilterRequestProduct) => {
+      if (products.some((x) => x.productCode === p.productCode)) return;
+      onChange([...products, p]);
+    },
+    [products, onChange],
+  );
+
+  const removeProduct = useCallback(
+    (productCode: string) => onChange(products.filter((p) => p.productCode !== productCode)),
+    [products, onChange],
+  );
+
+  const reset = useCallback(() => onChange([]), [onChange]);
+
+  return (
+    <div className={s.productListSection}>
+      <div className={s.productListTitle}>{title}</div>
+      <div className={s.productSearchWrap}>
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="제품명 검색"
+          aria-label={`${title} 제품명 검색`}
+        />
+      </div>
+      {searchQuery.trim() && (
+        <div className={s.productSearchResults}>
+          {searchResults.length === 0 ? (
+            <div className={s.productSearchResultRow}>검색 결과 없음</div>
+          ) : (
+            searchResults.map((p) => (
+              <div key={p.productCode} className={s.productSearchResultRow}>
+                <span className={s.productSearchResultText}>
+                  {p.productName} ({p.productEdi})
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="small"
+                  onClick={() => addProduct(p)}
+                  aria-label={`${p.productName} 추가`}
+                >
+                  추가
+                </Button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+      <div className={`${tableStyles.tableWrap} ${s.productTableMargin}`}>
+        <table>
+          <thead>
+            <tr>
+              <th>제품명</th>
+              <th>제품EDI</th>
+              <th style={{ width: 56 }} />
+            </tr>
+          </thead>
+          <tbody>
+            {products.length === 0 ? (
+              <tr>
+                <td colSpan={3} style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>
+                  지정된 품목 없음
+                </td>
+              </tr>
+            ) : (
+              products.map((p) => (
+                <tr key={p.productCode}>
+                  <td>{p.productName}</td>
+                  <td>{p.productEdi}</td>
+                  <td>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="small"
+                      className={s.productRowDeleteBtn}
+                      onClick={() => removeProduct(p.productCode)}
+                      aria-label={`${p.productName} 삭제`}
+                    >
+                      <Trash2 size={14} aria-hidden />
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div className={s.productListBtnGroup}>
+        <Button
+          type="button"
+          variant="secondary"
+          size="small"
+          onClick={reset}
+          disabled={products.length === 0}
+        >
+          리셋
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function FilterApprovalPage() {
+  const { currentPharmaId } = useApp();
+  const corporations = useDemoPlayStore((s) => s.corporations);
+  const hospitals = useDemoPlayStore((s) => s.hospitals);
+  const productFees = useDemoPlayStore((s) => s.productFees);
+  const filterRequests = useDemoPlayStore((s) => s.filterRequests);
+  const setFilterRequests = useDemoPlayStore((s) => s.setFilterRequests);
+  const filterApprovalDeadlines = useDemoPlayStore((s) => s.filterApprovalDeadlines);
+  const setFilterApprovalDeadlines = useDemoPlayStore((s) => s.setFilterApprovalDeadlines);
+
+  const productPool = useMemo<FilterRequestProduct[]>(
+    () =>
+      productFees.map((p) => ({
+        productCode: p.productCode,
+        productName: p.productName,
+        productEdi: p.ediCode ?? '',
+      })),
+    [productFees],
+  );
+  const updateFilterRequestStatus = useCallback(
+    (id: string, status: 'approved' | 'rejected') => {
+      const now = new Date().toISOString().slice(0, 19);
+      setFilterRequests((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, status, processedAt: now, updatedAt: now, updatedBy: 'admin' } : r,
+        ),
+      );
+    },
+    [setFilterRequests],
+  );
+
+  const updateFilterRequest = useCallback(
+    (
+      id: string,
+      updates: Partial<
+        Pick<
+          FilterRequest,
+          | 'corporationId'
+          | 'hospitalId'
+          | 'status'
+          | 'productFilterMode'
+          | 'allowedProducts'
+          | 'prohibitedProducts'
+        >
+      >,
+    ) => {
+      const now = new Date().toISOString().slice(0, 19);
+      setFilterRequests((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, ...updates, updatedAt: now, updatedBy: 'admin' } : r,
+        ),
+      );
+    },
+    [setFilterRequests],
+  );
+  const addFilterRequest = useCallback(
+    (
+      corporationId: string,
+      pharmaId: string,
+      hospitalId: string,
+      opts?: {
+        requestMessage?: string;
+        status?: FilterRequest['status'];
+        productFilterMode?: 'none' | 'prohibited' | 'allowed';
+        allowedProducts?: FilterRequest['allowedProducts'];
+        prohibitedProducts?: FilterRequest['prohibitedProducts'];
+      },
+    ) => {
+      const id = `fr-${Date.now()}`;
+      const now = new Date().toISOString().slice(0, 19);
+      const newStatus = opts?.status ?? 'pending';
+      const processedAt = newStatus !== 'pending' ? now : undefined;
+      setFilterRequests((prev) => [
+        ...prev,
+        {
+          id,
+          corporationId,
+          pharmaId,
+          hospitalId,
+          status: newStatus,
+          requestedAt: now,
+          requestMessage: opts?.requestMessage,
+          processedAt,
+          createdAt: now,
+          updatedAt: newStatus !== 'pending' ? now : undefined,
+          createdBy: 'admin',
+          updatedBy: newStatus !== 'pending' ? 'admin' : undefined,
+          productFilterMode: opts?.productFilterMode,
+          allowedProducts: opts?.allowedProducts ?? [],
+          prohibitedProducts: opts?.prohibitedProducts ?? [],
+        },
+      ]);
+    },
+    [setFilterRequests],
+  );
+  const [filterCorpId, setFilterCorpId] = useState<string | null>(null);
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [addCorpId, setAddCorpId] = useState<string | null>(null);
+  const [selectedHospitalId, setSelectedHospitalId] = useState('');
+  const [addStatus, setAddStatus] = useState<FilterRequest['status']>('pending');
+  const [addProductFilterMode, setAddProductFilterMode] = useState<
+    'none' | 'prohibited' | 'allowed'
+  >('none');
+  const [addAllowedProducts, setAddAllowedProducts] = useState<FilterRequestProduct[]>([]);
+  const [addProhibitedProducts, setAddProhibitedProducts] = useState<FilterRequestProduct[]>([]);
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
+  const currentMonthKey = useMemo(() => getCurrentMonthKey(), []);
+  const [deadlineDay, setDeadlineDay] = useState(0);
+  const [deadlineSelectValue, setDeadlineSelectValue] = useState(0);
+
+  useEffect(() => {
+    const loaded = filterApprovalDeadlines[currentMonthKey] ?? 0;
+    setDeadlineDay(loaded);
+    setDeadlineSelectValue(loaded);
+  }, [currentMonthKey, filterApprovalDeadlines]);
+
+  const updateDeadline = useCallback(
+    (day: number) => {
+      if (day <= 0) {
+        setDeadlineDay(0);
+        setDeadlineSelectValue(0);
+        setFilterApprovalDeadlines((prev) => {
+          const next = { ...prev };
+          delete next[currentMonthKey];
+          return next;
+        });
+      } else {
+        const maxDay = new Date(
+          parseInt(currentMonthKey.slice(0, 4), 10),
+          parseInt(currentMonthKey.slice(5, 7), 10),
+          0,
+        ).getDate();
+        if (day >= 1 && day <= maxDay) {
+          setDeadlineDay(day);
+          setDeadlineSelectValue(day);
+          setFilterApprovalDeadlines((prev) => ({ ...prev, [currentMonthKey]: day }));
+        }
+      }
+    },
+    [currentMonthKey, setFilterApprovalDeadlines],
+  );
+
+  const handleApplyDeadline = useCallback(() => {
+    updateDeadline(deadlineSelectValue);
+  }, [deadlineSelectValue, updateDeadline]);
+
+  const filteredRequests = useMemo(() => {
+    return filterRequests
+      .filter((r) => !filterCorpId || r.corporationId === filterCorpId)
+      .filter((r) => !filterStatus || r.status === filterStatus)
+      .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+  }, [filterRequests, filterCorpId, filterStatus]);
+
+  const hospitalsForAddCorp = useMemo(() => {
+    if (!addCorpId) return [];
+    return hospitals.filter((h) => h.corporationId === addCorpId);
+  }, [addCorpId, hospitals]);
+
+  const requestedHospitalIdsForAddCorp = useMemo(() => {
+    if (!addCorpId) return new Set<string>();
+    return new Set(
+      filterRequests.filter((r) => r.corporationId === addCorpId).map((r) => r.hospitalId),
+    );
+  }, [addCorpId, filterRequests]);
+
+  const addableHospitals = useMemo(
+    () => hospitalsForAddCorp.filter((h) => !requestedHospitalIdsForAddCorp.has(h.id)),
+    [hospitalsForAddCorp, requestedHospitalIdsForAddCorp],
+  );
+
+  const getCorporation = useCallback(
+    (id: string) => corporations.find((c) => c.id === id),
+    [corporations],
+  );
+
+  const getHospital = useCallback((id: string) => hospitals.find((h) => h.id === id), [hospitals]);
+
+  const selectedRequest = useMemo(
+    () => (selectedRowId ? filterRequests.find((r) => r.id === selectedRowId) : null),
+    [selectedRowId, filterRequests],
+  );
+
+  const hospitalsForEditCorp = useMemo(() => {
+    if (!selectedRequest) return [];
+    const corpHospitals = hospitals.filter(
+      (h) => h.corporationId === selectedRequest.corporationId,
+    );
+    const hasCurrent = corpHospitals.some((h) => h.id === selectedRequest.hospitalId);
+    if (!hasCurrent) {
+      const current = hospitals.find((h) => h.id === selectedRequest.hospitalId);
+      if (current) return [current, ...corpHospitals];
+    }
+    return corpHospitals;
+  }, [selectedRequest, hospitals]);
+
+  const handleRowClick = useCallback((row: FilterRequest) => {
+    setSelectedRowId((prev) => (prev === row.id ? null : row.id));
+  }, []);
+
+  const columnHelper = createColumnHelper<FilterRequest>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('status', {
+        id: 'status',
+        header: '상태',
+        size: 72,
+        cell: (info) => (
+          <span className={getStatusCellClass(info.getValue())}>
+            {STATUS_LABEL[info.getValue()] ?? info.getValue()}
+          </span>
+        ),
+      }),
+      columnHelper.accessor((r) => getCorporation(r.corporationId)?.name ?? '-', {
+        id: 'corporation',
+        header: '법인',
+      }),
+      columnHelper.accessor((r) => getHospital(r.hospitalId)?.name ?? r.hospitalName ?? '-', {
+        id: 'hospital',
+        header: '병의원',
+      }),
+      columnHelper.accessor('requestedAt', {
+        header: '요청 일시',
+        cell: (info) => formatDateTime(info.getValue()),
+      }),
+      columnHelper.accessor((r) => r.createdAt ?? r.requestedAt, {
+        id: 'createdAt',
+        header: '생성일',
+        cell: (info) => {
+          const v = info.getValue();
+          return v ? formatDate(v) : '-';
+        },
+      }),
+      columnHelper.accessor((r) => r.updatedAt ?? r.processedAt, {
+        id: 'updatedAt',
+        header: '업데이트일',
+        cell: (info) => {
+          const v = info.getValue();
+          return v ? formatDate(v) : '-';
+        },
+      }),
+      columnHelper.accessor('createdBy', {
+        header: '생성자',
+        cell: (info) => info.getValue() ?? '-',
+      }),
+      columnHelper.accessor('updatedBy', {
+        header: '업데이트',
+        cell: (info) => info.getValue() ?? '-',
+      }),
+      columnHelper.display({
+        id: 'actions',
+        header: '처리',
+        cell: (info) => (
+          <div className={s.btnGroup} onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="primary"
+              size="small"
+              onClick={() => updateFilterRequestStatus(info.row.original.id, 'approved')}
+            >
+              승인
+            </Button>
+            <Button
+              variant="danger"
+              size="small"
+              onClick={() => updateFilterRequestStatus(info.row.original.id, 'rejected')}
+            >
+              승인불가
+            </Button>
+          </div>
+        ),
+      }),
+    ],
+    [getCorporation, getHospital, updateFilterRequestStatus],
+  );
+
+  const getRowClassName = useCallback(
+    (row: FilterRequest) => (row.id === selectedRowId ? s.rowSelected : undefined),
+    [selectedRowId],
+  );
+
+  const handleAddFilter = useCallback(() => {
+    if (!addCorpId || !selectedHospitalId || !currentPharmaId) return;
+    addFilterRequest(addCorpId, currentPharmaId, selectedHospitalId, {
+      status: addStatus,
+      productFilterMode: addProductFilterMode,
+      allowedProducts: addProductFilterMode === 'allowed' ? addAllowedProducts : [],
+      prohibitedProducts: addProductFilterMode === 'prohibited' ? addProhibitedProducts : [],
+    });
+    setSelectedHospitalId('');
+    setAddAllowedProducts([]);
+    setAddProhibitedProducts([]);
+  }, [
+    addCorpId,
+    selectedHospitalId,
+    currentPharmaId,
+    addStatus,
+    addProductFilterMode,
+    addAllowedProducts,
+    addProhibitedProducts,
+    addFilterRequest,
+  ]);
+
+  const maxDay = useMemo(() => {
+    const [y, m] = currentMonthKey.split('-').map(Number);
+    return new Date(y, m, 0).getDate();
+  }, [currentMonthKey]);
+
+  const deadlineDayOptions = useMemo(
+    () => [
+      { label: '선택', value: '' },
+      ...Array.from({ length: maxDay }, (_, i) => ({
+        label: `${i + 1}일`,
+        value: String(i + 1),
+      })),
+    ],
+    [maxDay],
+  );
+
+  return (
+    <div className={s.page}>
+      <Row justifyContent="space-between" style={{ padding: '16px 0' }}>
+        <PageHeader
+          title="거래선 관리"
+          description="법인·병의원별 거래 허용 여부를 등록하고 승인·승인불가 처리합니다."
+        />
+        <div className={s.rightPanel}>
+          <div className={s.deadlineFilterField}>
+            <label htmlFor="deadline-select">
+              <Tooltip description="법인이 [처방 자료]를 제출할 수 있는 마감 기한을 설정합니다.">
+                <span>마감일 관리</span>
+              </Tooltip>
+            </label>
+            <div className={s.deadlineApplyRow}>
+              <SingleSelect
+                id="deadline-select"
+                options={deadlineDayOptions}
+                selected={deadlineSelectValue ? String(deadlineSelectValue) : ''}
+                onChange={(v) => setDeadlineSelectValue(v === '' ? 0 : parseInt(String(v), 10))}
+                placeholder="선택"
+                aria-label={`${currentMonthKey} 당월 마감일`}
+              />
+              <Button type="button" variant="primary" size="default" onClick={handleApplyDeadline}>
+                적용
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Row>
+      <div className={s.layoutWrap}>
+        <CardWrapper className={s.leftCardLayout} padding={0}>
+          <div className={s.filterSection}>
+            <div className={s.filterRow}>
+              <div className={s.filterField}>
+                <label htmlFor="filter-status">거래선 상태</label>
+                <SingleSelect
+                  id="filter-status"
+                  selected={filterStatus ?? ''}
+                  onChange={(v) => setFilterStatus(v === '' ? null : String(v))}
+                  options={[
+                    { label: '전체', value: '' },
+                    { label: '대기', value: 'pending' },
+                    { label: '승인', value: 'approved' },
+                    { label: '승인불가', value: 'rejected' },
+                  ]}
+                />
+              </div>
+              <div className={s.filterField}>
+                <label htmlFor="filter-corp">법인</label>
+                <SingleSelect
+                  id="filter-corp"
+                  options={[
+                    { label: '전체', value: '' },
+                    ...corporations.map((c) => ({ label: c.name, value: c.id })),
+                  ]}
+                  selected={filterCorpId ?? ''}
+                  onChange={(v) => setFilterCorpId(v === '' ? null : String(v))}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={s.listWrap}>
+            <DataTable<FilterRequest>
+              columns={columns}
+              data={filteredRequests}
+              getRowId={(r) => r.id}
+              getRowClassName={getRowClassName}
+              onRowClick={handleRowClick}
+              emptyMessage={
+                filterRequests.length === 0
+                  ? '등록된 거래선이 없습니다.'
+                  : '조건에 맞는 항목이 없습니다.'
+              }
+            />
+          </div>
+        </CardWrapper>
+
+        <CardWrapper
+          title={selectedRequest ? '거래선 상세' : '거래선 추가'}
+          className={s.rightPanelLayout}
+          padding={16}
+        >
+          {selectedRequest ? (
+            <>
+              <div className={s.detailHeader}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedRowId(null)}
+                  aria-label="닫기"
+                >
+                  <X size={18} aria-hidden />
+                </Button>
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-corp">법인</label>
+                <SingleSelect
+                  id="detail-corp"
+                  options={[
+                    { label: '법인 선택', value: '' },
+                    ...corporations.map((c) => ({ label: c.name, value: c.id })),
+                  ]}
+                  selected={selectedRequest.corporationId}
+                  onChange={(v) => {
+                    const corpId = v === '' ? null : String(v);
+                    if (!corpId) return;
+                    const corpHospitals = hospitals.filter((h) => h.corporationId === corpId);
+                    const newHospitalId = corpHospitals.some(
+                      (h) => h.id === selectedRequest.hospitalId,
+                    )
+                      ? selectedRequest.hospitalId
+                      : (corpHospitals[0]?.id ?? '');
+                    updateFilterRequest(selectedRequest.id, {
+                      corporationId: corpId,
+                      hospitalId: newHospitalId || selectedRequest.hospitalId,
+                    });
+                  }}
+                  placeholder="법인 선택"
+                  aria-label="법인"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-hospital">병의원</label>
+                <SingleSelect
+                  id="detail-hospital"
+                  options={[
+                    { label: '병의원 선택', value: '' },
+                    ...hospitalsForEditCorp.map((h) => ({
+                      label: h.name,
+                      value: h.id,
+                      description: h.address || undefined,
+                    })),
+                  ]}
+                  selected={selectedRequest.hospitalId}
+                  onChange={(v) => {
+                    const hospitalId = v === '' ? selectedRequest.hospitalId : String(v);
+                    if (hospitalId) updateFilterRequest(selectedRequest.id, { hospitalId });
+                  }}
+                  placeholder="병의원 선택"
+                  enableSearch
+                  aria-label="병의원"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="detail-status">상태</label>
+                <SingleSelect
+                  id="detail-status"
+                  options={[
+                    { label: '대기', value: 'pending' },
+                    { label: '승인', value: 'approved' },
+                    { label: '승인불가', value: 'rejected' },
+                  ]}
+                  selected={selectedRequest.status}
+                  onChange={(v) => {
+                    const status = (v as FilterRequest['status']) ?? selectedRequest.status;
+                    if (status === 'approved' || status === 'rejected') {
+                      updateFilterRequestStatus(selectedRequest.id, status);
+                    } else {
+                      updateFilterRequest(selectedRequest.id, { status });
+                    }
+                  }}
+                  placeholder="상태"
+                  aria-label="상태"
+                />
+              </div>
+              <div className={s.formField}>
+                <Tooltip description="미사용, 허용품목 설정, 금지품목 설정 중 하나만 선택합니다.">
+                  <label htmlFor="detail-product-filter-mode">품목 설정</label>
+                </Tooltip>
+                <SingleSelect
+                  id="detail-product-filter-mode"
+                  options={PRODUCT_FILTER_MODE_OPTIONS}
+                  selected={selectedRequest.productFilterMode ?? 'none'}
+                  onChange={(v) => {
+                    const mode = (v as 'none' | 'prohibited' | 'allowed') ?? 'none';
+                    updateFilterRequest(selectedRequest.id, {
+                      productFilterMode: mode,
+                      allowedProducts:
+                        mode === 'allowed' ? (selectedRequest.allowedProducts ?? []) : [],
+                      prohibitedProducts:
+                        mode === 'prohibited' ? (selectedRequest.prohibitedProducts ?? []) : [],
+                    });
+                  }}
+                  placeholder="선택"
+                  aria-label="품목 설정"
+                />
+              </div>
+              {(selectedRequest.productFilterMode ?? 'none') === 'allowed' && (
+                <ProductListSection
+                  title="가능품목 지정"
+                  products={selectedRequest.allowedProducts ?? []}
+                  onChange={(next) =>
+                    updateFilterRequest(selectedRequest.id, { allowedProducts: next })
+                  }
+                  productPool={productPool}
+                />
+              )}
+              {(selectedRequest.productFilterMode ?? 'none') === 'prohibited' && (
+                <ProductListSection
+                  title="불가품목 지정"
+                  products={selectedRequest.prohibitedProducts ?? []}
+                  onChange={(next) =>
+                    updateFilterRequest(selectedRequest.id, { prohibitedProducts: next })
+                  }
+                  productPool={productPool}
+                />
+              )}
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>요청 일시</div>
+                <div className={s.detailValue}>{formatDateTime(selectedRequest.requestedAt)}</div>
+              </div>
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>생성일</div>
+                <div className={s.detailValue}>
+                  {selectedRequest.createdAt ? formatDate(selectedRequest.createdAt) : '-'}
+                </div>
+              </div>
+              <div className={s.detailSection}>
+                <div className={s.detailLabel}>생성자</div>
+                <div className={s.detailValue}>{selectedRequest.createdBy ?? '-'}</div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={s.formField}>
+                <label htmlFor="filter-add-corp">법인 *</label>
+                <SingleSelect
+                  id="filter-add-corp"
+                  options={[
+                    { label: '법인 선택', value: '' },
+                    ...corporations.map((c) => ({ label: c.name, value: c.id })),
+                  ]}
+                  selected={addCorpId ?? ''}
+                  onChange={(v) => {
+                    setAddCorpId(v === '' ? null : String(v));
+                    setSelectedHospitalId('');
+                  }}
+                  placeholder="법인 선택"
+                  aria-label="법인 선택"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="filter-add-hospital">병의원 *</label>
+                <SingleSelect
+                  id="filter-add-hospital"
+                  options={[
+                    {
+                      label: !addCorpId
+                        ? '법인을 먼저 선택하세요'
+                        : addableHospitals.length === 0
+                          ? '추가 가능한 병의원 없음'
+                          : '병의원 선택',
+                      value: '',
+                    },
+                    ...addableHospitals.map((h) => ({
+                      label: h.name,
+                      value: h.id,
+                      description: h.address || undefined,
+                    })),
+                  ]}
+                  selected={selectedHospitalId}
+                  onChange={(v) => setSelectedHospitalId(String(v))}
+                  placeholder={
+                    !addCorpId
+                      ? '법인을 먼저 선택하세요'
+                      : addableHospitals.length === 0
+                        ? '추가 가능한 병의원 없음'
+                        : '병의원 선택'
+                  }
+                  enableSearch
+                  aria-label="병의원 선택"
+                />
+              </div>
+              <div className={s.formField}>
+                <label htmlFor="filter-add-status">상태</label>
+                <SingleSelect
+                  id="filter-add-status"
+                  options={[
+                    { label: '대기', value: 'pending' },
+                    { label: '승인', value: 'approved' },
+                    { label: '승인불가', value: 'rejected' },
+                  ]}
+                  selected={addStatus}
+                  onChange={(v) => setAddStatus((v as FilterRequest['status']) ?? 'pending')}
+                  placeholder="상태"
+                  aria-label="상태 선택"
+                />
+              </div>
+              <div className={s.formField}>
+                <Tooltip description="미사용, 허용품목 설정, 금지품목 설정 중 하나만 선택합니다.">
+                  <label htmlFor="filter-add-product-filter-mode">품목 설정</label>
+                </Tooltip>
+                <SingleSelect
+                  id="filter-add-product-filter-mode"
+                  options={PRODUCT_FILTER_MODE_OPTIONS}
+                  selected={addProductFilterMode}
+                  onChange={(v) => {
+                    const mode = (v as 'none' | 'prohibited' | 'allowed') ?? 'none';
+                    setAddProductFilterMode(mode);
+                    if (mode === 'allowed') setAddProhibitedProducts([]);
+                    else if (mode === 'prohibited') setAddAllowedProducts([]);
+                    else {
+                      setAddAllowedProducts([]);
+                      setAddProhibitedProducts([]);
+                    }
+                  }}
+                  placeholder="선택"
+                  aria-label="품목 설정"
+                />
+              </div>
+              {addProductFilterMode === 'allowed' && (
+                <ProductListSection
+                  title="가능품목 지정"
+                  products={addAllowedProducts}
+                  onChange={setAddAllowedProducts}
+                  productPool={productPool}
+                />
+              )}
+              {addProductFilterMode === 'prohibited' && (
+                <ProductListSection
+                  title="불가품목 지정"
+                  products={addProhibitedProducts}
+                  onChange={setAddProhibitedProducts}
+                  productPool={productPool}
+                />
+              )}
+              <Button
+                variant="primary"
+                onClick={handleAddFilter}
+                disabled={!addCorpId || !selectedHospitalId}
+                className={s.addButtonFull}
+              >
+                추가
+              </Button>
+            </>
+          )}
+        </CardWrapper>
+      </div>
+    </div>
+  );
+}

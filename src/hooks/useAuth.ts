@@ -1,11 +1,5 @@
 /**
- * 인증 상태/액션 훅 (Context 또는 Redux 연동)
+ * 인증 세션 (쿠키 기준, Context 없음)
+ * @see useAuthSession
  */
-export function useAuth() {
-  return {
-    isAuthenticated: false,
-    user: null as { id: string; email: string } | null,
-    login: async (_email: string, _password: string) => {},
-    logout: () => {},
-  };
-}
+export { useAuthSession as useAuth } from './useAuthSession';

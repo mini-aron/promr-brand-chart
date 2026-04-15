@@ -4,37 +4,45 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 5000",
-    "build": "next build",
+    "dev": "next dev -p 5001",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css.ts}\"",
+    "format:write": "prettier --write \"src/**/*.{ts,tsx,css.ts}\"",
+    "build": "npm run format:check && next build",
     "start": "next start",
-    "lint": "next lint",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.95.2",
     "@tanstack/react-table": "^8.21.3",
+    "@uiw/react-md-editor": "^4.1.0",
     "@vanilla-extract/css": "^1.18.0",
     "axios": "^1.7.7",
     "clsx": "^2.1.1",
+    "cookies-next": "^4.3.0",
+    "d3": "^7.9.0",
     "lucide-react": "^0.577.0",
     "next": "^14.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "^5.5.0",
+    "react-kakao-maps-sdk": "^1.2.1",
+    "react-toastify": "^11.0.5",
     "recharts": "^3.7.0",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.6.14",
-    "@storybook/blocks": "^8.6.14",
-    "@storybook/react": "^8.6.17",
-    "@storybook/react-vite": "^8.6.17",
+    "@types/d3": "^7.4.3",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vanilla-extract/next-plugin": "^2.4.17",
-    "storybook": "^8.6.17",
+    "msw": "^2.12.14",
+    "prettier": "^3.8.1",
     "typescript": "~5.6.2"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

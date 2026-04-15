@@ -1,25 +1,25 @@
 /* @jsxImportSource react */
 import type { Metadata } from 'next';
 import nextDynamic from 'next/dynamic';
+import { DevToolsTimingDetector } from '@/components/DevToolsTimingDetector';
 import './globals.css';
 
 const Providers = nextDynamic(
-  () => import('@/components/Providers').then((m) => ({ default: m.Providers })),
-  { ssr: false }
+  () => import('@/shared/components/providers/Providers').then((m) => ({ default: m.Providers })),
+  { ssr: false },
 );
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Promr Brand Chart - 실적/처방 관리',
-  description: '실적/처방 관리 시스템',
+  title: {
+    default: 'Promr',
+    template: '%s | Promr',
+  },
+  description: 'Promr 실적·처방 관리',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
@@ -32,6 +32,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <DevToolsTimingDetector />
         <Providers>{children}</Providers>
       </body>
     </html>

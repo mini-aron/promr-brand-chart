@@ -1,21 +1,14 @@
-'use client';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { AUTH_ACCESS_COOKIE } from '@/utils/authCookies';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/context/AuthContext';
-
+/**
+ * 서버에서 access 쿠키 여부로 분기. 클라이언트 useAuthSession과 동일한 `promr_auth_token`을 본다.
+ */
 export default function RootPage() {
-  const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthContext();
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (isAuthenticated) {
-      router.replace('/home');
-    } else {
-      router.replace('/promotion');
-    }
-  }, [isAuthenticated, isLoading, router]);
-
-  return null;
+  const token = cookies().get(AUTH_ACCESS_COOKIE)?.value;
+  if (token) {
+    redirect('/home');
+  }
+  redirect('/promotion');
 }

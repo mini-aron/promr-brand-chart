@@ -1,6 +1,4 @@
-'use client';
-
-import { SettlementByCorpPage } from '@/views/SettlementByCorpPage';
+import { SettlementByCorpPage } from '@/features/settlement/SettlementByCorpPage';
 
 export default function SettlementRoute() {
   return <SettlementByCorpPage />;

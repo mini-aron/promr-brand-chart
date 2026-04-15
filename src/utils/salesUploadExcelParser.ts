@@ -17,7 +17,7 @@ const COLUMNS = {
 
 function findColumnKey(row: Record<string, unknown>, keys: readonly string[]): string | null {
   const header = Object.keys(row).find((k) =>
-    keys.some((key) => String(k).trim() === key || String(k).toLowerCase() === key.toLowerCase())
+    keys.some((key) => String(k).trim() === key || String(k).toLowerCase() === key.toLowerCase()),
   );
   return header ?? null;
 }
@@ -31,7 +31,7 @@ export type ParseExcelResult = { rows: SalesRow[]; error?: string };
 export function parseExcelToSalesRows(
   file: File,
   corporationId: string,
-  hospitals: Hospital[]
+  hospitals: Hospital[],
 ): Promise<ParseExcelResult> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -70,7 +70,9 @@ export function parseExcelToSalesRows(
         for (let i = 0; i < json.length; i++) {
           const r = json[i];
           const hospitalName = String(r[hospitalKey] ?? '').trim();
-          const businessNumber = businessNumberKey ? String(r[businessNumberKey] ?? '').trim() : undefined;
+          const businessNumber = businessNumberKey
+            ? String(r[businessNumberKey] ?? '').trim()
+            : undefined;
           const productName = String(r[productKey] ?? '').trim();
           const productCode = productCodeKey ? String(r[productCodeKey] ?? '').trim() : undefined;
           const q = quantityKey ? r[quantityKey] : undefined;

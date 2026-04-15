@@ -1,6 +1,4 @@
-'use client';
-
-import { RoleProtectedRoute } from '@/components/RoleProtectedRoute';
+import { RoleProtectedRoute } from '@/shared/components/providers/RoleProtectedRoute';
 
 export default function PharmaLayout({
   children,

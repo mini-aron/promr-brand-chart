@@ -5,16 +5,60 @@ export type UserRole = 'corporation' | 'pharma' | 'admin';
 export interface Pharma {
   id: string;
   name: string;
+  /** 마이페이지: 커스텀 로고 (데모는 data URL 문자열) */
+  logoUrl?: string | null;
+  email?: string;
+  businessRegNo?: string;
+  /** 사업자등록증 파일명 (데모 표시용) */
+  businessLicenseFileName?: string | null;
 }
 
 /** 법인(업로더) 정보 */
 export interface Corporation {
   id: string;
   name: string;
+  /** 사업자등록번호 */
+  businessRegNo?: string;
+  /** 마이페이지: 담당 이메일 */
+  email?: string;
+  /** 마이페이지: 전화번호 */
+  phone?: string;
+  /** 마이페이지: 담당자 이름 */
+  representativeName?: string;
   /** 프로엠알에서 실적을 입력한 법인 여부 (법인별 정산 화면 뱃지·딜러 실적용) */
   isPromr?: boolean;
   /** 구간수수료 - 금액 구간별 수수료 (minAmount: 만원, maxAmount: 만원, rate: %) */
   tieredFeeTiers?: { minAmount: number; maxAmount: number; rate: number }[];
+  /** 법인 추가수수료 (%) - 기본수수료에 추가 적용 */
+  additionalFeeRate?: number;
+}
+
+/** 법인-병원별 수수료 (기간 없음, 고정 또는 추가) */
+export interface CorpHospitalFee {
+  corporationId: string;
+  hospitalId: string;
+  /** true=고정수수료, false=추가수수료 */
+  isFixedFee: boolean;
+  /** 수수료율 (%) */
+  feeRate: number;
+}
+
+/** 문전약국 정보 (병원 매핑용) */
+export interface Pharmacy {
+  id: string;
+  /** 매핑번호 (수정 가능) */
+  mappingNo?: string;
+  name: string;
+  hospitalId: string;
+  address?: string;
+  /** 대표자명 */
+  representativeName?: string;
+  /** 사업자등록번호 */
+  businessNumber?: string;
+  /** 위도 (지도 표시용) */
+  lat?: number;
+  /** 경도 (지도 표시용) */
+  lng?: number;
 }
 
 /** 병의원(거래처) 정보 */
@@ -28,6 +72,43 @@ export interface Hospital {
   businessNumber?: string;
   /** 주소 (정산 화면) */
   address?: string;
+  /** 전화번호 */
+  phone?: string;
+  /** 요양기관번호 */
+  careNumber?: string;
+  /** 대표자명 */
+  representativeName?: string;
+  /** 메모 */
+  memo?: string;
+}
+
+/** 품목별 흡수율 */
+export interface ProductAbsorptionRate {
+  productCode: string;
+  productName: string;
+  /** 기준 월 (YYYY-MM) */
+  month: string;
+  /** 흡수율 (%) */
+  absorptionRate: number;
+  /** 매출액 (원) */
+  salesAmount: number;
+  /** 처방액 (원) */
+  prescriptionAmount: number;
+}
+
+/** 병원별 품목 흡수율 (병원 선택 시 품목 리스트) */
+export interface HospitalProductAbsorptionRate {
+  hospitalId: string;
+  productCode: string;
+  productName: string;
+  /** 기준 월 (YYYY-MM) */
+  month: string;
+  /** 흡수율 (%) */
+  absorptionRate: number;
+  /** 매출액 (원) */
+  salesAmount: number;
+  /** 처방액 (원) */
+  prescriptionAmount: number;
 }
 
 /** 품목 (다운로드용) */
@@ -72,6 +153,7 @@ export interface FeeEvent {
   priority?: number;
   createdBy?: string;
   updatedBy?: string;
+  updatedAt?: string;
 }
 
 /** 실적(엑셀) 행 데이터 */
@@ -162,6 +244,8 @@ export interface CorpInvitation {
   corporationId?: string;
   /** 초대 메일 발송 대상 (선택) */
   invitedEmail?: string;
+  /** 재위탁 여부 */
+  subcontracting?: boolean;
 }
 
 /** 딜러(영업사원) 정보 */
@@ -179,5 +263,40 @@ export interface Dealer {
   subcontractContractUrl?: string;
   /** 사업자 등록증 파일 URL */
   businessLicenseUrl?: string;
+  /** 재위탁 해당 여부(계약서 제출 시 선택) */
+  subcontracting?: boolean;
   createdAt: string;
+}
+
+/** 공지 구분: 시스템(관리자) / 제약사별 */
+export type NoticeScope = 'system' | 'pharma';
+
+/** 공지사항 */
+export interface Notice {
+  id: string;
+  no: number;
+  title: string;
+  author: string;
+  createdAt: string;
+  noticeScope: NoticeScope;
+  /** `noticeScope === 'pharma'` 일 때 소속 제약사 */
+  pharmaId?: string;
+}
+
+/** 공지사항 상세 */
+export interface NoticeDetail extends Notice {
+  content: string;
+  updatedAt: string;
+}
+
+/** 헤더 알림 센터(데모) */
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+  href?: string;
+  /** 목록 카드 상단 태그(예: 시스템공지, 문의) */
+  category?: string;
 }

@@ -1,0 +1,13 @@
+'use client';
+import { Flex } from '@/shared/components/ui/Flex';
+import { Sidebar } from './Sidebar';
+import * as s from './Layout.css';
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <Flex direction="row" gap={0} alignItems="stretch" className={s.layoutWrap}>
+      <Sidebar />
+      <main className={s.main}>{children}</main>
+    </Flex>
+  );
+}

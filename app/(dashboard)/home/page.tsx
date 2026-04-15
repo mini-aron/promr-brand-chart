@@ -1,7 +1,5 @@
-'use client';
-
-import { HomePage } from '@/views/HomePage';
+import { DashboardHomePage } from '@/features/home/DashboardHomePage';
 
 export default function HomeRoute() {
-  return <HomePage />;
+  return <DashboardHomePage />;
 }

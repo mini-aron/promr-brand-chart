@@ -1,7 +1,5 @@
-'use client';
-
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { Layout } from '@/components/Layout';
+import { ProtectedRoute } from '@/shared/components/providers/ProtectedRoute';
+import { Layout } from '@/shared/components/layout';
 
 export default function DashboardLayout({
   children,

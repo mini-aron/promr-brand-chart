@@ -1,6 +1,6 @@
 /**
  * 테마 색상·간격·그림자.
- * CSS 변수는 index.css에서 정의되며, data-theme="dark" | "light" 로 전환.
+ * CSS 변수는 app/globals.css 에 정의되며, data-theme="dark" | "light" 로 전환.
  */
 export const theme = {
   fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
