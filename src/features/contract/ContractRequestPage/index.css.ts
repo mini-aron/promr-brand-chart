@@ -130,7 +130,7 @@ export const treeScroll = style({
   minHeight: 280,
   overflow: 'auto',
   padding: 0,
-  backgroundColor: '#eef1f5',
+  backgroundColor: '#ffffff',
 });
 
 export const treeViewport = style({

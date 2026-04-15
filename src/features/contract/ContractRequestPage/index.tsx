@@ -77,6 +77,19 @@ function buildSelectedDetailDocs(detail: GetReEntrusContractDetailResponse): Sel
 function buildTreeFromGraph(
   graphList: GetReEntrusContractGraphResponse['list'],
 ): ReentrustTreeNode {
+  const statusPriority: Record<ReentrustNodeStatus, number> = {
+    complete: 0,
+    warning: 1,
+    error: 2,
+  };
+
+  const mergeNodeStatus = (
+    prev: ReentrustNodeStatus,
+    next: ReentrustNodeStatus,
+  ): ReentrustNodeStatus => {
+    return statusPriority[next] > statusPriority[prev] ? next : prev;
+  };
+
   const toNode = (
     corporationId: number,
     corporationName: string,
@@ -89,7 +102,25 @@ function buildTreeFromGraph(
     children: [],
   });
 
-  const roots = graphList.map((rootItem) => {
+  const rootsByKey = new Map<string, ReentrustTreeNode>();
+
+  const mergeChildren = (target: ReentrustTreeNode, sourceChildren: ReentrustTreeNode[]) => {
+    sourceChildren.forEach((sourceChild) => {
+      const sameNode = target.children?.find(
+        (child) => child.id === sourceChild.id && child.name === sourceChild.name,
+      );
+
+      if (sameNode) {
+        sameNode.status = mergeNodeStatus(sameNode.status, sourceChild.status);
+        mergeChildren(sameNode, sourceChild.children ?? []);
+        return;
+      }
+
+      target.children = [...(target.children ?? []), sourceChild];
+    });
+  };
+
+  graphList.forEach((rootItem) => {
     const firstNode = toNode(
       rootItem.corporationId,
       rootItem.corporationName,
@@ -113,8 +144,18 @@ function buildTreeFromGraph(
       levelTail.set(child.depth, childNode);
     });
 
-    return firstNode;
+    const rootKey = `${rootItem.corporationId}-${rootItem.corporationName}`;
+    const existingRoot = rootsByKey.get(rootKey);
+    if (!existingRoot) {
+      rootsByKey.set(rootKey, firstNode);
+      return;
+    }
+
+    existingRoot.status = mergeNodeStatus(existingRoot.status, firstNode.status);
+    mergeChildren(existingRoot, firstNode.children ?? []);
   });
+
+  const roots = [...rootsByKey.values()];
 
   return {
     id: 'pharma-root',
@@ -387,9 +428,7 @@ export function ContractRequestPage() {
         if (!mounted) return;
         const nextRoot = buildTreeFromGraph(data.list);
         setTreeRoot(nextRoot);
-        setExpandedNodes(
-          Object.fromEntries(collectExpandableNodeIds(nextRoot).map((nodeId) => [nodeId, true])),
-        );
+        setExpandedNodes({});
         const firstChild = nextRoot.children?.[0];
         if (firstChild) {
           setSelectedId(firstChild.id);

@@ -29,3 +29,9 @@ export function formatRelativeTime(iso: string): string {
   const days = Math.floor(h / 24);
   return `${days}일 전`;
 }
+
+export function formatRequestUrlForDisplay(url: string): string {
+  if (typeof window === 'undefined') return url;
+  if (url.startsWith('/')) return `${window.location.origin}${url}`;
+  return url;
+}
