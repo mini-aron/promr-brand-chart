@@ -274,6 +274,28 @@ export function ContractReviewPage() {
     setPreviewModal({ isOpen: true, previewUrl, corporationName, documentName });
   }, [previewUrl, isReentrustView, contractDetail, reEntrustDetail]);
 
+  useEffect(() => {
+    if (!previewModal.isOpen || !previewUrl) return;
+
+    const corporationName = !isReentrustView
+      ? (contractDetail?.corporation.businessName ?? '')
+      : (reEntrustDetail?.corporationName ?? '');
+    const documentName = !isReentrustView
+      ? (contractDetail?.contract.contractFileName ?? '')
+      : (reEntrustDetail?.reEntrustContractFileName ?? '');
+
+    setPreviewModal((prev) => {
+      if (
+        prev.previewUrl === previewUrl &&
+        prev.corporationName === corporationName &&
+        prev.documentName === documentName
+      ) {
+        return prev;
+      }
+      return { ...prev, previewUrl, corporationName, documentName };
+    });
+  }, [previewModal.isOpen, previewUrl, isReentrustView, contractDetail, reEntrustDetail]);
+
   const handleClosePreview = useCallback(() => {
     setPreviewModal((prev) => ({ ...prev, isOpen: false }));
   }, []);

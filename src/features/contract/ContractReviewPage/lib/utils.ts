@@ -1,6 +1,10 @@
-/** NEXT_PUBLIC_IMAGE_BASE_URL + fileName으로 이미지 URL 구성 */
+/** NEXT_PUBLIC_IMAGE_SERVER_BASE_URL + 정적 경로(fileName)로 이미지 URL 구성 */
 export function buildImageUrl(fileName: string): string {
-  const base = process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '';
+  const isMswMode = process.env.NEXT_PUBLIC_MSW_ENABLED === 'true';
+  if (isMswMode && fileName.startsWith('/')) return fileName;
+
+  const base =
+    process.env.NEXT_PUBLIC_IMAGE_SERVER_BASE_URL ?? process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '';
   if (!base || !fileName) return '';
   const hasProtocol = base.startsWith('http://') || base.startsWith('https://');
   const normalizedBase = (hasProtocol ? base : `http://${base}`).replace(/\/$/, '');

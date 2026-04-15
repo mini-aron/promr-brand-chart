@@ -88,9 +88,49 @@ const mockContractRequestStore: ContractRequestResponse[] = [
     createdAt: '2026-04-02T09:00:00.000Z',
     updatedAt: '2026-04-02T10:00:00.000Z',
   },
+  {
+    contractRequestId: 3,
+    alias: '굿모닝위탁 계약 검토',
+    contractStatus: 'SUBMITTED',
+    reason: '',
+    sendType: 'EMAIL',
+    email: 'review@goodmorning-cso.kr',
+    createdAt: '2026-04-10T08:30:00.000Z',
+    updatedAt: '2026-04-10T09:10:00.000Z',
+  },
+  {
+    contractRequestId: 4,
+    alias: '온누리바이오 재검토 건',
+    contractStatus: 'REJECTED',
+    reason: '사업자등록증 식별 불가',
+    sendType: 'PHONE',
+    phoneNumber: '01023456789',
+    createdAt: '2026-04-11T10:15:00.000Z',
+    updatedAt: '2026-04-11T10:40:00.000Z',
+  },
+  {
+    contractRequestId: 5,
+    alias: '프라임헬스케어 신규 요청',
+    contractStatus: 'SUBMITTED',
+    reason: '',
+    sendType: 'EMAIL',
+    email: 'contract@prime-healthcare.co.kr',
+    createdAt: '2026-04-12T07:20:00.000Z',
+    updatedAt: '2026-04-12T07:50:00.000Z',
+  },
+  {
+    contractRequestId: 6,
+    alias: '서울메디유통 제출 완료',
+    contractStatus: 'SUBMITTED',
+    reason: '',
+    sendType: 'PHONE',
+    phoneNumber: '01034567890',
+    createdAt: '2026-04-13T13:05:00.000Z',
+    updatedAt: '2026-04-13T13:15:00.000Z',
+  },
 ];
 
-const mockContractRequestDetailMap: Record<number, GetContractRequestDetailResponse> = {
+const baseMockContractRequestDetailMap: Record<number, GetContractRequestDetailResponse> = {
   1: {
     contractRequestId: 1,
     contractStatus: 'REQUESTED',
@@ -142,6 +182,35 @@ const mockContractRequestDetailMap: Record<number, GetContractRequestDetailRespo
     documents: createMockDocuments(MOCK_REPORT_PREVIEW_PATH, '', MOCK_CONTRACT_PREVIEW_PATH),
   },
 };
+
+const mockContractRequestDetailMap: Record<number, GetContractRequestDetailResponse> =
+  mockContractRequestStore.reduce(
+    (acc, item) => {
+      acc[item.contractRequestId] = baseMockContractRequestDetailMap[item.contractRequestId]
+        ? {
+            ...baseMockContractRequestDetailMap[item.contractRequestId],
+            contractStatus: item.contractStatus,
+            reason: item.reason,
+            sendType: item.sendType,
+            email: item.email,
+            phoneNumber: item.phoneNumber,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            corporation: {
+              ...baseMockContractRequestDetailMap[item.contractRequestId]!.corporation,
+              businessName: `${item.alias} 법인`,
+            },
+            contract: {
+              ...baseMockContractRequestDetailMap[item.contractRequestId]!.contract,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+            },
+          }
+        : buildMockContractRequestDetail(item);
+      return acc;
+    },
+    {} as Record<number, GetContractRequestDetailResponse>,
+  );
 
 const mockReEntrusGraph: GetReEntrusContractGraphResponse = {
   list: [
