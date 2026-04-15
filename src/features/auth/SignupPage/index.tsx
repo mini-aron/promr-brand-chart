@@ -7,7 +7,12 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { clsx } from 'clsx';
 import { queryKeys } from '@/api/queryKey';
-import { getAgreementList, recognizeBusinessRegistration, registerCorp, registerDealer } from '@/api/services';
+import {
+  getAgreementList,
+  recognizeBusinessRegistration,
+  registerCorp,
+  registerDealer,
+} from '@/api/services';
 import type { AgreementItem, AgreementType } from '@/types/services/agreementService';
 import { Button } from '@/shared/components/ui/Button';
 import { Checkbox } from '@/shared/components/ui/Checkbox';
@@ -183,7 +188,8 @@ function SignupInner() {
     return false;
   }, [license]);
 
-  const passwordMismatch = form.passwordConfirm.length > 0 && form.password !== form.passwordConfirm;
+  const passwordMismatch =
+    form.passwordConfirm.length > 0 && form.password !== form.passwordConfirm;
   const passwordTooShort = form.password.length > 0 && form.password.length < MIN_PASSWORD_LEN;
   const emailInvalid = form.email.length > 0 && !isValidEmail(form.email);
   const phoneInvalid = form.phone.length > 0 && !isValidPhone(form.phone);
@@ -219,7 +225,14 @@ function SignupInner() {
   );
 
   const handleBusinessLicenseChange = useCallback(async (file: File | null) => {
-    setLicense({ file, parse: null, loading: false, error: null, nameManual: '', numberManual: '' });
+    setLicense({
+      file,
+      parse: null,
+      loading: false,
+      error: null,
+      nameManual: '',
+      numberManual: '',
+    });
     if (!file) return;
     setLicense((l) => ({ ...l, loading: true }));
     try {
@@ -246,7 +259,7 @@ function SignupInner() {
     if (!canSubmit) return;
 
     try {
-      if(form.businessSector === 'CORPORATE_CSO'){
+      if (form.businessSector === 'CORPORATE_CSO') {
         await registerCorp({
           name: form.displayName,
           accountId: form.email,
@@ -257,7 +270,7 @@ function SignupInner() {
           password: form.password,
           email: form.email,
         });
-      }else if(form.businessSector === 'PERSONAL_CSO'){
+      } else if (form.businessSector === 'PERSONAL_CSO') {
         await registerDealer({
           name: form.displayName,
           accountId: form.email,
@@ -274,10 +287,8 @@ function SignupInner() {
         window.location.assign(redirectUrl);
         return;
       }
-    } catch (error) {
-      
-    }
-   
+    } catch (error) {}
+
     setDone(true);
   }, [redirectUrl]);
 
@@ -385,9 +396,7 @@ function SignupInner() {
                   void handleBusinessLicenseChange(f);
                 }}
               />
-              {license.loading && (
-                <p className={s.parseLoading}>사업자 정보(OCR)를 읽는 중…</p>
-              )}
+              {license.loading && <p className={s.parseLoading}>사업자 정보(OCR)를 읽는 중…</p>}
               {license.error && !license.loading && (
                 <>
                   <p className={s.errorText}>{license.error}</p>
@@ -414,7 +423,9 @@ function SignupInner() {
                         inputMode="numeric"
                         autoComplete="off"
                         value={license.numberManual}
-                        onChange={(e) => setLicense((l) => ({ ...l, numberManual: e.target.value }))}
+                        onChange={(e) =>
+                          setLicense((l) => ({ ...l, numberManual: e.target.value }))
+                        }
                         placeholder="예: 123-45-67890"
                       />
                     </div>
@@ -491,13 +502,17 @@ function SignupInner() {
 
               {agreementLoading && <p className={s.parseLoading}>약관을 불러오는 중…</p>}
               {agreementError && !agreementLoading && (
-                <p className={s.errorText}>약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+                <p className={s.errorText}>
+                  약관을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+                </p>
               )}
               {!agreementLoading &&
                 !agreementError &&
                 sortedAgreements.map((item) => (
                   <Fragment key={item.id}>
-                    {item.agreementType === 'MARKETING_CONSENT' && <div className={s.consentDivider} />}
+                    {item.agreementType === 'MARKETING_CONSENT' && (
+                      <div className={s.consentDivider} />
+                    )}
                     <AccordionItem
                       checkboxId={`su-consent-${item.id}`}
                       label={`${AGREEMENT_TYPE_LABEL[item.agreementType]} 동의`}
@@ -507,7 +522,9 @@ function SignupInner() {
                       panelId={`su-agreement-${item.id}`}
                       panelAriaLabel={AGREEMENT_TYPE_LABEL[item.agreementType]}
                       panelClassName={
-                        item.agreementType === 'TERMS_OF_SERVICE' ? s.termsAccordionPanel : undefined
+                        item.agreementType === 'TERMS_OF_SERVICE'
+                          ? s.termsAccordionPanel
+                          : undefined
                       }
                       open={accordionOpenById[item.id] ?? false}
                       onToggle={() =>
@@ -526,7 +543,6 @@ function SignupInner() {
                     </AccordionItem>
                   </Fragment>
                 ))}
-
             </section>
 
             <div className={s.actions}>

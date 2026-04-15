@@ -2,11 +2,11 @@ import { clsx } from 'clsx';
 import CardWrapper from '@/shared/components/layout/CardWrapper/CardWrapper';
 import { Column } from '@/shared/components/ui/Flex';
 import { SingleSelect } from '@/shared/components/ui/Select';
-import type { ContractRequestResponse, GetReEntrusContractListResponse } from '@/types/services/contractService';
 import type {
-  ContractReviewChannelFilter,
-  ContractReviewStatusFilter,
-} from '../../types';
+  ContractRequestResponse,
+  GetReEntrusContractListResponse,
+} from '@/types/services/contractService';
+import type { ContractReviewChannelFilter, ContractReviewStatusFilter } from '../../types';
 import { CHANNEL_TAB_ITEMS, REVIEW_STATUS_FILTER_OPTIONS } from '../../lib/constants';
 import { ReceivedContractList } from './ReceivedContractList';
 import { ReentrustContractList } from './ReentrustContractList';
@@ -56,7 +56,6 @@ export function ContractReviewListSection({
     <div className={s.leftColumn}>
       <CardWrapper title={CARD_TITLE[listType]} fill padding={8}>
         <Column flex={1} gap={8} style={{ minHeight: 0 }}>
-
           {/* 목록 탭 */}
           <div className={s.listTypeTabsRow}>
             <div className={s.listTypeTabs} role="tablist" aria-label="계약 검토 목록">
@@ -146,7 +145,6 @@ export function ContractReviewListSection({
               onSelect={onSelect}
             />
           )}
-
         </Column>
       </CardWrapper>
     </div>

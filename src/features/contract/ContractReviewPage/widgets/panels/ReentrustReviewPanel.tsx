@@ -4,7 +4,13 @@ import type { GetReEntrusContractDetailResponse } from '@/types/services/contrac
 import { CONTRACT_STATUS_LABEL } from '../../lib/constants';
 import * as b from '../../contractReviewBadges.css';
 import * as s from './reentrustReviewPanel.css';
-import { actionRow, previewImageWrap, previewImage, previewFileMeta, previewPlaceholder } from './rightPanelShared.css';
+import {
+  actionRow,
+  previewImageWrap,
+  previewImage,
+  previewFileMeta,
+  previewPlaceholder,
+} from './rightPanelShared.css';
 
 type Props = {
   detail: GetReEntrusContractDetailResponse;
@@ -12,7 +18,9 @@ type Props = {
   onOpenPreview: () => void;
 };
 
-function reentrustNodeStatusClass(status: GetReEntrusContractDetailResponse['contractStatus']): string {
+function reentrustNodeStatusClass(
+  status: GetReEntrusContractDetailResponse['contractStatus'],
+): string {
   if (status === 'APPROVED') return b.reentrustStatusBadge.complete;
   if (status === 'REJECTED') return b.reentrustStatusBadge.error;
   return b.reentrustStatusBadge.warning;
@@ -21,7 +29,10 @@ function reentrustNodeStatusClass(status: GetReEntrusContractDetailResponse['con
 export function ReentrustReviewPanel({ detail, previewUrl, onOpenPreview }: Props) {
   const submittedDocRows: { label: string; fileName: string | null }[] = [
     { label: '신고필증', fileName: detail.documents.salesDeclarationCertificateFileName || null },
-    { label: 'CSO교육이수증', fileName: detail.documents.csoTraningCompletionCertificateFileName || null },
+    {
+      label: 'CSO교육이수증',
+      fileName: detail.documents.csoTraningCompletionCertificateFileName || null,
+    },
     { label: '사업자등록증', fileName: detail.documents.businessRegistrationFileName || null },
     { label: '재위탁계약서', fileName: detail.reEntrustContractFileName || null },
   ];

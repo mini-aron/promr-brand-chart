@@ -84,7 +84,9 @@ export function getReEntrusContractList() {
 }
 
 export function getReEntrusContractDetail(reEntrustContractId: number) {
-  return axios.get<GetReEntrusContractDetailResponse>(`/contract/re-entrust/${reEntrustContractId}`);
+  return axios.get<GetReEntrusContractDetailResponse>(
+    `/contract/re-entrust/${reEntrustContractId}`,
+  );
 }
 
 // 업로드한 계약서

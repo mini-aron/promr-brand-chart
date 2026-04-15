@@ -246,16 +246,16 @@ export function PharmaHomePage() {
         <CardWrapper title="영역별 통계" titleId="region-stats-title" padding={0} flush>
           <div className={clsx(s.regionCard, s.regionCardInWrapper)}>
             <div className={s.regionHighlight}>
-            <div className={s.regionPill}>
-              <MapPin size={14} aria-hidden />
-              상위 지역
-            </div>
-            <p className={s.regionLead}>
-              {topRegion
-                ? `${topRegion.regionName} 지역이 가장 높은 실적 금액을 보이고 있습니다.`
-                : '지역별 실적을 요약해 보여줍니다.'}
-            </p>
-            <p className={s.regionHint}>상세 집계는 정산·실적 메뉴에서 확인할 수 있습니다.</p>
+              <div className={s.regionPill}>
+                <MapPin size={14} aria-hidden />
+                상위 지역
+              </div>
+              <p className={s.regionLead}>
+                {topRegion
+                  ? `${topRegion.regionName} 지역이 가장 높은 실적 금액을 보이고 있습니다.`
+                  : '지역별 실적을 요약해 보여줍니다.'}
+              </p>
+              <p className={s.regionHint}>상세 집계는 정산·실적 메뉴에서 확인할 수 있습니다.</p>
             </div>
             <ul className={s.regionList}>
               {topRegions.map((r) => (

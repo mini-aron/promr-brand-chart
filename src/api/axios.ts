@@ -8,8 +8,7 @@ const instance: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-
- export function formDataConfig(): Pick<
+export function formDataConfig(): Pick<
   InternalAxiosRequestConfig,
   'transformRequest' | 'maxBodyLength' | 'maxContentLength'
 > {
@@ -30,8 +29,6 @@ const instance: AxiosInstance = axios.create({
     ],
   };
 }
-
-
 
 setupInterceptors(instance);
 export default instance;

@@ -15,7 +15,10 @@ import {
   getCorporationProfileDocumentsMock,
   type CorporationProfileDocumentsMock,
 } from './lib/corporationHomeMock';
-import type { ContractReviewReceivedItem, ContractReviewReceivedStatus } from '@/features/contract/ContractReviewPage/types';
+import type {
+  ContractReviewReceivedItem,
+  ContractReviewReceivedStatus,
+} from '@/features/contract/ContractReviewPage/types';
 import * as s from '@/features/pharma-dashboard/PharmaHomePage/index.css';
 import * as cs from './index.css';
 

@@ -768,3 +768,112 @@ export const docBadgeNo = style({
   backgroundColor: 'color-mix(in srgb, var(--color-text-muted) 10%, transparent)',
   color: 'var(--color-text-muted)',
 });
+
+/* ─── 재위탁 통보서 업로드 모달 ──────────────────────────────── */
+export const noticeModalOverlay = style({
+  position: 'fixed',
+  inset: 0,
+  zIndex: 1000,
+  backgroundColor: 'rgba(0, 0, 0, 0.45)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+export const noticeModalBox = style({
+  width: 440,
+  maxWidth: 'calc(100vw - 32px)',
+  backgroundColor: 'var(--color-surface)',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'var(--shadow-lg)',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+});
+
+export const noticeModalHeader = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '16px 20px 12px',
+  borderBottom: '1px solid var(--color-border)',
+});
+
+export const noticeModalTitle = style({
+  margin: 0,
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--color-text)',
+});
+
+export const noticeModalBody = style({
+  padding: '20px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+});
+
+export const noticeModalField = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+});
+
+export const noticeModalLabel = style({
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-text)',
+});
+
+export const noticeModalSelect = style({
+  width: '100%',
+  padding: '8px 10px',
+  border: '1px solid var(--color-border)',
+  borderRadius: 'var(--radius-sm)',
+  backgroundColor: 'var(--color-background)',
+  color: 'var(--color-text)',
+  fontSize: 13,
+  fontFamily: 'var(--font-family)',
+  cursor: 'pointer',
+  selectors: {
+    '&:focus': {
+      outline: '2px solid var(--color-primary)',
+      outlineOffset: 0,
+    },
+  },
+});
+
+export const noticeModalFileArea = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '10px 12px',
+  border: '1px dashed var(--color-border)',
+  borderRadius: 'var(--radius-sm)',
+  backgroundColor: 'var(--color-background)',
+});
+
+export const noticeModalFileName = style({
+  flex: 1,
+  minWidth: 0,
+  fontSize: 13,
+  color: 'var(--color-text)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+export const noticeModalFilePlaceholder = style({
+  flex: 1,
+  fontSize: 13,
+  color: 'var(--color-text-muted)',
+});
+
+export const noticeModalFooter = style({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: 8,
+  padding: '12px 20px 16px',
+  borderTop: '1px solid var(--color-border)',
+});

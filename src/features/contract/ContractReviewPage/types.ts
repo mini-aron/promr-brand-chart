@@ -17,12 +17,7 @@ export type RequestDeliveryMode = 'send' | 'linkOnly';
 export type ContractReviewChannel = '이메일' | '카카오톡' | '링크';
 
 export type ContractReviewReceivedStatus = '검토필요' | '검토완료' | '불가';
-export type ContractReviewRequestStatus =
-  | '요청중'
-  | '제출완료'
-  | '승인'
-  | '반려'
-  | '재제출요청';
+export type ContractReviewRequestStatus = '요청중' | '제출완료' | '승인' | '반려' | '재제출요청';
 
 export type ContractReviewListType = '수신목록' | '요청목록' | '재위탁목록';
 

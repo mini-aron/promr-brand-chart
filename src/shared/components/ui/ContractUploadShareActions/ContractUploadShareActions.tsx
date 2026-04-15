@@ -7,7 +7,10 @@ import { Button } from '@/shared/components/ui/Button';
 import type { ContractRequestResponse } from '@/types/services/contractService';
 import { ContractRequestModal } from '@/shared/components/ui/ContractRequestModal';
 import { CHANNEL_TAB_ITEMS } from '@/features/contract/ContractReviewPage/lib/constants';
-import { formatRelativeTime, formatRequestUrlForDisplay } from '@/features/contract/ContractReviewPage/lib/utils';
+import {
+  formatRelativeTime,
+  formatRequestUrlForDisplay,
+} from '@/features/contract/ContractReviewPage/lib/utils';
 import type {
   ContractReviewChannel,
   ContractReviewChannelFilter,
@@ -91,8 +94,7 @@ export function ContractUploadShareActions({
   const handleContractRequestSuccess = useCallback(
     (res: ContractRequestResponse) => {
       const requestUrl = buildUploadUrl();
-      const channel: ContractReviewChannel =
-        res.sendType === 'EMAIL' ? '이메일' : '카카오톡';
+      const channel: ContractReviewChannel = res.sendType === 'EMAIL' ? '이메일' : '카카오톡';
 
       const newItem: ContractReviewRequestItem = {
         id: String(res.contractRequestId),
@@ -104,9 +106,7 @@ export function ContractUploadShareActions({
         status: '요청중',
         receivedAt: res.createdAt,
         isNew: true,
-        ...(res.email || res.phoneNumber
-          ? { deliveryTarget: res.email ?? res.phoneNumber }
-          : {}),
+        ...(res.email || res.phoneNumber ? { deliveryTarget: res.email ?? res.phoneNumber } : {}),
       };
 
       setRequestItems((prev) => [newItem, ...prev]);

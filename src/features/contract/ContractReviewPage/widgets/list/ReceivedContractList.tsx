@@ -15,7 +15,8 @@ type Props = {
 
 function contractBadgeClass(status: ContractStatus): string {
   if (status === 'SUBMITTED') return b.statusBadge.needReview;
-  if (status === 'REJECTED') return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
+  if (status === 'REJECTED')
+    return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
   return b.statusBadge.done;
 }
 
@@ -31,15 +32,24 @@ export function ReceivedContractList({ items, selectedId, onSelect }: Props) {
           <span className={s.listStatusLegendTitle}>목록 상태</span>
           <div className={s.listStatusLegendItems}>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotComplete)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotComplete)}
+                aria-hidden
+              />
               완료
             </span>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotNeedReview)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotNeedReview)}
+                aria-hidden
+              />
               검토필요
             </span>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotDenied)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotDenied)}
+                aria-hidden
+              />
               불가
             </span>
           </div>
@@ -54,7 +64,10 @@ export function ReceivedContractList({ items, selectedId, onSelect }: Props) {
             <button
               key={item.contractRequestId}
               type="button"
-              className={clsx(s.listItem, selectedId === item.contractRequestId && s.listItemSelected)}
+              className={clsx(
+                s.listItem,
+                selectedId === item.contractRequestId && s.listItemSelected,
+              )}
               onClick={() => onSelect(item.contractRequestId)}
             >
               <ChannelIcon channel={SEND_TYPE_CHANNEL[item.sendType]} />

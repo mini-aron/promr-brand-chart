@@ -2,11 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import { LayoutGrid, Mail, MessageCircle } from 'lucide-react';
 import type { ContractStatus, SendType } from '@/types/services/contractService';
 import type { Option } from '@/shared/components/ui/Select';
-import type {
-  ChannelTabKey,
-  ContractReviewChannel,
-  ContractReviewChannelFilter,
-} from '../types';
+import type { ChannelTabKey, ContractReviewChannel, ContractReviewChannelFilter } from '../types';
 
 export const CONTRACT_STATUS_LABEL: Record<ContractStatus, string> = {
   REQUESTED: '요청중',

@@ -51,13 +51,16 @@ type PreviewModalState = {
 
 function contractBadgeClass(status: string): string {
   if (status === 'SUBMITTED') return b.statusBadge.needReview;
-  if (status === 'REJECTED') return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
+  if (status === 'REJECTED')
+    return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
   return b.statusBadge.done;
 }
 
 function reentrustBadgeClass(status: string): string {
-  if (status === 'SUBMITTED') return clsx(b.reentrustStatusBadge.warning, b.listRowReentrustStatusBadge);
-  if (status === 'REJECTED') return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
+  if (status === 'SUBMITTED')
+    return clsx(b.reentrustStatusBadge.warning, b.listRowReentrustStatusBadge);
+  if (status === 'REJECTED')
+    return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
   return clsx(b.reentrustStatusBadge.complete, b.listRowReentrustStatusBadge);
 }
 
@@ -94,9 +97,7 @@ export function ContractReviewPage() {
 
   // ─── 필터 적용 ────────────────────────────────────────────────
   const filteredContractItems = useMemo(() => {
-    const items = (contractListData ?? []).filter(
-      (item) => item.contractStatus !== 'REQUESTED',
-    );
+    const items = (contractListData ?? []).filter((item) => item.contractStatus !== 'REQUESTED');
     const byChannel =
       channelFilter === '전체'
         ? items
@@ -195,7 +196,9 @@ export function ContractReviewPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestList() });
       if (selectedId !== null) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestDetail(selectedId) });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.contract.requestDetail(selectedId),
+        });
       }
     },
   });
@@ -205,24 +208,39 @@ export function ContractReviewPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestList() });
       if (selectedId !== null) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestDetail(selectedId) });
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.contract.requestDetail(selectedId),
+        });
       }
     },
   });
 
   // ─── 이벤트 핸들러 ───────────────────────────────────────────
-  const handleListTypeChange = useCallback((nextListType: ListType) => {
-    setListUiState({ listType: nextListType, channelFilter: '전체', reviewStatusFilter: '전체', selectedId: null });
-    // 탭 전환 시 해당 리스트를 재요청 → 리스트 API가 디테일 API보다 먼저 호출되도록 보장
-    if (nextListType === '수신목록') {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestList() });
-    } else {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.contract.reEntrustList() });
-    }
-  }, [queryClient]);
+  const handleListTypeChange = useCallback(
+    (nextListType: ListType) => {
+      setListUiState({
+        listType: nextListType,
+        channelFilter: '전체',
+        reviewStatusFilter: '전체',
+        selectedId: null,
+      });
+      // 탭 전환 시 해당 리스트를 재요청 → 리스트 API가 디테일 API보다 먼저 호출되도록 보장
+      if (nextListType === '수신목록') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestList() });
+      } else {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.contract.reEntrustList() });
+      }
+    },
+    [queryClient],
+  );
 
   const handleChannelChange = useCallback((tab: ContractReviewChannelFilter) => {
-    setListUiState((prev) => ({ ...prev, channelFilter: tab, reviewStatusFilter: '전체', selectedId: null }));
+    setListUiState((prev) => ({
+      ...prev,
+      channelFilter: tab,
+      reviewStatusFilter: '전체',
+      selectedId: null,
+    }));
   }, []);
 
   const handleReviewStatusFilterChange = useCallback((next: ContractReviewStatusFilter) => {

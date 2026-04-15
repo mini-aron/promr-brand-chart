@@ -77,10 +77,18 @@ export function DocumentPreviewModal({
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
       if (!stackNav) return;
-      if (e.key === 'ArrowLeft') { e.preventDefault(); stackNav.onPrev(); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); stackNav.onNext(); }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        stackNav.onPrev();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        stackNav.onNext();
+      }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -131,10 +139,11 @@ export function DocumentPreviewModal({
       role="dialog"
       aria-modal="true"
       aria-label="계약서 미리보기"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className={s.previewModalBox}>
-
         {/* 사이드바 */}
         {sideListOpen ? (
           <aside className={s.previewModalSideList} aria-label="계약서 목록">
@@ -161,13 +170,23 @@ export function DocumentPreviewModal({
                       key={item.id}
                       ref={isActive ? selectedRowRef : undefined}
                       type="button"
-                      className={clsx(s.previewModalSideItem, isActive && s.previewModalSideItemActive)}
+                      className={clsx(
+                        s.previewModalSideItem,
+                        isActive && s.previewModalSideItemActive,
+                      )}
                       onClick={() => onSelectSidebar?.(item.id)}
                     >
                       <div className={s.previewModalSideItemBody}>
                         <div className={s.previewModalSideItemTitle}>{item.title}</div>
-                        <span className={s.previewModalSideItemReceived} title={formatRelativeTime(item.receivedAt)}>
-                          제출 {new Date(item.receivedAt).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })}
+                        <span
+                          className={s.previewModalSideItemReceived}
+                          title={formatRelativeTime(item.receivedAt)}
+                        >
+                          제출{' '}
+                          {new Date(item.receivedAt).toLocaleString('ko-KR', {
+                            dateStyle: 'short',
+                            timeStyle: 'short',
+                          })}
                         </span>
                         <span className={clsx(item.badgeClass, s.previewModalStatusChip)}>
                           {item.badgeLabel}
@@ -203,11 +222,29 @@ export function DocumentPreviewModal({
               <div className={s.previewModalHeaderSub}>
                 {stackNav && (
                   <div className={s.previewModalStackNav}>
-                    <Button type="button" variant="secondary" size="small" aria-label="이전 서류" onClick={(e) => { e.stopPropagation(); stackNav.onPrev(); }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="small"
+                      aria-label="이전 서류"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        stackNav.onPrev();
+                      }}
+                    >
                       <ChevronLeft size={18} aria-hidden />
                     </Button>
                     <span className={s.previewModalStackNavCounter}>{stackNav.counterLabel}</span>
-                    <Button type="button" variant="secondary" size="small" aria-label="다음 서류" onClick={(e) => { e.stopPropagation(); stackNav.onNext(); }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="small"
+                      aria-label="다음 서류"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        stackNav.onNext();
+                      }}
+                    >
                       <ChevronRight size={18} aria-hidden />
                     </Button>
                   </div>
@@ -216,13 +253,33 @@ export function DocumentPreviewModal({
               </div>
             </div>
             <div className={s.previewModalActions}>
-              <Button variant="ghost" size="icon" aria-label="줌 아웃" onClick={() => setPreviewScale((sc) => Math.max(0.5, Number((sc - 0.25).toFixed(2))))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="줌 아웃"
+                onClick={() =>
+                  setPreviewScale((sc) => Math.max(0.5, Number((sc - 0.25).toFixed(2))))
+                }
+              >
                 <ZoomOut size={18} aria-hidden />
               </Button>
-              <Button variant="ghost" size="icon" aria-label="줌 인" onClick={() => setPreviewScale((sc) => Math.min(3, Number((sc + 0.25).toFixed(2))))}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="줌 인"
+                onClick={() => setPreviewScale((sc) => Math.min(3, Number((sc + 0.25).toFixed(2))))}
+              >
                 <ZoomIn size={18} aria-hidden />
               </Button>
-              <Button variant="ghost" size="icon" aria-label="줌·위치 초기화" onClick={() => { setPreviewScale(1); setPreviewPan({ x: 0, y: 0 }); }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="줌·위치 초기화"
+                onClick={() => {
+                  setPreviewScale(1);
+                  setPreviewPan({ x: 0, y: 0 });
+                }}
+              >
                 <RotateCcw size={18} aria-hidden />
               </Button>
               <Button variant="ghost" size="icon" aria-label="닫기" onClick={onClose}>
@@ -242,12 +299,19 @@ export function DocumentPreviewModal({
                   )}
                   src={previewUrl}
                   alt={previewAlt}
-                  style={{ transform: `translate(${previewPan.x}px, ${previewPan.y}px) scale(${previewScale})` }}
+                  style={{
+                    transform: `translate(${previewPan.x}px, ${previewPan.y}px) scale(${previewScale})`,
+                  }}
                   draggable={false}
                   onPointerDown={(e) => {
                     if (!finePointer || e.button !== 0) return;
                     e.preventDefault();
-                    previewDragRef.current = { startX: e.clientX, startY: e.clientY, originX: previewPan.x, originY: previewPan.y };
+                    previewDragRef.current = {
+                      startX: e.clientX,
+                      startY: e.clientY,
+                      originX: previewPan.x,
+                      originY: previewPan.y,
+                    };
                     setIsPreviewDragging(true);
                   }}
                 />

@@ -378,7 +378,7 @@ const mockReEntrusList: GetReEntrusContractListResponse = {
     {
       reEntrustContractId: 301,
       reEntrustContractFileName: MOCK_SUBCONTRACT_PREVIEW_PATH,
-      pharmaceuticalName: '데모바이오',
+      pharmaceuticalName: '데모 메디컬',
       contracteeName: '메디 위탁',
       contractorName: '상위 CSO C',
       startDate: '2026-04-12',

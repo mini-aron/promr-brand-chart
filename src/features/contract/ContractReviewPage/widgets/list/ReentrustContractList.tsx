@@ -1,7 +1,10 @@
 import { clsx } from 'clsx';
 import { formatRelativeTime } from '../../lib/utils';
 import { CONTRACT_STATUS_LABEL } from '../../lib/constants';
-import type { ContractStatus, GetReEntrusContractListResponse } from '@/types/services/contractService';
+import type {
+  ContractStatus,
+  GetReEntrusContractListResponse,
+} from '@/types/services/contractService';
 import * as b from '../../contractReviewBadges.css';
 import * as s from './ContractReviewListSection.css';
 
@@ -14,9 +17,12 @@ type Props = {
 };
 
 function reentrustBadgeClass(status: ContractStatus): string {
-  if (status === 'SUBMITTED') return clsx(b.reentrustStatusBadge.warning, b.listRowReentrustStatusBadge);
-  if (status === 'REJECTED') return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
-  if (status === 'APPROVED') return clsx(b.reentrustStatusBadge.complete, b.listRowReentrustStatusBadge);
+  if (status === 'SUBMITTED')
+    return clsx(b.reentrustStatusBadge.warning, b.listRowReentrustStatusBadge);
+  if (status === 'REJECTED')
+    return clsx(b.reentrustStatusBadge.error, b.listRowReentrustStatusBadge);
+  if (status === 'APPROVED')
+    return clsx(b.reentrustStatusBadge.complete, b.listRowReentrustStatusBadge);
   return b.statusBadge.done;
 }
 
@@ -32,15 +38,24 @@ export function ReentrustContractList({ items, selectedId, onSelect }: Props) {
           <span className={s.listStatusLegendTitle}>목록 상태</span>
           <div className={s.listStatusLegendItems}>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotComplete)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotComplete)}
+                aria-hidden
+              />
               완료
             </span>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotNeedReview)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotNeedReview)}
+                aria-hidden
+              />
               경고
             </span>
             <span className={s.listStatusLegendItem}>
-              <span className={clsx(s.listStatusLegendDot, s.listStatusLegendDotDenied)} aria-hidden />
+              <span
+                className={clsx(s.listStatusLegendDot, s.listStatusLegendDotDenied)}
+                aria-hidden
+              />
               오류
             </span>
           </div>
@@ -55,12 +70,17 @@ export function ReentrustContractList({ items, selectedId, onSelect }: Props) {
             <button
               key={item.reEntrustContractId}
               type="button"
-              className={clsx(s.listItem, selectedId === item.reEntrustContractId && s.listItemSelected)}
+              className={clsx(
+                s.listItem,
+                selectedId === item.reEntrustContractId && s.listItemSelected,
+              )}
               onClick={() => onSelect(item.reEntrustContractId)}
             >
               <div className={s.listItemBody}>
                 <div className={s.listItemTitle}>{item.contracteeName}</div>
-                <div className={s.listItemSub}>{item.contractorName} → {item.contracteeName}</div>
+                <div className={s.listItemSub}>
+                  {item.contractorName} → {item.contracteeName}
+                </div>
                 <div className={s.listItemMeta}>
                   시작일: {item.startDate}, 종료일: {item.expireDate}
                 </div>

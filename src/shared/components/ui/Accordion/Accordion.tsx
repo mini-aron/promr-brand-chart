@@ -60,11 +60,7 @@ export function AccordionItem({
           onClick={onToggle}
         >
           자세히 보기
-          <ChevronDown
-            className={clsx(s.chevron, open && s.chevronOpen)}
-            size={14}
-            aria-hidden
-          />
+          <ChevronDown className={clsx(s.chevron, open && s.chevronOpen)} size={14} aria-hidden />
         </button>
       </div>
       {open && (

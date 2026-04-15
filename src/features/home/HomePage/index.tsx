@@ -278,7 +278,10 @@ export function HomePage() {
             <div className={s.card}>
               <h2 className={s.cardTitle}>계약관리</h2>
               <p className={s.cardDesc}>계약 정보를 관리합니다.</p>
-              <Link href="/corporation/contract-manage" className={clsx(s.cardLink, s.cardLinkHover)}>
+              <Link
+                href="/corporation/contract-manage"
+                className={clsx(s.cardLink, s.cardLinkHover)}
+              >
                 계약관리 페이지로 →
               </Link>
             </div>

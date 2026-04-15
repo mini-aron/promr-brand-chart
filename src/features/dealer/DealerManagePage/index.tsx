@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, Upload, X } from 'lucide-react';
 import {
   getContractRequest,
   getReEntrusContractList,
@@ -113,6 +113,107 @@ function mapContractRequestResponseToItem(res: ContractRequestResponse): Request
   };
 }
 
+type ReentrustNoticeModalProps = {
+  pharmaceuticalName: string;
+  onClose: () => void;
+  onUpload: (csoName: string, file: File) => void;
+};
+
+function ReentrustNoticeUploadModal({
+  pharmaceuticalName,
+  onClose,
+  onUpload,
+}: ReentrustNoticeModalProps) {
+  const [csoName, setCsoName] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+
+  const canSubmit = csoName.trim().length > 0 && file !== null;
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    onUpload(csoName.trim(), file!);
+  };
+
+  return (
+    <div
+      className={s.noticeModalOverlay}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="재위탁 통보서 업로드"
+        className={s.noticeModalBox}
+      >
+        <div className={s.noticeModalHeader}>
+          <h3 className={s.noticeModalTitle}>재위탁 통보서 업로드</h3>
+          <Button type="button" variant="ghost" size="icon" aria-label="닫기" onClick={onClose}>
+            <X size={18} aria-hidden />
+          </Button>
+        </div>
+
+        <div className={s.noticeModalBody}>
+          <div className={s.noticeModalField}>
+            <label className={s.noticeModalLabel} htmlFor="reentrust-notice-cso-name">
+              CSO명
+            </label>
+            <input
+              id="reentrust-notice-cso-name"
+              className={s.noticeModalSelect}
+              type="text"
+              placeholder="CSO 업체명을 입력하세요"
+              value={csoName}
+              onChange={(e) => setCsoName(e.target.value)}
+            />
+            <p style={{ margin: 0, fontSize: 12, color: 'var(--color-text-muted)' }}>
+              제약사: {pharmaceuticalName}
+            </p>
+          </div>
+
+          <div className={s.noticeModalField}>
+            <label className={s.noticeModalLabel}>통보서 파일</label>
+            <div className={s.noticeModalFileArea}>
+              {file ? (
+                <span className={s.noticeModalFileName} title={file.name}>
+                  {file.name}
+                </span>
+              ) : (
+                <span className={s.noticeModalFilePlaceholder}>
+                  파일을 선택해 주세요 (이미지, PDF)
+                </span>
+              )}
+              <label style={{ flexShrink: 0, cursor: 'pointer' }}>
+                <span className={s.corpOwnStatusNo} style={{ fontSize: 12, fontWeight: 600 }}>
+                  파일 선택
+                </span>
+                <FileInput
+                  className={s.corpOwnFileInputHidden}
+                  accept="image/*,.pdf"
+                  onChange={(f) => {
+                    if (f && !Array.isArray(f)) setFile(f);
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className={s.noticeModalFooter}>
+          <Button type="button" variant="secondary" onClick={onClose}>
+            취소
+          </Button>
+          <Button type="button" variant="primary" disabled={!canSubmit} onClick={handleSubmit}>
+            <Upload size={15} aria-hidden />
+            업로드
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DealerManagePage() {
   const [activeTab, setActiveTab] = useState<DealerTab>('contract');
   const [contractSubTab, setContractSubTab] = useState<ContractSubTab>('uploaded');
@@ -134,6 +235,8 @@ export function DealerManagePage() {
   const [reentrustLoading, setReentrustLoading] = useState(false);
   const [reentrustError, setReentrustError] = useState<string | null>(null);
   const [selectedPharmaceuticalName, setSelectedPharmaceuticalName] = useState<string | null>(null);
+  const [isNoticeModalOpen, setIsNoticeModalOpen] = useState(false);
+  const [reentrustNoticeUploads, setReentrustNoticeUploads] = useState<Record<string, string>>({});
   const blobUrlsRef = useRef<string[]>([]);
 
   useEffect(() => {
@@ -158,6 +261,19 @@ export function DealerManagePage() {
     setPreviewUrl(null);
     setPreviewTitle('');
   }, []);
+
+  const handleNoticeUpload = useCallback(
+    (csoName: string, file: File) => {
+      if (!selectedPharmaceuticalName) return;
+      const url = URL.createObjectURL(file);
+      blobUrlsRef.current.push(url);
+      // 제약사 + CSO 조합을 키로 저장해 행별 미리보기에 활용
+      const key = `${selectedPharmaceuticalName}__${csoName}`;
+      setReentrustNoticeUploads((prev) => ({ ...prev, [key]: url }));
+      setIsNoticeModalOpen(false);
+    },
+    [selectedPharmaceuticalName],
+  );
 
   const fetchContractRequestList = useCallback(async () => {
     setRequestListLoading(true);
@@ -395,8 +511,34 @@ export function DealerManagePage() {
           </span>
         ),
       }),
+      reentrustColHelper.display({
+        id: 'registeredDocument',
+        header: '등록서류',
+        size: 110,
+        cell: ({ row }) => {
+          const fileName = row.original.reEntrustContractFileName;
+          const url = fileName ? buildImageUrl(fileName) : '';
+
+          if (!url) {
+            return <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>미등록</span>;
+          }
+
+          return (
+            <Button
+              type="button"
+              variant="ghost"
+              size="small"
+              aria-label="재위탁통보서 미리보기"
+              onClick={() => handlePreview(url, `재위탁통보서 - ${row.original.contracteeName}`)}
+            >
+              <Eye size={13} strokeWidth={2} aria-hidden />
+              재위탁통보서
+            </Button>
+          );
+        },
+      }),
     ],
-    [],
+    [handlePreview],
   );
 
   return (
@@ -602,6 +744,35 @@ export function DealerManagePage() {
                       {selectedPharmaceuticalName ?? '위탁사'}
                     </h3>
                   </div>
+                  <div className={s.reentrustNoticeCell}>
+                    {selectedPharmaceuticalName &&
+                      reentrustNoticeUploads[selectedPharmaceuticalName] && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label="재위탁 통보서 미리보기"
+                          onClick={() =>
+                            handlePreview(
+                              reentrustNoticeUploads[selectedPharmaceuticalName]!,
+                              `재위탁 통보서 - ${selectedPharmaceuticalName}`,
+                            )
+                          }
+                        >
+                          <Eye size={14} strokeWidth={2} aria-hidden />
+                        </Button>
+                      )}
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="small"
+                      disabled={!selectedPharmaceuticalName || selectedReentrustRows.length === 0}
+                      onClick={() => setIsNoticeModalOpen(true)}
+                    >
+                      <Upload size={13} aria-hidden />
+                      재위탁 통보서 업로드
+                    </Button>
+                  </div>
                 </header>
                 <div className={s.reentrustContentBody}>
                   {reentrustLoading ? (
@@ -638,6 +809,14 @@ export function DealerManagePage() {
         <ContractRequestModal
           onClose={() => setIsRequestModalOpen(false)}
           onSuccess={() => void fetchContractRequestList()}
+        />
+      )}
+
+      {isNoticeModalOpen && selectedPharmaceuticalName && (
+        <ReentrustNoticeUploadModal
+          pharmaceuticalName={selectedPharmaceuticalName}
+          onClose={() => setIsNoticeModalOpen(false)}
+          onUpload={handleNoticeUpload}
         />
       )}
     </div>
