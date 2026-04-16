@@ -30,6 +30,7 @@ import {
   DocumentPreviewModal,
   type PreviewSidebarItem,
 } from './widgets/modals/DocumentPreviewModal';
+import { ContractRequestModal } from '@/shared/components/ui/ContractRequestModal';
 import * as b from './contractReviewBadges.css';
 import { clsx } from 'clsx';
 
@@ -80,6 +81,8 @@ export function ContractReviewPage() {
     corporationName: '',
     documentName: '',
   });
+
+  const [isContractRequestModalOpen, setIsContractRequestModalOpen] = useState(false);
 
   const { listType, channelFilter, reviewStatusFilter, selectedId } = listUiState;
   const isReentrustView = listType === '재위탁목록';
@@ -304,6 +307,10 @@ export function ContractReviewPage() {
     setListUiState((prev) => ({ ...prev, selectedId: id }));
   }, []);
 
+  const invalidateContractRequestList = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.contract.requestList() });
+  }, [queryClient]);
+
   return (
     <div className={page}>
       <PageHeader
@@ -329,6 +336,7 @@ export function ContractReviewPage() {
           onChannelChange={handleChannelChange}
           onReviewStatusFilterChange={handleReviewStatusFilterChange}
           onSelect={handleSelect}
+          onOpenContractRequest={() => setIsContractRequestModalOpen(true)}
         />
 
         <div className={rightColumn}>
@@ -347,6 +355,14 @@ export function ContractReviewPage() {
           </CardWrapper>
         </div>
       </div>
+
+      {isContractRequestModalOpen && (
+        <ContractRequestModal
+          onClose={() => setIsContractRequestModalOpen(false)}
+          onSuccess={invalidateContractRequestList}
+          onExcelSuccess={invalidateContractRequestList}
+        />
+      )}
 
       {previewModal.isOpen && (
         <DocumentPreviewModal

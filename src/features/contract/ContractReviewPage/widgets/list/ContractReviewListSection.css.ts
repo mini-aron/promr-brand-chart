@@ -142,7 +142,9 @@ export const listTypeTabs = style({
   border: '1px solid var(--color-border)',
 });
 
-export const listTypeTabsAction = style({});
+export const listTypeTabsAction = style({
+  flexShrink: 0,
+});
 
 export const listTypeTab = style({
   appearance: 'none',

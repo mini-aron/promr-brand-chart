@@ -1,6 +1,7 @@
 import { clsx } from 'clsx';
 import CardWrapper from '@/shared/components/layout/CardWrapper/CardWrapper';
 import { Column } from '@/shared/components/ui/Flex';
+import { Button } from '@/shared/components/ui/Button';
 import { SingleSelect } from '@/shared/components/ui/Select';
 import type {
   ContractRequestResponse,
@@ -26,6 +27,7 @@ type Props = {
   onChannelChange: (tab: ContractReviewChannelFilter) => void;
   onReviewStatusFilterChange: (next: ContractReviewStatusFilter) => void;
   onSelect: (id: number) => void;
+  onOpenContractRequest?: () => void;
 };
 
 const LIST_TYPE_TABS: { type: ListType; label: string }[] = [
@@ -49,6 +51,7 @@ export function ContractReviewListSection({
   onChannelChange,
   onReviewStatusFilterChange,
   onSelect,
+  onOpenContractRequest,
 }: Props) {
   const isReentrustView = listType === '재위탁목록';
 
@@ -72,6 +75,17 @@ export function ContractReviewListSection({
                 </button>
               ))}
             </div>
+            {!isReentrustView && onOpenContractRequest ? (
+              <Button
+                type="button"
+                variant="primary"
+                size="default"
+                className={s.listTypeTabsAction}
+                onClick={onOpenContractRequest}
+              >
+                계약서 요청
+              </Button>
+            ) : null}
           </div>
 
           {/* 채널 필터 + 상태 필터 (계약서 목록 탭에서만 노출) */}
